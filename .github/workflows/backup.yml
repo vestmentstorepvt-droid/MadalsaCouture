@@ -1,0 +1,37 @@
+name: Nightly database backup
+
+# Every night at 02:30 IST (21:00 UTC): copies the whole Turso database to Cloudflare R2.
+# Free: uses about a minute of the 2,000 monthly GitHub Actions minutes.
+# Secrets needed (repo → Settings → Secrets and variables → Actions):
+#   TURSO_DATABASE_URL, TURSO_AUTH_TOKEN, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID,
+#   R2_SECRET_ACCESS_KEY, R2_BACKUP_BUCKET (or R2_BUCKET_NAME)
+on:
+  schedule:
+    - cron: "0 21 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:backup -- --upload-r2
+        env:
+          NODE_ENV: production
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BACKUP_BUCKET: ${{ secrets.R2_BACKUP_BUCKET }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: backups/*.json.gz
+          retention-days: 7

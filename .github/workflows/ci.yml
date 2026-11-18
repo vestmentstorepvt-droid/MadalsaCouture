@@ -1,0 +1,27 @@
+name: CI
+
+# Checks every pull request and push to main on GitHub's own machines.
+# Deployment itself is done by Vercel's GitHub integration (preview per PR, production on main).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test --if-present
+      - run: npm run build
+        env:
+          JWT_ACCESS_SECRET: ci-access-secret-not-used-anywhere-real-000
+          JWT_REFRESH_SECRET: ci-refresh-secret-not-used-anywhere-real-111
