@@ -27,6 +27,13 @@ const SECURITY_HEADERS: Record<string, string> = {
 
 const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",").map((o) => o.trim()).filter(Boolean);
 const allowAllOrigins = allowedOrigins.length === 0 || allowedOrigins.includes("*");
+// Entries may contain "*" wildcards, e.g. https://madalsacouture-*-vestment-store.vercel.app
+// (Vercel gives every deployment its own address). "*" never matches "." or "/".
+const originPatterns = allowedOrigins
+  .filter((o) => o !== "*" && o.includes("*"))
+  .map((o) => new RegExp(`^${o.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^./]*")}$`));
+const isAllowedOrigin = (origin: string) =>
+  allowAllOrigins || allowedOrigins.includes(origin) || originPatterns.some((p) => p.test(origin));
 
 /** express-mongo-sanitize: drop keys that start with `$` or contain `.`. */
 function sanitize(value: any): any {
@@ -99,7 +106,7 @@ async function handle(request: NextRequest): Promise<Response> {
 
   const res = new Res();
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.set(k, v);
-  if (origin && (allowAllOrigins || allowedOrigins.includes(origin))) {
+  if (origin && isAllowedOrigin(origin)) {
     res.set("Access-Control-Allow-Origin", origin);
     res.set("Access-Control-Allow-Credentials", "true");
     res.set("Vary", "Origin");
