@@ -29,6 +29,8 @@ import {
 import { useAddToCartApiMutation } from '../../services/cartApi';
 import { addToCart } from '../../store/slices/cartSlice';
 import { optimizeImage } from '../../utils/imageUtils';
+import { ProductCard } from '../../components/ui/ProductCard';
+import { SectionHeader } from '../../components/ui/SectionHeader';
 import {
   findAvailableVariantForSize,
   isSizeUnavailable,
@@ -65,7 +67,7 @@ const getDefaultAccordionContent = (key: string, product: Product): React.ReactN
       <ul className="space-y-2">
         {items.map((item, idx) => (
           <li key={idx} className="flex gap-2">
-            <span className="text-[#D4AF37] opacity-80 mt-1.5 text-[10px]">♦</span>
+            <span className="text-accent opacity-80 mt-1.5 text-xs">♦</span>
             <span>{item}</span>
           </li>
         ))}
@@ -79,7 +81,7 @@ const getDefaultAccordionContent = (key: string, product: Product): React.ReactN
       <ul className="space-y-2">
         {items.map((item, idx) => (
           <li key={idx} className="flex gap-2">
-            <span className="text-[#D4AF37] opacity-80 mt-1.5 text-[10px]">♦</span>
+            <span className="text-accent opacity-80 mt-1.5 text-xs">♦</span>
             <span>
               <strong className="font-semibold text-stone-800">{item.label}:</strong> {item.value}
             </span>
@@ -188,7 +190,7 @@ const LightboxWithMagnifier: React.FC<LightboxProps> = ({
       >
         {/* ── Top bar ── */}
         <div className="flex items-center justify-between bg-black/70 backdrop-blur-sm px-5 py-3 shrink-0">
-          <span className="text-xs font-semibold tracking-widest uppercase text-white/60">
+          <span className="text-xs font-semibold tracking-wider uppercase text-white/60">
             {productName}
           </span>
           <div className="flex items-center gap-3">
@@ -197,8 +199,8 @@ const LightboxWithMagnifier: React.FC<LightboxProps> = ({
               type="button"
               onClick={() => setIsMagnifierOn((v) => !v)}
               title={isMagnifierOn ? 'Disable magnifier' : 'Enable magnifier'}
-              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-semibold tracking-wider transition-all ${isMagnifierOn
-                ? 'border-[#D4AF37] bg-[#D4AF37]/20 text-[#D4AF37]'
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wider transition-all ${isMagnifierOn
+                ? 'border-hairline bg-ink/20 text-accent'
                 : 'border-white/30 bg-white/10 text-white/60 hover:border-white/60 hover:text-white'
                 }`}
             >
@@ -225,7 +227,7 @@ const LightboxWithMagnifier: React.FC<LightboxProps> = ({
         </div>
 
         {/* ── Image area ── */}
-        <div className="relative flex-1 flex items-center justify-center bg-[#0d0d0d] min-h-0">
+        <div className="relative flex-1 flex items-center justify-center bg-ink min-h-0">
 
           {/* Image + magnifier wrapper */}
           <div
@@ -252,7 +254,7 @@ const LightboxWithMagnifier: React.FC<LightboxProps> = ({
                   width: MAGNIFIER_SIZE,
                   height: MAGNIFIER_SIZE,
                   borderRadius: '50%',
-                  border: '2.5px solid #D4AF37',
+                  border: '2px solid #171717',
                   boxShadow: '0 0 0 1.5px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.6)',
                   backgroundImage: `url(${optimizeImage(currentSrc, 1200)})`,
                   backgroundRepeat: 'no-repeat',
@@ -317,7 +319,7 @@ const LightboxWithMagnifier: React.FC<LightboxProps> = ({
                   else for (let i = 0; i > diff; i--) onPrev();
                 }}
                 className={`h-12 w-10 shrink-0 overflow-hidden rounded-lg border transition-all ${idx === selectedImage
-                  ? 'border-[#D4AF37] opacity-100 ring-1 ring-[#D4AF37]'
+                  ? 'border-hairline opacity-100 ring-1 ring-hairline'
                   : 'border-transparent opacity-40 hover:opacity-80'
                   }`}
               >
@@ -330,8 +332,8 @@ const LightboxWithMagnifier: React.FC<LightboxProps> = ({
         {/* ── Hint bar ── */}
         {isMagnifierOn && (
           <div className="flex items-center justify-center gap-2 bg-black/50 py-2 shrink-0">
-            <ZoomIn className="h-3 w-3 text-[#D4AF37]" />
-            <span className="text-[10px] tracking-wider text-white/40 uppercase font-medium">
+            <ZoomIn className="h-3 w-3 text-accent" />
+            <span className="text-xs tracking-wider text-white/40 uppercase font-medium">
               Hover over image to magnify · {ZOOM_LEVEL}× zoom
             </span>
           </div>
@@ -513,7 +515,7 @@ const ProductDetails: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2]">
+      <div className="min-h-screen bg-canvas">
         <div className="mx-auto max-w-7xl px-4 py-28 sm:px-6 lg:px-8">
           <div className="animate-pulse grid gap-12 lg:grid-cols-2">
             <div className="aspect-[4/5] bg-stone-200/60" />
@@ -531,9 +533,9 @@ const ProductDetails: React.FC = () => {
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2]">
+      <div className="min-h-screen bg-canvas">
         <div className="mx-auto max-w-3xl px-4 py-32 text-center">
-          <h2 className="font-serif text-2xl tracking-widest text-[#4A3B32] uppercase">
+          <h2 className="text-xl tracking-[-0.4px] text-ink font-semibold">
             Product Unavailable
           </h2>
           <p className="mt-3 text-sm text-stone-600">
@@ -541,7 +543,7 @@ const ProductDetails: React.FC = () => {
           </p>
           <Link
             to="/products"
-            className="mt-6 inline-flex items-center gap-2 border border-[#4A3B32] px-6 py-3 text-xs tracking-widest uppercase text-[#4A3B32] hover:bg-[#4A3B32] hover:text-white transition-all"
+            className="mt-6 inline-flex items-center gap-2 border px-6 text-ink h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
           >
             <ArrowLeft className="h-4 w-4" /> Back to Collections
           </Link>
@@ -581,296 +583,243 @@ const ProductDetails: React.FC = () => {
     : null;
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#3D2C24] font-sans antialiased selection:bg-[#B38756]/20">
-      {/* Floating Toast Notification */}
+    <div className="min-h-screen bg-canvas text-ink">
+      {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-3 rounded-full border border-[#B38756]/40 bg-[#2D211A] px-6 py-3 text-xs font-medium uppercase tracking-widest text-[#FAF7F2] shadow-2xl backdrop-blur-md animate-in fade-in duration-300">
-          <Sparkles className="h-4 w-4 text-[#D4AF37] shrink-0" />
+        <div role="status" className="fixed bottom-6 left-1/2 z-[80] flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-5 text-sm font-medium text-white shadow-2xl h-11 transition-colors hover:bg-ink-hover">
+          <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Main High-Fashion Split Layout */}
-      <main className="pt-24 lg:pt-28 pb-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[430px_1fr] xl:grid-cols-[460px_1fr] gap-8 lg:gap-14 items-start">
+      <main className="pb-24 pt-6 lg:pt-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <nav aria-label="Breadcrumb" className="mb-6 text-sm text-mute">
+            <ol className="flex flex-wrap items-center gap-1.5">
+              <li><Link to="/" className="hover:text-ink">Home</Link></li>
+              <li aria-hidden="true">/</li>
+              <li><Link to="/products" className="hover:text-ink">Shop</Link></li>
+              <li aria-hidden="true">/</li>
+              <li className="truncate text-ink" aria-current="page">{product.name}</li>
+            </ol>
+          </nav>
 
-            {/* LEFT: Compact Sticky Image Carousel */}
-            <div className="relative group w-full max-w-[460px] mx-auto lg:mx-0 lg:sticky lg:top-28 self-start space-y-3">
-              <div className="relative aspect-[3/4] max-h-[540px] w-full overflow-hidden rounded-2xl border border-stone-300/40 bg-white shadow-sm flex items-center justify-center">
-                <img
-                  src={optimizeImage(imageSet[selectedImage], 800)}
-                  alt={product.name}
-                  className="h-full w-full object-cover object-center transition-all duration-500"
-                />
-
-                {/* Overlaid Prev / Next Slider Arrows (Matching Screenshot) */}
-                {imageSet.length > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedImage((prev) => (prev - 1 + imageSet.length) % imageSet.length)
-                      }
-                      className="absolute left-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-stone-900 shadow-md backdrop-blur transition-all opacity-80 hover:opacity-100 hover:bg-white"
-                      aria-label="Previous image"
-                    >
-                      <ChevronLeft className="h-5 w-5 stroke-[1.5]" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedImage((prev) => (prev + 1) % imageSet.length)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-stone-900 shadow-md backdrop-blur transition-all opacity-80 hover:opacity-100 hover:bg-white"
-                      aria-label="Next image"
-                    >
-                      <ChevronRight className="h-5 w-5 stroke-[1.5]" />
-                    </button>
-                  </>
-                )}
-
-                {/* Fullscreen Zoom Trigger */}
-                <button
-                  type="button"
-                  onClick={() => setIsPreviewOpen(true)}
-                  className="absolute bottom-3 right-3 rounded-full bg-black/50 p-2 text-white backdrop-blur transition-transform hover:scale-110"
-                  title="Inspect detail"
-                >
-                  <Eye className="h-3.5 w-3.5" />
-                </button>
-              </div>
-
-              {/* Thumbnail Strip Below Stage */}
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_440px] lg:gap-14 xl:grid-cols-[minmax(0,1fr)_480px]">
+            {/* Gallery: thumbnails left on desktop, below on phones */}
+            <div className="flex flex-col-reverse gap-3 lg:sticky lg:top-28 lg:flex-row">
               {imageSet.length > 1 && (
-                <div className="flex gap-2.5 overflow-x-auto p-1 justify-center">
+                <div className="flex gap-2 overflow-x-auto lg:max-h-[640px] lg:flex-col lg:overflow-y-auto" aria-label="Product images">
                   {imageSet.map((img, idx) => (
                     <button
                       key={idx}
                       type="button"
+                      aria-current={selectedImage === idx ? 'true' : undefined}
+                      aria-label={`Show image ${idx + 1} of ${imageSet.length}`}
                       onClick={() => setSelectedImage(idx)}
-                      className={`h-14 w-12 shrink-0 overflow-hidden rounded-lg border transition-all ${selectedImage === idx
-                        ? 'border-[#3D2C24] opacity-100 ring-1 ring-[#3D2C24] scale-105'
-                        : 'border-transparent opacity-50 hover:opacity-90'
-                        }`}
+                      className={`h-20 w-16 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
+                        selectedImage === idx ? 'border-ink' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
                     >
-                      <img src={optimizeImage(img, 200)} alt="" className="h-full w-full object-cover bg-white" />
+                      <img src={optimizeImage(img, 200)} alt="" className="h-full w-full object-cover object-top" />
                     </button>
                   ))}
                 </div>
               )}
-            </div>
-            {/* RIGHT: High-Fashion Product Info & Order Panel */}
-            <div className="py-2 w-full max-w-2xl">
-              {/* Main Card Container matching Screenshot 1 */}
-              <div className="rounded-[2rem] border border-stone-200/80 bg-white p-2 sm:p-8 lg:p-6 shadow-sm relative">
 
-                {/* Wishlist & Share absolute positioning */}
-                <div className="absolute top-6 right-6 sm:top-8 sm:right-8 flex gap-3 z-10">
+              <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl border border-hairline bg-hairline-soft lg:max-h-[720px]">
+                <img
+                  src={optimizeImage(imageSet[selectedImage], 1000)}
+                  alt={product.name}
+                  className="h-full w-full object-cover object-top"
+                />
+                {imageSet.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedImage((prev) => (prev - 1 + imageSet.length) % imageSet.length)}
+                      className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-surface/90 text-ink backdrop-blur hover:bg-surface"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedImage((prev) => (prev + 1) % imageSet.length)}
+                      className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-surface/90 text-ink backdrop-blur hover:bg-surface"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewOpen(true)}
+                  className="absolute bottom-3 right-3 inline-flex h-10 items-center gap-1.5 rounded-full border border-hairline bg-surface/90 px-3 text-sm font-medium text-ink backdrop-blur hover:bg-surface"
+                >
+                  <Eye className="h-4 w-4" aria-hidden="true" /> Zoom
+                </button>
+              </div>
+            </div>
+
+            {/* Buy box */}
+            <div className="w-full">
+              <div className="flex items-start justify-between gap-4">
+                <h1 className="text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink">{product.name}</h1>
+                <div className="flex shrink-0 gap-2 pt-1">
                   <button
                     type="button"
                     onClick={handleToggleWishlist}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 transition-colors ${isWishlisted ? 'border-[#3D2C24]' : 'hover:border-[#3D2C24]'}`}
-                    aria-label="Wishlist"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface hover:border-ink"
+                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-pressed={isWishlisted}
                   >
-                    <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-[#3D2C24] text-[#3D2C24]' : 'text-stone-500'}`} />
+                    <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-accent text-accent' : 'text-ink'}`} />
                   </button>
                   <button
                     type="button"
                     onClick={handleShare}
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 transition-colors hover:border-[#3D2C24]"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface hover:border-ink"
                     aria-label="Share"
                   >
-                    <Share2 className="h-4 w-4 text-stone-500" />
+                    <Share2 className="h-4 w-4 text-ink" />
                   </button>
-                </div>
-
-                <div className="space-y-3 ">
-                  {/* Collection Label & Title */}
-                  <h1 className="font-sans text-3xl sm:text-4xl text-[#1F2937] font-semibold pr-18">
-                    {product.name}
-                  </h1>
-
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-2 text-[11px] font-semibold tracking-wider">
-                    {product.inStock ? (
-                      <span className="rounded-full bg-emerald-100/60 px-3 py-1.5 text-emerald-600">
-                        In Stock
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-red-100/60 px-3 py-1.5 text-red-600">
-                        Out of Stock
-                      </span>
-                    )}
-                    {product.isNewArrival && (
-                      <span className="rounded-full bg-blue-50 px-3 py-1.5 text-blue-600">
-                        New Arrival
-                      </span>
-                    )}
-                    {product.isBestSeller && (
-                      <span className="rounded-full bg-orange-50 px-3 py-1.5 text-orange-600">
-                        Best Seller
-                      </span>
-                    )}
-                  </div>
-                  {product.shortDescription && (
-                    <p className="text-[14px] text-[#4b5563] mt-2 leading-relaxed max-w-[90%]">
-                      {product.shortDescription}
-                    </p>
-                  )}
-
-                  {/* Tags */}
-                  {product.tags && product.tags.length > 0 && (
-                    <div className="text-[13px] text-[#4b5563] flex flex-wrap gap-x-2 gap-y-1 leading-relaxed">
-                      {product.tags.map((tag, i, arr) => (
-                        <React.Fragment key={tag}>
-                          <span>{tag}</span>
-                          {i < arr.length - 1 && <span className="text-stone-300">|</span>}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Price */}
-                  <div className="flex items-center gap-3 pt-1">
-                    <span className="text-[28px] font-semibold text-[#1F2937]">
-                      ₹{(product.price ?? 0).toLocaleString('en-IN')}
-                    </span>
-                    {product.originalPrice && (
-                      <span className="text-lg text-[#9ca3af] line-through decoration-[#9ca3af]/60 font-medium">
-                        ₹{(product.originalPrice ?? 0).toLocaleString('en-IN')}
-                      </span>
-                    )}
-                    {discountPercent !== null && (
-                      <span className="ml-2 rounded-full bg-pink-50 px-3 py-1 text-xs font-semibold text-[#f43f5e]">
-                        {discountPercent}% OFF
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Size Selector */}
-                  <div className="pt-4 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold tracking-[0.25em] text-[#374151]">
-                        SIZE
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setIsSizeGuideOpen(true)}
-                        className="flex items-center gap-1.5 rounded-full border border-[#D4AF37] px-4 py-1.5 text-[10px] font-semibold tracking-widest text-[#D4AF37] hover:bg-[#D4AF37] hover:text-white transition-colors"
-                      >
-                        <Ruler className="h-3 w-3" /> SIZE GUIDE
-                      </button>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4">
-                      {sizeOptions.map((size) => {
-                        const disabled = unavailableSizes.includes(size);
-                        const isSelected = selectedSize === size;
-                        return (
-                          <button
-                            key={size}
-                            type="button"
-                            disabled={disabled}
-                            onClick={() => setSelectedSize(size)}
-                            className={`flex h-11 w-11 items-center justify-center rounded-full border text-[13px] transition-all ${isSelected
-                              ? 'border-[#374151] text-[#374151] bg-[#f9fafb]'
-                              : 'border-stone-200 text-stone-500 hover:border-[#374151]'
-                              } ${disabled ? 'opacity-40 cursor-not-allowed bg-stone-50' : ''}`}
-                          >
-                            {size}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {product.variants?.some((variant) => variant.size?.includes(',')) && (
-                      <p className="text-xs text-amber-700" role="status">
-                        Size-wise stock is being configured. Each size must have its own inventory variant before it can be selected.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Quantity Selector */}
-                  {!isAdmin && (
-                    <div className="pt-4 space-y-4">
-                      <span className="text-[11px] font-bold tracking-[0.25em] text-[#374151] block">
-                        QUANTITY
-                      </span>
-                      <div className="flex h-12 w-[110px] items-center justify-between rounded-full border border-stone-200 px-4">
-                        <button
-                          type="button"
-                          onClick={() => setQuantity((v) => Math.max(1, v - 1))}
-                          className="text-stone-400 hover:text-[#1F2937] transition-colors"
-                        >
-                          <Minus className="h-4 w-4" />
-                        </button>
-                        <span className="font-semibold text-[#1F2937]">{quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => setQuantity((v) => v + 1)}
-                          className="text-stone-400 hover:text-[#1F2937] transition-colors"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Buttons: Add to Cart (Pink), Add to Wishlist (Grey) mapping to screenshot's layout */}
-                  {!isAdmin && (
-                    <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                      <button
-                        type="button"
-                        onClick={handleAddToCart}
-                        disabled={!product.inStock}
-                        className={`flex-1 rounded-xl py-3.5 text-[15px] font-semibold text-white transition-all ${addedToCart
-                          ? 'bg-emerald-500 hover:bg-emerald-600'
-                          : 'bg-[#C2185B] hover:bg-[#AD1457]'
-                          } disabled:opacity-50`}
-                      >
-                        {addedToCart ? 'Added to Cart' : 'Add to Cart'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleToggleWishlist}
-                        className="flex-1 rounded-xl bg-[#4A3B32] hover:bg-[#3D2C24] py-3.5 text-[15px] font-semibold text-white transition-all"
-                      >
-                        {isWishlisted ? 'Wishlisted' : 'Add to Wishlist'}
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Accordions Matching Screenshot 2 (Rounded distinct boxes) */}
-              <div className="mt-8 flex flex-col gap-4">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${product.inStock ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${product.inStock ? 'bg-emerald-600' : 'bg-red-600'}`} aria-hidden="true" />
+                  {product.inStock ? 'In stock' : 'Out of stock'}
+                </span>
+                {product.isNewArrival && <span className="rounded-full border border-hairline bg-surface px-2.5 py-0.5 font-mono text-xs uppercase text-ink">New</span>}
+                {product.isBestSeller && <span className="rounded-full border border-hairline bg-surface px-2.5 py-0.5 font-mono text-xs uppercase text-ink">Bestseller</span>}
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="text-[32px] font-semibold leading-10 tracking-[-1px] text-ink tabular-nums">₹{(product.price ?? 0).toLocaleString('en-IN')}</span>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span className="text-base text-mute line-through tabular-nums">
+                    <span className="sr-only">Was </span>₹{(product.originalPrice ?? 0).toLocaleString('en-IN')}
+                  </span>
+                )}
+                {discountPercent !== null && <span className="text-sm font-medium text-accent">{discountPercent}% off</span>}
+              </div>
+              <p className="mt-1 text-sm text-mute">Inclusive of all taxes</p>
+
+              {product.shortDescription && <p className="mt-5 text-base text-body">{product.shortDescription}</p>}
+
+              {product.tags && product.tags.length > 0 && (
+                <ul className="mt-4 flex flex-wrap gap-1.5" aria-label="Tags">
+                  {product.tags.map((tag) => (
+                    <li key={tag} className="rounded-full bg-hairline-soft px-2.5 py-0.5 text-xs text-body">{tag}</li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Size */}
+              <fieldset className="mt-8 border-t border-hairline pt-6">
+                <div className="flex items-center justify-between">
+                  <legend className="text-sm font-medium text-ink">
+                    Size{selectedSize ? <span className="font-normal text-mute">: {selectedSize}</span> : null}
+                  </legend>
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeGuideOpen(true)}
+                    className="inline-flex items-center gap-1.5 text-sm text-ink underline underline-offset-4 hover:text-body"
+                  >
+                    <Ruler className="h-4 w-4" aria-hidden="true" /> Size guide
+                  </button>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {sizeOptions.map((size) => {
+                    const disabled = unavailableSizes.includes(size);
+                    const isSelected = selectedSize === size;
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        disabled={disabled}
+                        aria-pressed={isSelected}
+                        onClick={() => setSelectedSize(size)}
+                        className={`inline-flex h-11 min-w-12 items-center justify-center rounded-md border px-3 text-sm font-medium transition-colors ${
+                          isSelected ? 'border-ink bg-ink text-white' : 'border-hairline-strong bg-surface text-ink hover:border-ink'
+                        } ${disabled ? 'cursor-not-allowed text-faint line-through opacity-60 hover:border-hairline-strong' : ''}`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+                {product.variants?.some((variant) => variant.size?.includes(',')) && (
+                  <p className="mt-3 text-sm text-amber-700" role="status">
+                    Size-wise stock is being configured. Each size must have its own inventory variant before it can be selected.
+                  </p>
+                )}
+              </fieldset>
+
+              {!isAdmin && (
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <div className="flex h-12 w-full items-center justify-between rounded-full border border-hairline-strong bg-surface px-1 sm:w-32" role="group" aria-label="Quantity">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((v) => Math.max(1, v - 1))}
+                      disabled={quantity <= 1}
+                      aria-label="Decrease quantity"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-hairline-soft disabled:text-faint"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="text-base font-medium tabular-nums text-ink" aria-live="polite">{quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((v) => v + 1)}
+                      aria-label="Increase quantity"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full text-ink hover:bg-hairline-soft"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    disabled={!product.inStock}
+                    className={`btn-primary h-12 flex-1 ${addedToCart ? '!bg-emerald-700' : ''}`}
+                  >
+                    {!product.inStock ? 'Out of stock' : addedToCart ? 'Added to cart' : 'Add to cart'}
+                  </button>
+                </div>
+              )}
+              {!isAdmin && (
+                <button type="button" onClick={handleToggleWishlist} className="btn-secondary mt-3 h-12 w-full">
+                  <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-accent text-accent' : ''}`} aria-hidden="true" />
+                  {isWishlisted ? 'Saved to wishlist' : 'Save to wishlist'}
+                </button>
+              )}
+
+              {/* Details */}
+              <div className="mt-10 border-t border-hairline">
                 {ACCORDION_ITEMS.map((item) => {
                   const isOpen = openAccordion === item.key;
                   const content = getDefaultAccordionContent(item.key, product);
                   if (!content) return null;
-
+                  const panelId = `pdp-panel-${item.key}`;
                   return (
-                    <div
-                      key={item.key}
-                      className={`overflow-hidden rounded-2xl border transition-colors ${isOpen ? 'border-[#D4AF37]/50 bg-white' : 'border-stone-200 bg-white'}`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setOpenAccordion(isOpen ? null : item.key)}
-                        className="flex w-full items-center justify-between px-6 py-[18px]"
-                      >
-                        <span className="text-[13px] font-semibold tracking-[0.2em] text-[#1F2937] uppercase">
-                          {item.label}
-                        </span>
-                        {isOpen ? (
-                          <ChevronUp className="h-4 w-4 text-[#D4AF37]" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-stone-400" />
-                        )}
-                      </button>
+                    <div key={item.key} className="border-b border-hairline">
+                      <h2>
+                        <button
+                          type="button"
+                          onClick={() => setOpenAccordion(isOpen ? null : item.key)}
+                          aria-expanded={isOpen}
+                          aria-controls={panelId}
+                          className="flex w-full items-center justify-between py-4 text-left text-sm font-medium text-ink"
+                        >
+                          {item.label.charAt(0).toUpperCase() + item.label.slice(1).toLowerCase()}
+                          <ChevronDown className={`h-4 w-4 text-mute transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                        </button>
+                      </h2>
                       {isOpen && (
-                        <div className="px-6 pb-6 pt-0 text-[14px] text-stone-600 leading-[1.8] font-light">
+                        <div id={panelId} className="pb-5 text-sm leading-6 text-body">
                           {content}
                         </div>
                       )}
@@ -878,57 +827,29 @@ const ProductDetails: React.FC = () => {
                   );
                 })}
               </div>
-
-            </div>         </div>
+            </div>
+          </div>
         </div>
 
-
-        {/* Product Comments / Feedback Section */}
         {product && (
-          <section className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 mt-16 pb-8">
+          <section className="mx-auto mt-20 max-w-7xl border-t border-hairline px-4 pt-14 sm:px-6 lg:px-8">
             <ProductComments key={product._id} productId={product._id} />
           </section>
         )}
 
-        {/* Related Products Carousel */}
         {related.length > 0 && (
-          <section className="mx-auto max-w-[1440px] px-6 sm:px-10 lg:px-12 mt-24 pt-16 border-t border-stone-300/60 space-y-10">
-            <div className="flex items-center justify-between">
-              <h2 className="font-serif text-xl sm:text-2xl tracking-[0.15em] text-[#3D2C24] uppercase">
-                YOU MAY ALSO ADMIRE
-              </h2>
-              <Link
-                to="/products"
-                className="text-xs font-semibold uppercase tracking-widest text-[#3D2C24] hover:text-[#A87443] transition-colors"
-              >
-                VIEW ALL
-              </Link>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <section aria-labelledby="related-title" className="mx-auto mt-20 max-w-7xl border-t border-hairline px-4 pt-14 sm:px-6 lg:px-8">
+            <SectionHeader id="related-title" eyebrow="You may also like" title="More to explore" action={{ label: 'View all', to: '/products' }} />
+            <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-4">
               {related.map((item) => (
-                <Link
+                <ProductCard
                   key={item._id}
-                  to={`/product/${item.slug}`}
-                  className="group space-y-3"
-                >
-                  <div className="aspect-[3/4] w-full overflow-hidden bg-white border border-stone-200/40 rounded-lg flex items-center justify-center">
-                    <img
-                      src={optimizeImage(item.primaryImage || item.images?.[0], 400)}
-                      alt={item.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="space-y-1 text-xs tracking-wider">
-                    <h3 className="font-serif text-stone-900 uppercase line-clamp-1 group-hover:text-[#A87443] transition-colors">
-                      {item.name}
-                    </h3>
-                    <p className="font-semibold text-stone-800">
-                      INR {(item.price ?? 0).toLocaleString('en-IN')}
-                    </p>
-                  </div>
-                </Link>
+                  href={`/product/${item.slug}`}
+                  title={item.name}
+                  image={item.primaryImage || item.images?.[0]}
+                  price={item.price ?? 0}
+                  originalPrice={item.originalPrice}
+                />
               ))}
             </div>
           </section>
@@ -950,9 +871,9 @@ const ProductDetails: React.FC = () => {
       {/* Size Chart Modal */}
       {isSizeGuideOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-xl bg-[#FAF7F2] p-6 sm:p-8 space-y-6 border border-[#3D2C24]">
+          <div className="relative w-full max-w-xl bg-canvas p-6 sm:p-8 space-y-6 border border-ink">
             <div className="flex items-center justify-between border-b border-stone-300 pb-4">
-              <span className="font-serif text-lg tracking-widest text-[#3D2C24] uppercase">
+              <span className="text-base text-ink font-semibold">
                 SIZE CHART & MEASUREMENTS
               </span>
               <button
@@ -966,7 +887,7 @@ const ProductDetails: React.FC = () => {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-sans">
-                <thead className="bg-[#EFE8DC] uppercase tracking-wider font-semibold border-b border-stone-300">
+                <thead className="bg-canvas uppercase tracking-wider font-semibold border-b border-stone-300">
                   <tr>
                     <th className="p-3">Size</th>
                     <th className="p-3">Bust</th>
@@ -975,7 +896,7 @@ const ProductDetails: React.FC = () => {
                     <th className="p-3">Length</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-300/60 font-light">
+                <tbody className="divide-y divide-stone-300/60 font-normal">
                   {SIZE_CHART.map((row) => (
                     <tr key={row.size} className="hover:bg-stone-200/50">
                       <td className="p-3 font-semibold text-stone-900">{row.size}</td>
@@ -989,7 +910,7 @@ const ProductDetails: React.FC = () => {
               </table>
             </div>
 
-            <p className="text-xs text-stone-600 leading-relaxed font-light">
+            <p className="text-xs text-stone-600 leading-relaxed font-normal">
               Measurements are specified in inches. Need custom dimensions? Speak with our atelier stylist directly via WhatsApp.
             </p>
           </div>

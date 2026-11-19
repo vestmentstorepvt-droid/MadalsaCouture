@@ -130,7 +130,7 @@ export const AppDropdown: React.FC<AppDropdownProps> = ({
                     option.disabled
                       ? 'opacity-40 cursor-not-allowed text-slate-400'
                       : isSelected
-                      ? 'bg-rose-50 text-[#E85D88] font-medium'
+                      ? 'bg-rose-50 text-accent font-medium'
                       : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
@@ -139,7 +139,7 @@ export const AppDropdown: React.FC<AppDropdownProps> = ({
                     <span className="truncate">{option.label}</span>
                   </div>
 
-                  {isSelected && <Check className="w-4 h-4 text-[#E85D88] shrink-0" />}
+                  {isSelected && <Check className="w-4 h-4 text-accent shrink-0" />}
                 </div>
               );
             })

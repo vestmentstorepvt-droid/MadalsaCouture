@@ -1,6 +1,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithErrorLogging } from '../api/baseQuery';
 import { ENDPOINTS } from '../constants/endpoints';
+import { normalizeAuditLog } from './auditLogApi';
 
 export interface AuditLog {
   _id: string;
@@ -52,7 +53,7 @@ export const recentActivityApi = createApi({
             if (Array.isArray(inner.logs)) {
               const meta = r.meta as { pagination?: PaginationMeta } | undefined;
               return {
-                logs: inner.logs as AuditLog[],
+                logs: inner.logs.map(normalizeAuditLog),
                 pagination: meta?.pagination ?? fallbackPagination,
               };
             }
@@ -60,20 +61,20 @@ export const recentActivityApi = createApi({
 
           // Shape: { data: [...], pagination: {...} }
           if (Array.isArray(r.data) && r.pagination) {
-            return { logs: r.data as AuditLog[], pagination: r.pagination as PaginationMeta };
+            return { logs: r.data.map(normalizeAuditLog), pagination: r.pagination as PaginationMeta };
           }
 
           // Shape: { logs: [...], pagination: {...} }  (no envelope)
           if (Array.isArray(r.logs)) {
             return {
-              logs: r.logs as AuditLog[],
+              logs: r.logs.map(normalizeAuditLog),
               pagination: (r.pagination as PaginationMeta) ?? fallbackPagination,
             };
           }
 
           // Shape: raw array
           if (Array.isArray(response)) {
-            return { logs: response as AuditLog[], pagination: fallbackPagination };
+            return { logs: response.map(normalizeAuditLog), pagination: fallbackPagination };
           }
         }
 

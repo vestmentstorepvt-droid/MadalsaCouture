@@ -43,14 +43,14 @@ const VerifyEmailChange: React.FC = () => {
   }, [token, verifyEmailChange]);
 
   return (
-    <div className="min-h-screen bg-[#FDF4F7] px-4 py-6 sm:px-6 flex items-center justify-center">
-      <div className="w-full max-w-md rounded-[2rem] border border-[#F7D7E0] bg-white/95 p-8 text-center shadow-[0_40px_120px_rgba(232,93,136,0.12)]">
+    <div className="min-h-screen bg-canvas px-4 py-6 sm:px-6 flex items-center justify-center">
+      <div className="w-full max-w-md rounded-2xl border border-hairline bg-surface p-8 text-center">
         <img src={logoSrc} alt="Madalsa Couture" className="mx-auto mb-8 h-14 w-auto object-contain" />
 
         {status === 'verifying' && (
           <>
-            <RefreshCw className="mx-auto mb-4 h-8 w-8 animate-spin text-[#E85D88]" />
-            <h1 className="text-xl font-bold text-slate-800">Verifying your new email…</h1>
+            <RefreshCw className="mx-auto mb-4 h-8 w-8 animate-spin text-accent" />
+            <h1 className="text-xl font-semibold tracking-[-0.4px] text-ink">Verifying your new email…</h1>
           </>
         )}
 
@@ -59,7 +59,7 @@ const VerifyEmailChange: React.FC = () => {
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
               <CheckCircle2 className="h-8 w-8 text-emerald-500" />
             </div>
-            <h1 className="text-xl font-bold text-slate-800">Email updated</h1>
+            <h1 className="text-xl font-semibold tracking-[-0.4px] text-ink">Email updated</h1>
             <p className="mt-2 text-sm leading-relaxed text-slate-500">{message}</p>
             <p className="mt-1 text-xs text-slate-400">Please sign in again with your new email address.</p>
           </>
@@ -70,7 +70,7 @@ const VerifyEmailChange: React.FC = () => {
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-rose-100 bg-rose-50">
               <AlertCircle className="h-8 w-8 text-rose-500" />
             </div>
-            <h1 className="text-xl font-bold text-slate-800">Verification failed</h1>
+            <h1 className="text-xl font-semibold tracking-[-0.4px] text-ink">Verification failed</h1>
             <p className="mt-2 text-sm leading-relaxed text-slate-500">{message}</p>
           </>
         )}
@@ -78,7 +78,7 @@ const VerifyEmailChange: React.FC = () => {
         {status !== 'verifying' && (
           <Link
             to="/login"
-            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-[#E85D88] px-5 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#d44f72]"
+            className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-ink px-5 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-ink-hover"
           >
             Go to Sign In
           </Link>

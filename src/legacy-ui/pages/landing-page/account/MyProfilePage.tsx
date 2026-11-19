@@ -25,7 +25,7 @@ const ProfileSkeleton = () => (
 
 // ─── Error state ──────────────────────────────────────────────────────────────
 const ProfileErrorState: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
-  <div className="rounded-[2rem] border border-rose-200 bg-rose-50 px-8 py-14 text-center shadow-sm">
+  <div className="rounded-3xl border border-rose-200 bg-rose-50 px-8 py-14 text-center shadow-sm">
     <p className="text-lg font-semibold text-rose-700">Failed to load your profile.</p>
     {onRetry ? (
       <ActionButton variant="outline" onClick={onRetry} className="mt-4">
@@ -190,11 +190,11 @@ const MyProfilePage = () => {
     'w-full rounded-2xl border px-4 py-3 text-sm text-slate-800 outline-none transition';
 
   const inputClass = isEditing
-    ? `${inputBase} border-[#E4D1BB] bg-[#FFFDF9] focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20`
-    : `${inputBase} border-transparent bg-[#F7F4EF] text-slate-600 cursor-default select-none`;
+    ? `${inputBase} border-hairline bg-surface focus:border-hairline focus:ring-2 focus:ring-hairline`
+    : `${inputBase} border-transparent bg-canvas text-slate-600 cursor-default select-none`;
 
   const passwordInputClass =
-    `${inputBase} border-[#E4D1BB] bg-[#FFFDF9] pr-12 focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20`;
+    `${inputBase} border-hairline bg-surface pr-12 focus:border-hairline focus:ring-2 focus:ring-hairline`;
 
   // Show loading skeleton while fetching profile
   if (isProfileLoading) {
@@ -229,14 +229,14 @@ const MyProfilePage = () => {
 
           {/* ── Personal Information header ── */}
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+            <p className="eyebrow">
               Personal Information
             </p>
             {isEditing ? (
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex items-center gap-1.5 rounded-full border border-[#E4D1BB] bg-white px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
+                className="flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
               >
                 <X className="h-3.5 w-3.5" />
                 Cancel
@@ -245,7 +245,7 @@ const MyProfilePage = () => {
               <button
                 type="button"
                 onClick={handleEdit}
-                className="flex items-center gap-1.5 rounded-full border border-[#E4D1BB] bg-white px-3 py-1.5 text-xs font-medium text-[#A67B26] transition hover:border-[#D4AF37] hover:bg-[#FFF9F0]"
+                className="flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-accent transition hover:border-hairline hover:bg-surface"
               >
                 <Pencil className="h-3.5 w-3.5" />
                 Edit
@@ -266,7 +266,7 @@ const MyProfilePage = () => {
                   value={form[key]}
                   onChange={handleField(key)}
                   readOnly={!isEditing || key === 'email'}
-                  className={key === 'email' ? `${inputBase} border-transparent bg-[#F7F4EF] text-slate-600 cursor-default select-none` : inputClass}
+                  className={key === 'email' ? `${inputBase} border-transparent bg-canvas text-slate-600 cursor-default select-none` : inputClass}
                 />
               </label>
             ))}
@@ -295,10 +295,10 @@ const MyProfilePage = () => {
           </div>
 
           {/* ── Separator ── */}
-          <div className="my-6 border-t border-[#EDE3D6]" />
+          <div className="my-6 border-t border-hairline" />
 
           {/* ── Change Email ── */}
-          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+          <p className="mb-4 eyebrow">
             Change Email
           </p>
 
@@ -312,13 +312,13 @@ const MyProfilePage = () => {
                 value={emailForm.newEmail}
                 onChange={(e) => setEmailForm(prev => ({ ...prev, newEmail: e.target.value }))}
                 placeholder="new@example.com"
-                className={inputBase + ' border-[#E4D1BB] bg-[#FFFDF9] focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20'}
+                className={inputBase + ' border-hairline bg-surface focus:border-hairline focus:ring-2 focus:ring-hairline'}
               />
             </label>
 
             <label className="block text-sm text-slate-700">
               <span className="mb-2 flex items-center gap-2 font-medium">
-                <ShieldCheck className="h-4 w-4 text-[#D4AF37]" />
+                <ShieldCheck className="h-4 w-4 text-accent" />
                 Current Password
               </span>
               <div className="relative">
@@ -355,10 +355,10 @@ const MyProfilePage = () => {
           </div>
 
           {/* ── Separator ── */}
-          <div className="my-6 border-t border-[#EDE3D6]" />
+          <div className="my-6 border-t border-hairline" />
 
           {/* ── Change Password ── */}
-          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#D4AF37]">
+          <p className="mb-4 eyebrow">
             Change Password
           </p>
 
@@ -370,7 +370,7 @@ const MyProfilePage = () => {
             ] as const).map(({ label, key }) => (
               <label key={key} className="block text-sm text-slate-700">
                 <span className="mb-2 flex items-center gap-2 font-medium">
-                  <ShieldCheck className="h-4 w-4 text-[#D4AF37]" />
+                  <ShieldCheck className="h-4 w-4 text-accent" />
                   {label}
                 </span>
                 <div className="relative">

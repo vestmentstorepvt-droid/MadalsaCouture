@@ -21,7 +21,7 @@ const useToast = () => {
   return { toasts, show };
 };
 
-const INPUT = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] bg-white transition-colors';
+const INPUT = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink bg-white transition-colors';
 
 const FieldHint: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <p className="text-xs text-slate-400 mt-1 leading-relaxed">{children}</p>
@@ -167,7 +167,7 @@ const PageModal: React.FC<{
             <label className="block text-sm font-medium text-slate-700 mb-1">
               URL Slug <span className="text-rose-500">*</span>
             </label>
-            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#E85D88]/20 focus-within:border-[#E85D88] bg-white">
+            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-ink/20 focus-within:border-ink bg-white">
               <span className="px-2.5 py-2 text-xs text-slate-400 bg-slate-50 border-r border-slate-200 shrink-0 select-none">
                 /pages/
               </span>
@@ -298,7 +298,7 @@ export const CmsStaticPagesPage: React.FC = () => {
   const publishedCount = pages.filter((p) => p.status === 'published').length;
 
   return (
-    <div className="min-h-screen p-6 bg-[#FAFAFC]">
+    <div className="min-h-screen p-6 bg-canvas">
       {/* Toasts */}
       <div className="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map((t) => (
@@ -356,7 +356,7 @@ export const CmsStaticPagesPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[11px] font-bold text-[#E85D88]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-bold text-accent">
                 <Sparkles className="h-3 w-3" /> Static Pages
               </span>
               <div className="flex items-center gap-1.5">

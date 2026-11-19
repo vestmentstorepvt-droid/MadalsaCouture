@@ -136,19 +136,19 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen w-full bg-canvas flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header Card */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
             <img src={logoSrc} alt="Madalsa Couture" className="h-14 w-auto object-contain" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome Back</h1>
+          <h1 className="text-[32px] leading-10 font-semibold tracking-[-1.28px] text-ink mb-2">Welcome Back</h1>
           <p className="text-slate-600 text-sm">Sign in to your account to continue shopping</p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8 space-y-6">
+        <div className="bg-surface rounded-2xl border border-hairline p-8 space-y-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             {justRegistered && !errorMessage && (
               <div role="status" className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm font-medium text-green-900">
@@ -174,7 +174,7 @@ const Login: React.FC = () => {
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-ink mb-1.5">
                 Email Address
               </label>
               <div className="relative">
@@ -188,14 +188,14 @@ const Login: React.FC = () => {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-500 outline-none transition-all duration-200 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#E85D88]/20 hover:border-slate-300"
+                  className="w-full pl-10 pr-4 h-11 rounded-md border border-hairline-strong bg-surface text-ink text-base md:text-sm placeholder:text-faint outline-none transition-all duration-200 focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/20 hover:border-slate-300"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-900 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-ink mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -209,7 +209,7 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-12 py-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-500 outline-none transition-all duration-200 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#E85D88]/20 hover:border-slate-300"
+                  className="w-full pl-10 pr-12 h-11 rounded-md border border-hairline-strong bg-surface text-ink text-base md:text-sm placeholder:text-faint outline-none transition-all duration-200 focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/20 hover:border-slate-300"
                 />
                 <button
                   type="button"
@@ -227,7 +227,7 @@ const Login: React.FC = () => {
               <span />
               <Link
                 to="/forgot-password"
-                className="text-sm font-semibold text-[#E85D88] hover:text-[#d44f72] transition-colors"
+                className="text-sm font-semibold text-accent hover:text-accent-deep transition-colors"
               >
                 Forgot password?
               </Link>
@@ -237,7 +237,7 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-[#E85D88] to-[#d44f72] hover:shadow-lg text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-[0_10px_30px_rgba(232,93,136,0.3)]"
+              className="w-full bg-ink hover:bg-ink-hover text-white font-medium h-11 rounded-full transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-md"
             >
               {isLoading ? (
                 <>
@@ -267,7 +267,7 @@ const Login: React.FC = () => {
               type="button"
               onClick={triggerGoogleSignIn}
               disabled={isGoogleLoading}
-              className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed hover:border-slate-300 hover:shadow-md"
+              className="w-full border border-hairline-strong bg-surface hover:bg-hairline-soft text-ink font-medium h-11 rounded-full transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed hover:border-slate-300 hover:shadow-md"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -283,7 +283,7 @@ const Login: React.FC = () => {
           <div className="text-center pt-4 border-t border-slate-100">
             <p className="text-slate-600 text-sm">
               Don't have an account?{' '}
-              <Link to="/signup" className="font-semibold text-[#E85D88] hover:text-[#d44f72] transition-colors">
+              <Link to="/signup" className="font-semibold text-accent hover:text-accent-deep transition-colors">
                 Create one
               </Link>
             </p>

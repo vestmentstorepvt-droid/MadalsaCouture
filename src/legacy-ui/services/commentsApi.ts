@@ -21,12 +21,17 @@ export interface Comment {
   rating: number | null;
   user: CommentUser | null;
   isGuest?: boolean;
+  /** The author has received an order containing this product. */
+  isVerifiedBuyer?: boolean;
   media?: CommentMedia[];
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CommentsListResponse {
   comments: Comment[];
+  /** The signed-in reader's own review on this product (any page), or null. */
+  myComment: Comment | null;
   avgRating: number | null;
   ratingCount: number;
   distribution: Record<1 | 2 | 3 | 4 | 5, number>;
@@ -41,10 +46,7 @@ export interface CommentsListResponse {
 export interface CreateCommentPayload {
   productId: string;
   body: string;
-  rating?: number | null;
-  /** Required only for guests (not signed in) */
-  name?: string;
-  email?: string;
+  rating: number;
   /** Optional images/videos */
   files?: File[];
 }
@@ -58,7 +60,8 @@ export const commentsApi = createApi({
 
   endpoints: (builder) => ({
     // GET /api/v1/products/:productId/comments?page=&limit=
-    getComments: builder.query<CommentsListResponse, { productId: string; page?: number; limit?: number }>({
+    // `viewer` is not sent; it keeps signed-in and signed-out results in separate cache entries.
+    getComments: builder.query<CommentsListResponse, { productId: string; page?: number; limit?: number; viewer?: string }>({
       query: ({ productId, page = 1, limit = 10 }) => ({
         url: ENDPOINTS.COMMENTS(productId),
         params: { page, limit },
@@ -70,6 +73,7 @@ export const commentsApi = createApi({
 
         return {
           comments: Array.isArray(data.comments) ? data.comments as Comment[] : [],
+          myComment: (data.myComment as Comment | null | undefined) ?? null,
           avgRating: typeof data.avgRating === 'number' ? data.avgRating : null,
           ratingCount: typeof data.ratingCount === 'number' ? data.ratingCount : 0,
           distribution: (data.distribution as CommentsListResponse['distribution']) ?? { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
@@ -88,7 +92,7 @@ export const commentsApi = createApi({
     createComment: builder.mutation<Comment, CreateCommentPayload>({
       // Review photos/videos go straight to storage first (Vercel's 4.5 MB request
       // limit); the review itself is the same POST, listing them in `mediaUploads`.
-      queryFn: async ({ productId, body, rating, name, email, files }, _api, _extra, baseQuery) => {
+      queryFn: async ({ productId, body, rating, files }, _api, _extra, baseQuery) => {
         let mediaUploads: UploadedRef[] = [];
         try {
           mediaUploads = await Promise.all((files ?? []).map((f) => uploadReviewFile(f)));
@@ -97,9 +101,7 @@ export const commentsApi = createApi({
         }
         const fd = new FormData();
         fd.append('body', body);
-        if (rating) fd.append('rating', String(rating));
-        if (name) fd.append('name', name);
-        if (email) fd.append('email', email);
+        fd.append('rating', String(rating));
         if (mediaUploads.length) fd.append('mediaUploads', JSON.stringify(mediaUploads));
         const result = await baseQuery({ url: ENDPOINTS.COMMENTS(productId), method: 'POST', body: fd });
         if (result.error) return { error: result.error };

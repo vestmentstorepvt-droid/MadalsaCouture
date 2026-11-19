@@ -21,7 +21,7 @@ const useToast = () => {
   return { toasts, show };
 };
 
-const INPUT = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] bg-white transition-colors';
+const INPUT = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink bg-white transition-colors';
 
 const FieldHint: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <p className="text-xs text-slate-400 mt-1 leading-relaxed">{children}</p>
@@ -102,7 +102,7 @@ const ToggleSwitch: React.FC<{
 }> = ({ id, checked, onChange, label, hint }) => (
   <div className="flex items-start gap-3">
     <button id={id} type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[#E85D88]/40 mt-0.5 ${checked ? 'bg-[#E85D88]' : 'bg-slate-200'}`}>
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-ink/40 mt-0.5 ${checked ? 'bg-ink' : 'bg-slate-200'}`}>
       <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
     </button>
     <div>
@@ -328,7 +328,7 @@ export const CmsBannersPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 bg-[#FAFAFC]">
+    <div className="min-h-screen p-6 bg-canvas">
       {/* Toasts */}
       <div className="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map((t) => (
@@ -362,7 +362,7 @@ export const CmsBannersPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[11px] font-bold text-[#E85D88]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-bold text-accent">
                 <Sparkles className="h-3 w-3" /> Promotional Banners
               </span>
               <div className="flex items-center gap-1.5">
@@ -409,7 +409,7 @@ export const CmsBannersPage: React.FC = () => {
             {banners.length === 0 ? (
               <div className="bg-white rounded-3xl border border-slate-200/80 p-16 flex flex-col items-center gap-4 text-center">
                 <div className="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center">
-                  <ImageIcon className="w-8 h-8 text-[#E85D88]" />
+                  <ImageIcon className="w-8 h-8 text-accent" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-slate-900">No banners yet</p>
@@ -461,14 +461,14 @@ export const CmsBannersPage: React.FC = () => {
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <h3 className="font-bold text-slate-900 text-sm truncate">{b.title ?? '—'}</h3>
-                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${b.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                        <span className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${b.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${b.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                           {b.status === 'active' ? 'Active' : 'Hidden'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-slate-400">{placementLabel(b.placement ?? '')}</p>
-                        <span className="text-[10px] text-slate-400 font-mono">Priority {b.priority ?? 0}</span>
+                        <span className="text-xs text-slate-400 font-mono">Priority {b.priority ?? 0}</span>
                       </div>
                     </div>
                   </div>

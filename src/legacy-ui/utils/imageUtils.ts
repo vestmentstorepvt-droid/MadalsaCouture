@@ -12,12 +12,15 @@ export const optimizeImage = (url: string | undefined | null, width: number = 80
   // Only apply transformations to Cloudinary URLs
   if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
     // Check if it already has transformations to avoid double applying
-    if (url.includes('/upload/c_') || url.includes('/upload/w_') || url.includes('/upload/f_auto')) {
+    if (url.includes('/upload/c_') || url.includes('/upload/w_') || url.includes('/upload/f_auto') || url.includes('/upload/e_')) {
       return url;
     }
 
-    // Insert transformation string right after '/upload/'
-    const transformString = `c_limit,w_${width},f_auto,q_auto`;
+    // Resize first, then e_trim:5: several uploads (banners, some product photos) have plain
+    // white bands baked into the file, which showed as white gaps once cropped. Trim only removes
+    // near-uniform edge rows/columns, so ordinary photos are unchanged. Order matters: Cloudinary
+    // rejects e_trim on originals over 25 MP (some product photos are ~33 MP).
+    const transformString = `c_limit,w_${width}/e_trim:5/f_auto,q_auto`;
     return url.replace('/upload/', `/upload/${transformString}/`);
   }
 

@@ -160,7 +160,7 @@ const Signup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center p-4">
+    <div className="min-h-screen w-full bg-canvas flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -171,12 +171,12 @@ const Signup: React.FC = () => {
               className="h-14 w-auto object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Create Account</h1>
+          <h1 className="text-[32px] leading-10 font-semibold tracking-[-1.28px] text-ink mb-2">Create Account</h1>
           <p className="text-slate-600 text-sm">Join us and start your fashion journey</p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-8">
+        <div className="bg-surface rounded-2xl border border-hairline p-8">
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Error/Success Messages */}
@@ -204,7 +204,7 @@ const Signup: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             {/* Full Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-slate-900 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-ink mb-1.5">
                 Full Name
               </label>
               <div className="relative">
@@ -221,7 +221,7 @@ const Signup: React.FC = () => {
                     if (errors.name) setErrors((current) => ({ ...current, name: '' }));
                   }}
                   placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-500 text-sm outline-none transition-all duration-200 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#E85D88]/20 hover:border-slate-300"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-md border border-hairline-strong bg-surface text-ink text-base md:text-sm placeholder:text-faint text-sm outline-none transition-all duration-200 focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/20 hover:border-slate-300"
                 />
               </div>
               {errors.name ? <p className="mt-1 text-xs text-red-600">{errors.name}</p> : null}
@@ -229,7 +229,7 @@ const Signup: React.FC = () => {
 
             {/* Phone Number */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-slate-900 mb-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-ink mb-1.5">
                 Phone
               </label>
               <div className="relative">
@@ -246,7 +246,7 @@ const Signup: React.FC = () => {
                     if (errors.phone) setErrors((current) => ({ ...current, phone: '' }));
                   }}
                   placeholder="+91 98765"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-500 text-sm outline-none transition-all duration-200 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#E85D88]/20 hover:border-slate-300"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-md border border-hairline-strong bg-surface text-ink text-base md:text-sm placeholder:text-faint text-sm outline-none transition-all duration-200 focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/20 hover:border-slate-300"
                 />
               </div>
               {errors.phone ? <p className="mt-1 text-xs text-red-600">{errors.phone}</p> : null}
@@ -255,7 +255,7 @@ const Signup: React.FC = () => {
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-semibold text-slate-900 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-ink mb-1.5">
               Email Address
             </label>
             <div className="relative">
@@ -272,7 +272,7 @@ const Signup: React.FC = () => {
                   if (errors.email) setErrors((current) => ({ ...current, email: '' }));
                 }}
                 placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-500 text-sm outline-none transition-all duration-200 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#E85D88]/20 hover:border-slate-300"
+                className="w-full pl-10 pr-4 py-2.5 rounded-md border border-hairline-strong bg-surface text-ink text-base md:text-sm placeholder:text-faint text-sm outline-none transition-all duration-200 focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/20 hover:border-slate-300"
               />
             </div>
             {errors.email ? <p className="mt-1 text-xs text-red-600">{errors.email}</p> : null}
@@ -282,7 +282,7 @@ const Signup: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-slate-900 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-ink mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -299,7 +299,7 @@ const Signup: React.FC = () => {
                     if (errors.password) setErrors((current) => ({ ...current, password: '' }));
                   }}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-500 text-sm outline-none transition-all duration-200 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#E85D88]/20 hover:border-slate-300"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-md border border-hairline-strong bg-surface text-ink text-base md:text-sm placeholder:text-faint text-sm outline-none transition-all duration-200 focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/20 hover:border-slate-300"
                 />
                 <button
                   type="button"
@@ -318,7 +318,7 @@ const Signup: React.FC = () => {
 
             {/* Confirm Password */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-slate-900 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink mb-1.5">
                 Confirm
               </label>
               <div className="relative">
@@ -335,7 +335,7 @@ const Signup: React.FC = () => {
                     if (errors.confirmPassword) setErrors((current) => ({ ...current, confirmPassword: '' }));
                   }}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder:text-slate-500 text-sm outline-none transition-all duration-200 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#E85D88]/20 hover:border-slate-300"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-md border border-hairline-strong bg-surface text-ink text-base md:text-sm placeholder:text-faint text-sm outline-none transition-all duration-200 focus:border-ink focus:bg-white focus:ring-2 focus:ring-ink/20 hover:border-slate-300"
                 />
                 <button
                   type="button"
@@ -353,7 +353,7 @@ const Signup: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-[#E85D88] to-[#d44f72] hover:shadow-lg text-white font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-[0_10px_30px_rgba(232,93,136,0.3)]"
+            className="w-full bg-ink hover:bg-ink-hover text-white font-medium h-11 rounded-full transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed hover:shadow-md"
           >
             {isLoading ? (
               <>
@@ -383,7 +383,7 @@ const Signup: React.FC = () => {
             type="button"
             onClick={triggerGoogleSignIn}
             disabled={isGoogleLoading}
-            className="w-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-900 font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed hover:border-slate-300 hover:shadow-md"
+            className="w-full border border-hairline-strong bg-surface hover:bg-hairline-soft text-ink font-medium h-11 rounded-full transition-all duration-200 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed hover:border-slate-300 hover:shadow-md"
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -398,7 +398,7 @@ const Signup: React.FC = () => {
           <div className="text-center pt-4 border-t border-slate-100">
             <p className="text-slate-600 text-sm">
               Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-[#E85D88] hover:text-[#d44f72] transition-colors">
+              <Link to="/login" className="font-semibold text-accent hover:text-accent-deep transition-colors">
                 Sign in
               </Link>
             </p>

@@ -83,7 +83,7 @@ export const AuditLogs: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => refetch()}
-                          className="ml-2 underline text-[#E85D88] hover:opacity-80"
+                          className="ml-2 underline text-accent hover:opacity-80"
                         >
                           Retry
                         </button>
@@ -100,7 +100,7 @@ export const AuditLogs: React.FC = () => {
                   {!isLoading && !isError && logs.map((log) => (
                     <tr key={log._id} className="border-b border-slate-100 hover:bg-slate-50 align-middle">
                       <td className="py-3 px-4 align-middle">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-pink-50 text-[#E85D88] text-xs font-semibold border border-pink-100">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-pink-50 text-accent text-xs font-semibold border border-pink-100">
                           {log.action}
                         </span>
                       </td>

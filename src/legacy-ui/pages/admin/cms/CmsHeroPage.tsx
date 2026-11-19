@@ -334,24 +334,24 @@ export const CmsHeroPage: React.FC = () => {
 
   const previewSubHeadlineClass =
     currentSubHeadlineSize === 'small'
-      ? 'text-[11px] sm:text-xs'
+      ? 'text-xs sm:text-xs'
       : currentSubHeadlineSize === 'large'
         ? 'text-xs sm:text-base'
         : 'text-xs sm:text-sm'; // medium (default)
 
   const previewButtonSizeClass =
     currentButtonSize === 'small'
-      ? 'px-4 py-2 text-[10px]'
+      ? 'px-4 py-2 text-xs'
       : currentButtonSize === 'large'
         ? 'px-7 py-3.5 text-xs sm:text-sm'
         : 'px-5 py-2.5 text-xs'; // medium (default)
 
   const previewButtonStyleClass =
     currentButtonStyle === 'solid'
-      ? 'bg-[#D4AF37] text-black hover:bg-[#c49f2e] border border-[#D4AF37]'
+      ? 'bg-ink text-black hover:bg-ink border border-hairline'
       : currentButtonStyle === 'gold_glow'
-        ? 'bg-linear-to-r from-[#D4AF37] to-[#F3E5AB] text-black shadow-lg shadow-[#D4AF37]/30 hover:scale-105 border-none'
-        : 'border border-[#D4AF37] bg-black/40 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black'; // outline
+        ? 'bg-linear-to-r from-ink to-hairline-soft text-black shadow-lg shadow-black/30 hover:scale-105 border-none'
+        : 'border border-hairline bg-black/40 text-accent hover:bg-ink hover:text-white'; // outline
   const previewMedia = form.media[selectedMediaIndex];
   const previewImageUrl = previewDevice === 'mobile'
     ? previewMedia?.mobileMediaUrl || previewMedia?.mediaUrl
@@ -362,7 +362,7 @@ export const CmsHeroPage: React.FC = () => {
     !previewMedia.mobileMediaUrl;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFC] px-4 py-5 text-slate-800 sm:px-6 sm:py-8">
+    <div className="min-h-screen bg-canvas px-4 py-5 text-slate-800 sm:px-6 sm:py-8">
       {/* Toast Alert */}
       {toast && (
         <div
@@ -390,7 +390,7 @@ export const CmsHeroPage: React.FC = () => {
       <div className="mx-auto mb-6 flex max-w-[1600px] flex-col justify-between gap-4 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs sm:p-6 lg:flex-row lg:items-center">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[11px] font-bold text-[#E85D88]">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-bold text-accent">
               <Sparkles className="h-3 w-3" /> Homepage banner
             </span>
             <div className="flex items-center gap-1.5" aria-live="polite">
@@ -417,7 +417,7 @@ export const CmsHeroPage: React.FC = () => {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]"
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
           >
             <Eye className="h-3.5 w-3.5 text-slate-500" /> View store <ExternalLink className="h-3 w-3 opacity-60" />
           </a>
@@ -425,7 +425,7 @@ export const CmsHeroPage: React.FC = () => {
             type="button"
             onClick={() => refetch()}
             disabled={hasUnsavedChanges}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-xs transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-xs transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink disabled:cursor-not-allowed disabled:opacity-40"
             title={hasUnsavedChanges ? 'Save changes before reloading' : 'Reload saved settings'}
             aria-label={hasUnsavedChanges ? 'Reload disabled while you have unsaved changes' : 'Reload saved settings'}
           >
@@ -447,7 +447,7 @@ export const CmsHeroPage: React.FC = () => {
 
       {isLoading ? (
         <div className="mx-auto max-w-[1600px] rounded-3xl border border-slate-200 bg-white py-28 text-center text-slate-500">
-          <RefreshCw className="mx-auto mb-3 h-9 w-9 animate-spin text-[#E85D88]" />
+          <RefreshCw className="mx-auto mb-3 h-9 w-9 animate-spin text-accent" />
           <p className="text-sm font-bold text-slate-800">Loading your homepage banner…</p>
           <p className="mt-1 text-xs text-slate-400">Your saved images and settings will appear here.</p>
         </div>
@@ -466,12 +466,12 @@ export const CmsHeroPage: React.FC = () => {
           <div className="order-last space-y-5 xl:order-first xl:col-span-7">
             {/* 1-Click Luxury Presets Bar */}
             {activeTab === 'design' && (
-            <div className="space-y-3 rounded-3xl border border-white/10 bg-linear-to-r from-[#1E1727] to-[#120E16] p-4 text-white shadow-lg sm:p-5">
+            <div className="space-y-3 rounded-3xl border border-white/10 bg-linear-to-r from-ink to-ink p-4 text-white shadow-lg sm:p-5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-accent flex items-center gap-1.5">
                   <Wand2 className="w-3.5 h-3.5" /> Quick style ideas
                 </span>
-                <span className="text-[10px] text-white/50">Choose one to try it</span>
+                <span className="text-xs text-white/50">Choose one to try it</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {LUXURY_PRESETS.map((p) => (
@@ -479,12 +479,12 @@ export const CmsHeroPage: React.FC = () => {
                     key={p.name}
                     type="button"
                     onClick={() => applyPreset(p.styles)}
-                    className="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#D4AF37]/50 text-left transition group"
+                    className="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-hairline text-left transition group"
                   >
-                    <span className="text-xs font-bold text-white group-hover:text-[#D4AF37] transition block truncate">
+                    <span className="text-xs font-bold text-white group-hover:text-accent transition block truncate">
                       {p.name}
                     </span>
-                    <span className="text-[10px] text-white/60 line-clamp-1 block mt-0.5">
+                    <span className="text-xs text-white/60 line-clamp-1 block mt-0.5">
                       {p.desc}
                     </span>
                   </button>
@@ -502,17 +502,17 @@ export const CmsHeroPage: React.FC = () => {
                     type="button"
                     onClick={() => setActiveTab(section.id)}
                     aria-current={isActive ? 'step' : undefined}
-                    className={`flex min-h-[76px] items-start gap-3 rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] sm:p-4 ${isActive
-                        ? 'border-[#E85D88] bg-white shadow-sm ring-2 ring-[#E85D88]/10'
+                    className={`flex min-h-[76px] items-start gap-3 rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink sm:p-4 ${isActive
+                        ? 'border-ink bg-white shadow-sm ring-2 ring-ink/10'
                         : 'border-slate-200 bg-white/70 hover:border-slate-300 hover:bg-white'
                       }`}
                   >
-                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${isActive ? 'bg-[#E85D88] text-white' : 'bg-slate-100 text-slate-600'}`}>
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${isActive ? 'bg-ink text-white' : 'bg-slate-100 text-slate-600'}`}>
                       {index + 1}
                     </span>
                     <span className="min-w-0">
                       <span className={`block text-xs font-bold sm:text-sm ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>{section.label}</span>
-                      <span className="mt-0.5 block text-[10px] leading-4 text-slate-500 sm:text-xs">{section.description}</span>
+                      <span className="mt-0.5 block text-xs leading-4 text-slate-500 sm:text-xs">{section.description}</span>
                     </span>
                   </button>
                 );
@@ -526,12 +526,12 @@ export const CmsHeroPage: React.FC = () => {
                 <div className="space-y-5 rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs sm:p-6">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-pink-50 text-[#E85D88] flex items-center justify-center font-bold text-xs">
+                      <div className="w-8 h-8 rounded-xl bg-pink-50 text-accent flex items-center justify-center font-bold text-xs">
                         01
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Add your banner</h2>
-                        <p className="text-[11px] text-slate-500">One item shows as a single banner. Add more items to rotate between them.</p>
+                        <p className="text-xs text-slate-500">One item shows as a single banner. Add more items to rotate between them.</p>
                       </div>
                     </div>
                   </div>
@@ -541,8 +541,8 @@ export const CmsHeroPage: React.FC = () => {
                       type="button"
                       onClick={() => setNewMediaType('video')}
                       aria-pressed={newMediaType === 'video'}
-                      className={`flex min-h-12 items-center justify-center gap-2.5 rounded-2xl border px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] ${newMediaType === 'video'
-                          ? 'border-[#E85D88] bg-pink-50/50 text-[#E85D88] ring-2 ring-[#E85D88]/20 shadow-xs'
+                      className={`flex min-h-12 items-center justify-center gap-2.5 rounded-2xl border px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${newMediaType === 'video'
+                          ? 'border-ink bg-pink-50/50 text-accent ring-2 ring-ink/20 shadow-xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                         }`}
                     >
@@ -552,8 +552,8 @@ export const CmsHeroPage: React.FC = () => {
                       type="button"
                       onClick={() => setNewMediaType('image')}
                       aria-pressed={newMediaType === 'image'}
-                      className={`flex min-h-12 items-center justify-center gap-2.5 rounded-2xl border px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] ${newMediaType === 'image'
-                          ? 'border-[#E85D88] bg-pink-50/50 text-[#E85D88] ring-2 ring-[#E85D88]/20 shadow-xs'
+                      className={`flex min-h-12 items-center justify-center gap-2.5 rounded-2xl border px-4 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${newMediaType === 'image'
+                          ? 'border-ink bg-pink-50/50 text-accent ring-2 ring-ink/20 shadow-xs'
                           : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                         }`}
                     >
@@ -586,7 +586,7 @@ export const CmsHeroPage: React.FC = () => {
                       acceptType={newMediaType}
                     />
                     <div className="pt-1">
-                      <label className="mb-1 block text-[11px] font-semibold text-slate-600">
+                      <label className="mb-1 block text-xs font-semibold text-slate-600">
                         Or paste a media link
                       </label>
                       <div className="flex gap-2">
@@ -596,13 +596,13 @@ export const CmsHeroPage: React.FC = () => {
                           onChange={(e) => setMediaUrlInput(e.target.value)}
                           placeholder="Paste an image or video URL"
                           aria-label="Image or video URL"
-                          className="min-w-0 flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                          className="min-w-0 flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                         />
                         <button
                           type="button"
                           onClick={addMediaUrl}
                           disabled={!mediaUrlInput.trim()}
-                          className="inline-flex min-h-10 items-center gap-1 rounded-xl bg-[#E85D88] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#d64f78] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] focus-visible:ring-offset-2"
+                          className="inline-flex min-h-10 items-center gap-1 rounded-xl bg-ink px-3 py-2 text-xs font-bold text-white transition hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                         >
                           <Plus className="h-3.5 w-3.5" /> Add
                         </button>
@@ -623,14 +623,14 @@ export const CmsHeroPage: React.FC = () => {
                         {form.media.map((item, index) => (
                           <li
                             key={`${item.mediaUrl}-${index}`}
-                            className={`space-y-3 rounded-2xl border p-3 transition ${selectedMediaIndex === index ? 'border-[#E85D88] bg-rose-50/30 ring-2 ring-[#E85D88]/10' : 'border-slate-200 bg-white'}`}
+                            className={`space-y-3 rounded-2xl border p-3 transition ${selectedMediaIndex === index ? 'border-ink bg-rose-50/30 ring-2 ring-ink/10' : 'border-slate-200 bg-white'}`}
                           >
                             <div className="flex items-center gap-3">
                               <button
                                 type="button"
                                 onClick={() => setSelectedMediaIndex(index)}
                                 aria-pressed={selectedMediaIndex === index}
-                                className="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]"
+                                className="flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
                               >
                                 {item.mediaType === 'video' ? (
                                   <video src={item.mediaUrl} muted playsInline className="h-14 w-20 shrink-0 rounded-lg bg-slate-100 object-cover" />
@@ -642,15 +642,15 @@ export const CmsHeroPage: React.FC = () => {
                                     {form.media.length > 1 ? `Slide ${index + 1}` : 'Homepage banner'}
                                     <span className="font-medium text-slate-500"> · {item.mediaType === 'video' ? 'Video' : 'Image'}</span>
                                   </span>
-                                  <span className="mt-1 block truncate text-[11px] text-slate-500">
+                                  <span className="mt-1 block truncate text-xs text-slate-500">
                                     {selectedMediaIndex === index ? 'Showing in preview' : 'Select to preview'}
                                   </span>
                                 </span>
                               </button>
-                              <button type="button" onClick={() => moveMedia(index, -1)} disabled={index === 0} aria-label={`Move slide ${index + 1} up`} className="rounded-lg p-2 text-slate-500 hover:bg-white disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]">
+                              <button type="button" onClick={() => moveMedia(index, -1)} disabled={index === 0} aria-label={`Move slide ${index + 1} up`} className="rounded-lg p-2 text-slate-500 hover:bg-white disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">
                                 <ArrowUp className="h-4 w-4" />
                               </button>
-                              <button type="button" onClick={() => moveMedia(index, 1)} disabled={index === form.media.length - 1} aria-label={`Move slide ${index + 1} down`} className="rounded-lg p-2 text-slate-500 hover:bg-white disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]">
+                              <button type="button" onClick={() => moveMedia(index, 1)} disabled={index === form.media.length - 1} aria-label={`Move slide ${index + 1} down`} className="rounded-lg p-2 text-slate-500 hover:bg-white disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">
                                 <ArrowDown className="h-4 w-4" />
                               </button>
                               <button type="button" onClick={() => removeMedia(index)} aria-label={`Remove slide ${index + 1}`} className="rounded-lg p-2 text-rose-500 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
@@ -660,7 +660,7 @@ export const CmsHeroPage: React.FC = () => {
                             {item.mediaType === 'image' && (
                               <div className="border-t border-slate-100 pt-3">
                                 <p className="mb-1 text-xs font-bold text-slate-700">Mobile image <span className="font-normal text-slate-500">(optional)</span></p>
-                                <p className="mb-2 text-[11px] leading-5 text-slate-500">
+                                <p className="mb-2 text-xs leading-5 text-slate-500">
                                   Phones use this image. If you leave it empty, the desktop image is used instead.
                                 </p>
                                 <ImageUploader
@@ -707,7 +707,7 @@ export const CmsHeroPage: React.FC = () => {
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Add your message</h2>
-                        <p className="text-[11px] text-slate-500">Write the words shoppers will see on the banner.</p>
+                        <p className="text-xs text-slate-500">Write the words shoppers will see on the banner.</p>
                       </div>
                     </div>
                   </div>
@@ -716,7 +716,7 @@ export const CmsHeroPage: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label htmlFor="hero-headline" className="text-xs font-bold text-slate-700">Headline <span className="font-normal text-slate-500">(optional)</span></label>
-                      <span className="text-[11px] text-slate-400">{form.headline.length}/80</span>
+                      <span className="text-xs text-slate-400">{form.headline.length}/80</span>
                     </div>
                     <input
                       id="hero-headline"
@@ -725,7 +725,7 @@ export const CmsHeroPage: React.FC = () => {
                       onChange={(e) => setForm((f) => ({ ...f, headline: e.target.value }))}
                       placeholder="e.g. Madalsa Couture"
                       maxLength={80}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-serif tracking-wider bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink font-semibold"
                     />
                   </div>
 
@@ -746,13 +746,13 @@ export const CmsHeroPage: React.FC = () => {
                               styles: { ...f.styles, headlineSize: s.id },
                             }))
                           }
-                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] ${currentHeadlineSize === s.id
-                              ? 'border-[#E85D88] bg-pink-50/60 text-[#E85D88] ring-2 ring-[#E85D88]/20 shadow-xs'
+                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${currentHeadlineSize === s.id
+                              ? 'border-ink bg-pink-50/60 text-accent ring-2 ring-ink/20 shadow-xs'
                               : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                             }`}
                         >
                           <span className="text-xs font-bold block">{s.title}</span>
-                          <span className="text-[10px] text-slate-400 block">{s.desc}</span>
+                          <span className="text-xs text-slate-400 block">{s.desc}</span>
                         </button>
                       ))}
                     </div>
@@ -769,7 +769,7 @@ export const CmsHeroPage: React.FC = () => {
                       value={form.subHeadline}
                       onChange={(e) => setForm((f) => ({ ...f, subHeadline: e.target.value }))}
                       placeholder="e.g. Wear your story. Own the moment."
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                     />
                   </div>
 
@@ -790,13 +790,13 @@ export const CmsHeroPage: React.FC = () => {
                               styles: { ...f.styles, subHeadlineSize: s.id },
                             }))
                           }
-                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] ${currentSubHeadlineSize === s.id
-                              ? 'border-[#E85D88] bg-pink-50/60 text-[#E85D88] ring-2 ring-[#E85D88]/20 shadow-xs'
+                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${currentSubHeadlineSize === s.id
+                              ? 'border-ink bg-pink-50/60 text-accent ring-2 ring-ink/20 shadow-xs'
                               : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                             }`}
                         >
                           <span className="text-xs font-bold block">{s.title}</span>
-                          <span className="text-[10px] text-slate-400 block">{s.desc}</span>
+                          <span className="text-xs text-slate-400 block">{s.desc}</span>
                         </button>
                       ))}
                     </div>
@@ -814,7 +814,7 @@ export const CmsHeroPage: React.FC = () => {
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Add a button</h2>
-                        <p className="text-[11px] text-slate-500">Leave either field empty if you don’t want a button.</p>
+                        <p className="text-xs text-slate-500">Leave either field empty if you don’t want a button.</p>
                       </div>
                     </div>
                   </div>
@@ -832,7 +832,7 @@ export const CmsHeroPage: React.FC = () => {
                           setForm((f) => ({ ...f, cta: { ...f.cta, label: e.target.value } }))
                         }
                         placeholder="e.g. Explore Collection"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ink/20"
                       />
                     </div>
                     <div>
@@ -847,7 +847,7 @@ export const CmsHeroPage: React.FC = () => {
                           setForm((f) => ({ ...f, cta: { ...f.cta, url: e.target.value } }))
                         }
                         placeholder="/collections"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ink/20"
                       />
                     </div>
                   </div>
@@ -869,13 +869,13 @@ export const CmsHeroPage: React.FC = () => {
                               styles: { ...f.styles, buttonSize: s.id },
                             }))
                           }
-                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] ${currentButtonSize === s.id
-                              ? 'border-[#E85D88] bg-pink-50/60 text-[#E85D88] ring-2 ring-[#E85D88]/20 shadow-xs'
+                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${currentButtonSize === s.id
+                              ? 'border-ink bg-pink-50/60 text-accent ring-2 ring-ink/20 shadow-xs'
                               : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                             }`}
                         >
                           <span className="text-xs font-bold block">{s.title}</span>
-                          <span className="text-[10px] text-slate-400 block">{s.desc}</span>
+                          <span className="text-xs text-slate-400 block">{s.desc}</span>
                         </button>
                       ))}
                     </div>
@@ -898,13 +898,13 @@ export const CmsHeroPage: React.FC = () => {
                               styles: { ...f.styles, buttonStyle: s.id },
                             }))
                           }
-                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] ${currentButtonStyle === s.id
+                          className={`rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${currentButtonStyle === s.id
                               ? 'border-amber-500 bg-amber-50/70 text-amber-900 ring-2 ring-amber-500/20 shadow-xs'
                               : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                             }`}
                         >
                           <span className="block text-xs font-bold">{s.title}</span>
-                          <span className="text-[10px] text-slate-500 block mt-0.5">{s.desc}</span>
+                          <span className="text-xs text-slate-500 block mt-0.5">{s.desc}</span>
                         </button>
                       ))}
                     </div>
@@ -921,7 +921,7 @@ export const CmsHeroPage: React.FC = () => {
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Choose where the text appears</h2>
-                        <p className="text-[11px] text-slate-500">Pick a position that stays clear of important details in your image.</p>
+                        <p className="text-xs text-slate-500">Pick a position that stays clear of important details in your image.</p>
                       </div>
                     </div>
                   </div>
@@ -943,14 +943,14 @@ export const CmsHeroPage: React.FC = () => {
                               }))
                             }
                             aria-pressed={isSel}
-                            className={`flex min-h-24 flex-col items-center justify-center gap-1.5 rounded-2xl border p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] ${isSel
-                                ? 'border-[#E85D88] bg-pink-50/60 text-[#E85D88] ring-2 ring-[#E85D88]/20 shadow-xs'
+                            className={`flex min-h-24 flex-col items-center justify-center gap-1.5 rounded-2xl border p-3 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink ${isSel
+                                ? 'border-ink bg-pink-50/60 text-accent ring-2 ring-ink/20 shadow-xs'
                                 : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                               }`}
                           >
                             <Icon className="w-4 h-4" />
                             <span className="text-xs font-bold">{a.label}</span>
-                            <span className="text-[9px] text-slate-400">{a.hint}</span>
+                            <span className="text-xs text-slate-400">{a.hint}</span>
                           </button>
                         );
                       })}
@@ -965,7 +965,7 @@ export const CmsHeroPage: React.FC = () => {
                     <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-xs font-bold text-emerald-700">04</div>
                     <div>
                       <h2 className="text-sm font-bold text-slate-900">Choose when your banner appears</h2>
-                      <p className="text-[11px] text-slate-500">You can show it now or set a start and end time.</p>
+                      <p className="text-xs text-slate-500">You can show it now or set a start and end time.</p>
                     </div>
                   </div>
 
@@ -974,29 +974,61 @@ export const CmsHeroPage: React.FC = () => {
                       <label htmlFor="hero-starts-at" className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-700">
                         <Calendar className="h-3.5 w-3.5 text-slate-400" /> Start showing (optional)
                       </label>
-                      <input
-                        id="hero-starts-at"
-                        type="datetime-local"
-                        value={toDatetimeLocal(form.startsAt)}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, startsAt: e.target.value || null }))
-                        }
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
-                      />
+                      {/* Browsers give datetime fields no clear button, so the optional date gets its own. */}
+                      <div className="flex gap-2">
+                        <input
+                          id="hero-starts-at"
+                          type="datetime-local"
+                          value={toDatetimeLocal(form.startsAt)}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, startsAt: e.target.value || null }))
+                          }
+                          className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20"
+                        />
+                        {form.startsAt && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, startsAt: null }))}
+                            aria-label="Clear start date"
+                            className="shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {form.startsAt ? '' : 'No start date: shows as soon as it is turned on.'}
+                      </p>
                     </div>
                     <div>
                       <label htmlFor="hero-ends-at" className="mb-1 flex items-center gap-1 text-xs font-semibold text-slate-700">
                         <Clock className="h-3.5 w-3.5 text-slate-400" /> Stop showing (optional)
                       </label>
-                      <input
-                        id="hero-ends-at"
-                        type="datetime-local"
-                        value={toDatetimeLocal(form.endsAt)}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, endsAt: e.target.value || null }))
-                        }
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
-                      />
+                      {/* Browsers give datetime fields no clear button, so the optional date gets its own. */}
+                      <div className="flex gap-2">
+                        <input
+                          id="hero-ends-at"
+                          type="datetime-local"
+                          value={toDatetimeLocal(form.endsAt)}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, endsAt: e.target.value || null }))
+                          }
+                          className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20"
+                        />
+                        {form.endsAt && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, endsAt: null }))}
+                            aria-label="Clear end date"
+                            className="shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {form.endsAt ? '' : 'No end date: keeps showing until you turn it off.'}
+                      </p>
                     </div>
                   </div>
 
@@ -1017,7 +1049,7 @@ export const CmsHeroPage: React.FC = () => {
                           status: f.status === 'active' ? 'inactive' : 'active',
                         }))
                       }
-                      className={`inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88] focus-visible:ring-offset-2 ${form.status === 'active'
+                      className={`inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${form.status === 'active'
                           ? 'bg-emerald-600 text-white'
                           : 'bg-slate-200 text-slate-700'
                         }`}
@@ -1041,15 +1073,15 @@ export const CmsHeroPage: React.FC = () => {
 
           {/* ── Right Column: Interactive Studio Workbench (5 cols) ─────────── */}
           <div className="order-first space-y-4 xl:sticky xl:top-6 xl:order-last xl:col-span-5">
-            <div className="bg-[#120E16] text-white p-5 rounded-3xl border border-white/10 shadow-2xl space-y-4">
+            <div className="bg-ink text-white p-5 rounded-3xl border border-white/10 shadow-2xl space-y-4">
               {/* Workbench Top Bar */}
               <div className="flex flex-col gap-3 border-b border-white/10 pb-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#D4AF37] animate-pulse" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-ink animate-pulse" />
                   <span className="text-sm font-bold text-white">
                     Live preview
                   </span>
-                  <span className="text-[11px] text-white/55">
+                  <span className="text-xs text-white/55">
                     {previewMedia ? `Slide ${selectedMediaIndex + 1} of ${form.media.length}` : 'Add a banner to preview it'}
                   </span>
                 </div>
@@ -1060,7 +1092,7 @@ export const CmsHeroPage: React.FC = () => {
                     type="button"
                     onClick={() => setPreviewDevice('desktop')}
                     aria-pressed={previewDevice === 'desktop'}
-                    className={`flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] sm:flex-none ${previewDevice === 'desktop' ? 'bg-[#D4AF37] text-black font-bold' : 'text-white/70 hover:text-white'
+                    className={`flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hairline sm:flex-none ${previewDevice === 'desktop' ? 'bg-ink text-black font-bold' : 'text-white/70 hover:text-white'
                       }`}
                     aria-label="Preview on desktop"
                   >
@@ -1070,7 +1102,7 @@ export const CmsHeroPage: React.FC = () => {
                     type="button"
                     onClick={() => setPreviewDevice('tablet')}
                     aria-pressed={previewDevice === 'tablet'}
-                    className={`flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] sm:flex-none ${previewDevice === 'tablet' ? 'bg-[#D4AF37] text-black font-bold' : 'text-white/70 hover:text-white'
+                    className={`flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hairline sm:flex-none ${previewDevice === 'tablet' ? 'bg-ink text-black font-bold' : 'text-white/70 hover:text-white'
                       }`}
                     aria-label="Preview on tablet"
                   >
@@ -1080,7 +1112,7 @@ export const CmsHeroPage: React.FC = () => {
                     type="button"
                     onClick={() => setPreviewDevice('mobile')}
                     aria-pressed={previewDevice === 'mobile'}
-                    className={`flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] sm:flex-none ${previewDevice === 'mobile' ? 'bg-[#D4AF37] text-black font-bold' : 'text-white/70 hover:text-white'
+                    className={`flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hairline sm:flex-none ${previewDevice === 'mobile' ? 'bg-ink text-black font-bold' : 'text-white/70 hover:text-white'
                       }`}
                     aria-label="Preview on mobile"
                   >
@@ -1099,16 +1131,16 @@ export const CmsHeroPage: React.FC = () => {
                   }`}
               >
                 {/* Browser Address Header */}
-                <div className="bg-[#1A1423] px-3.5 py-2 border-b border-white/10 flex items-center justify-between">
+                <div className="bg-ink px-3.5 py-2 border-b border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-rose-500/80" />
                     <div className="w-2 h-2 rounded-full bg-amber-500/80" />
                     <div className="w-2 h-2 rounded-full bg-emerald-500/80" />
                   </div>
-                  <span className="text-[10px] text-white/50 font-mono truncate max-w-[160px]">
+                  <span className="text-xs text-white/50 font-mono truncate max-w-[160px]">
                     madalsacouture.com
                   </span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-[#D4AF37] font-mono">
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-white/10 text-accent font-mono">
                     HTTPS
                   </span>
                 </div>
@@ -1140,7 +1172,7 @@ export const CmsHeroPage: React.FC = () => {
                       className="absolute inset-0 w-full h-full object-cover scale-105"
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-linear-to-b from-[#1E1727] via-[#2D1F38] to-[#120E16] flex items-center justify-center text-center p-4">
+                    <div className="absolute inset-0 bg-linear-to-b from-ink via-ink to-ink flex items-center justify-center text-center p-4">
                       <span className="text-center text-sm text-white/70">Your banner preview will appear here after you add an image or video.</span>
                     </div>
                   )}
@@ -1150,7 +1182,7 @@ export const CmsHeroPage: React.FC = () => {
                   {/* Dynamic Content Overlay (Sizes & Positions in Real-Time) */}
                   <div className={`absolute z-10 p-6 max-w-sm flex flex-col pointer-events-auto ${previewAlignClass}`}>
                     <h3
-                      className={`font-serif font-normal tracking-[0.3em] uppercase text-white drop-shadow-md transition-all ${previewHeadlineClass}`}
+                      className={`text-white drop-shadow-md transition-all font-semibold${previewHeadlineClass}`}
                     >
                       {form.headline}
                     </h3>
@@ -1159,7 +1191,7 @@ export const CmsHeroPage: React.FC = () => {
                     )}
                     {form.subHeadline && (
                       <p
-                        className={`mt-1 font-light tracking-[0.15em] text-slate-200 opacity-90 drop-shadow-sm transition-all ${previewSubHeadlineClass}`}
+                        className={`mt-1 font-normal tracking-[0.15em] text-slate-200 opacity-90 drop-shadow-sm transition-all ${previewSubHeadlineClass}`}
                       >
                         {form.subHeadline}
                       </p>
@@ -1169,7 +1201,7 @@ export const CmsHeroPage: React.FC = () => {
                       <div className="mt-3.5">
                         <button
                           type="button"
-                          className={`inline-flex items-center gap-2 font-medium uppercase tracking-[0.3em] backdrop-blur-sm transition-all duration-300 shadow-md ${previewButtonSizeClass} ${previewButtonStyleClass}`}
+                          className={`inline-flex items-center gap-2 font-medium uppercase tracking-wider backdrop-blur-sm transition-all duration-300 shadow-md ${previewButtonSizeClass} ${previewButtonStyleClass}`}
                         >
                           {form.cta.label}
                         </button>
@@ -1180,20 +1212,20 @@ export const CmsHeroPage: React.FC = () => {
               </div>
 
               {previewUsesDesktopFallback && (
-                <p className="text-center text-[11px] text-white/60" aria-live="polite">
+                <p className="text-center text-xs text-white/60" aria-live="polite">
                   No mobile image added for this slide. The desktop image is shown on mobile.
                 </p>
               )}
 
               {/* Status Info Chips */}
-              <div className="grid grid-cols-2 gap-2 border-t border-white/10 pt-2 text-[11px] text-white/70">
+              <div className="grid grid-cols-2 gap-2 border-t border-white/10 pt-2 text-xs text-white/70">
                 <div className="flex items-center gap-1.5">
                   <span className="text-white/40">Text position:</span>
                   <span className="font-bold text-white capitalize">{currentAlignment.replace('-', ' ')}</span>
                 </div>
                 <div className="flex items-center gap-1.5 justify-end">
                   <span className="text-white/40">Headline:</span>
-                  <span className="font-bold text-[#D4AF37] capitalize">{currentHeadlineSize}</span>
+                  <span className="font-bold text-accent capitalize">{currentHeadlineSize}</span>
                 </div>
               </div>
             </div>

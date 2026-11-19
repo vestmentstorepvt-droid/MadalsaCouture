@@ -20,8 +20,8 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   icon: Icon,
   changePercentage,
   changeText,
-  iconBgColor = 'bg-[#FFF0F5]',
-  iconColor = 'text-[#E85D88]',
+  iconBgColor = 'bg-accent-soft',
+  iconColor = 'text-accent',
   onMoreClick,
   className = '',
 }) => {

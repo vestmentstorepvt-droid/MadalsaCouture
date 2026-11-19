@@ -245,7 +245,7 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({ isOpen, onClo
       >
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="font-bold text-slate-900 flex items-center gap-2 text-sm">
-            <Plus className="w-4 h-4 text-[#E85D88]" /> Add New Product Category
+            <Plus className="w-4 h-4 text-accent" /> Add New Product Category
           </h3>
           <button type="button" onClick={onClose} className="p-1 rounded text-slate-400 hover:text-slate-600">
             <X className="w-4 h-4" />
@@ -258,7 +258,7 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({ isOpen, onClo
             <label className="text-xs font-semibold text-slate-600 block mb-1">Category Name *</label>
             <input
               type="text"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
               placeholder="e.g. Co-ord Sets, Anarkali Suits, Sarees"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -270,7 +270,7 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({ isOpen, onClo
             <label className="text-xs font-semibold text-slate-600 block mb-1">Description (Optional)</label>
             <textarea
               rows={2}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
               placeholder="Brief description of this luxury collection category..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -394,7 +394,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
 
   const inputClass = (hasErr?: boolean) =>
-    `w-full px-3.5 py-2.5 rounded-xl border ${hasErr ? 'border-rose-400 focus:ring-rose-200' : 'border-slate-200 focus:ring-[#E85D88]/20 focus:border-[#E85D88]'
+    `w-full px-3.5 py-2.5 rounded-xl border ${hasErr ? 'border-rose-400 focus:ring-rose-200' : 'border-slate-200 focus:ring-ink/20 focus:border-ink'
     } bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 transition placeholder:text-slate-400`;
 
   const labelClass = 'text-xs font-semibold text-slate-600 block mb-1';
@@ -497,7 +497,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsCategoryModalOpen(true)}
-                className="text-xs font-semibold text-[#E85D88] hover:text-[#d44874] flex items-center gap-1 transition"
+                className="text-xs font-semibold text-accent hover:text-accent-deep flex items-center gap-1 transition"
               >
                 <Plus className="w-3.5 h-3.5" /> New Category
               </button>
@@ -570,7 +570,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
               <span className="text-sm font-bold text-slate-800 tracking-wider">
                 Storefront Accordion Details
               </span>
-              <span className="text-[11px] text-slate-400 font-medium bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100">
+              <span className="text-xs text-slate-400 font-medium bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100">
                 Displayed as dynamic lists on product page
               </span>
             </div>
@@ -636,7 +636,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
               <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                 SEO & Search Engine Optimization
               </span>
-              <span className="text-[11px] text-slate-400 font-medium">
+              <span className="text-xs text-slate-400 font-medium">
                 Required for publishing
               </span>
             </div>
@@ -650,7 +650,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 value={form.metaTitle}
                 onChange={(e) => setForm({ ...form, metaTitle: e.target.value })}
               />
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-xs text-slate-400 mt-1">
                 If left blank, Product Title will be used automatically.
               </p>
             </div>
@@ -688,7 +688,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   type="checkbox"
                   checked={form.isNewArrival}
                   onChange={(e) => setForm({ ...form, isNewArrival: e.target.checked })}
-                  className="rounded text-[#E85D88] focus:ring-[#E85D88] accent-[#E85D88]"
+                  className="rounded text-accent focus:ring-ink accent-accent"
                 />
                 New Arrival
               </label>
@@ -698,7 +698,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   type="checkbox"
                   checked={form.isBestSeller}
                   onChange={(e) => setForm({ ...form, isBestSeller: e.target.checked })}
-                  className="rounded text-[#E85D88] focus:ring-[#E85D88] accent-[#E85D88]"
+                  className="rounded text-accent focus:ring-ink accent-accent"
                 />
                 Best Seller
               </label>
@@ -708,7 +708,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   type="checkbox"
                   checked={form.isFeatured}
                   onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-                  className="rounded text-[#E85D88] focus:ring-[#E85D88] accent-[#E85D88]"
+                  className="rounded text-accent focus:ring-ink accent-accent"
                 />
                 Featured
               </label>
@@ -718,7 +718,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   type="checkbox"
                   checked={form.isTrending}
                   onChange={(e) => setForm({ ...form, isTrending: e.target.checked })}
-                  className="rounded text-[#E85D88] focus:ring-[#E85D88] accent-[#E85D88]"
+                  className="rounded text-accent focus:ring-ink accent-accent"
                 />
                 Trending
               </label>
@@ -915,7 +915,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
   };
 
   const inputClass =
-    'w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition';
+    'w-full px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition';
 
   return (
     <div
@@ -951,7 +951,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsAdding(true)}
-                className="px-3 py-1.5 rounded-lg bg-[#E85D88] text-white text-xs font-semibold hover:bg-[#d44874] transition"
+                className="px-3 py-1.5 rounded-lg bg-ink text-white text-xs font-semibold hover:bg-ink-hover transition"
               >
                 + Add Variant
               </button>
@@ -961,11 +961,11 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
           {/* Add Form */}
           {isAdding && (
             <form onSubmit={handleAddSubmit} className="p-4 rounded-xl bg-pink-50/40 border border-pink-100 space-y-3">
-              <p className="text-xs font-bold text-[#E85D88] uppercase tracking-wider">New Variant</p>
+              <p className="text-xs font-bold text-accent uppercase tracking-wider">New Variant</p>
               {error && <p className="text-xs text-rose-600">{error}</p>}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Size *</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Size *</label>
                   <input
                     type="text"
                     className={inputClass}
@@ -973,10 +973,10 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                     value={variantForm.size}
                     onChange={(e) => setVariantForm({ ...variantForm, size: e.target.value })}
                   />
-                  <p className="mt-1 text-[10px] text-slate-400">Create a separate variant for each size so stock and checkout remain accurate.</p>
+                  <p className="mt-1 text-xs text-slate-400">Create a separate variant for each size so stock and checkout remain accurate.</p>
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Color *</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Color *</label>
                   <input
                     type="text"
                     className={inputClass}
@@ -986,7 +986,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Fabric *</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Fabric *</label>
                   <input
                     type="text"
                     className={inputClass}
@@ -996,7 +996,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Price (₹) *</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Price (₹) *</label>
                   <input
                     type="number"
                     className={inputClass}
@@ -1006,7 +1006,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-600 block mb-1">Stock *</label>
+                  <label className="text-xs font-semibold text-slate-600 block mb-1">Stock *</label>
                   <input
                     type="number"
                     className={inputClass}
@@ -1038,7 +1038,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
             <div className="text-center py-8 border border-dashed border-slate-200 rounded-xl">
               <Layers className="w-8 h-8 text-slate-300 mx-auto mb-1" />
               <p className="text-xs font-medium text-slate-600">No variants created yet.</p>
-              <p className="text-[11px] text-slate-400">Add size/color options to enable inventory tracking.</p>
+              <p className="text-xs text-slate-400">Add size/color options to enable inventory tracking.</p>
             </div>
           ) : (
             <div className="space-y-2.5">
@@ -1048,17 +1048,17 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                     <p className="text-xs font-bold text-purple-700 uppercase tracking-wider">Edit Variant</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Size</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">Size</label>
                         <input
                           type="text"
                           className={inputClass}
                           value={variantForm.size}
                           onChange={(e) => setVariantForm({ ...variantForm, size: e.target.value })}
                         />
-                        <p className="mt-1 text-[10px] text-slate-400">One size per variant (e.g. XS, S, M, L or XL).</p>
+                        <p className="mt-1 text-xs text-slate-400">One size per variant (e.g. XS, S, M, L or XL).</p>
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Color</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">Color</label>
                         <input
                           type="text"
                           className={inputClass}
@@ -1067,7 +1067,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Fabric</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">Fabric</label>
                         <input
                           type="text"
                           className={inputClass}
@@ -1076,7 +1076,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Price (₹)</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">Price (₹)</label>
                         <input
                           type="number"
                           className={inputClass}
@@ -1085,7 +1085,7 @@ const VariantPanelModal: React.FC<VariantPanelModalProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Stock</label>
+                        <label className="text-xs font-semibold text-slate-600 block mb-1">Stock</label>
                         <input
                           type="number"
                           className={inputClass}
@@ -1208,7 +1208,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-[#E85D88]" />
+            <Package className="w-5 h-5 text-accent" />
             <h2 className="text-lg font-bold text-slate-900">Product Overview</h2>
           </div>
           <button
@@ -1246,7 +1246,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
             <div className="p-3 rounded-xl border border-slate-100 bg-slate-50/50">
               <span className="text-slate-400 block mb-1">Base Price</span>
-              <span className="font-bold text-[#E85D88] text-sm">
+              <span className="font-bold text-accent text-sm">
                 {currency.format(product.basePrice)}
               </span>
             </div>
@@ -1518,7 +1518,7 @@ export const ProductManagement: React.FC = () => {
             size="sm"
             onClick={() => setIsStandaloneCatOpen(true)}
           >
-            <Tag className="w-4 h-4 mr-1.5 text-[#E85D88]" /> + New Category
+            <Tag className="w-4 h-4 mr-1.5 text-accent" /> + New Category
           </AppButton>
           <AppButton
             variant="outline"
@@ -1557,7 +1557,7 @@ export const ProductManagement: React.FC = () => {
           changeText="in catalog"
           icon={Package}
           iconBgColor="bg-rose-50"
-          iconColor="text-[#E85D88]"
+          iconColor="text-accent"
         />
         <StatsCard
           title="Published"
@@ -1590,7 +1590,7 @@ export const ProductManagement: React.FC = () => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search products..."
-              className="w-full pl-9 pr-16 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+              className="w-full pl-9 pr-16 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
             />
             {searchInput && (
               <button
@@ -1607,7 +1607,7 @@ export const ProductManagement: React.FC = () => {
             )}
             <button
               type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 text-xs font-semibold bg-[#E85D88] text-white rounded-lg hover:bg-[#d44874] transition"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 text-xs font-semibold bg-ink text-white rounded-lg hover:bg-ink-hover transition"
             >
               Go
             </button>
@@ -1654,7 +1654,7 @@ export const ProductManagement: React.FC = () => {
           <button
             type="button"
             onClick={handleClearFilters}
-            className="text-xs text-[#E85D88] hover:underline font-semibold self-end lg:self-center"
+            className="text-xs text-accent hover:underline font-semibold self-end lg:self-center"
           >
             Clear Filters
           </button>
@@ -1681,7 +1681,7 @@ export const ProductManagement: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-[#E85D88]" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-accent" />
                       <span className="text-sm">Loading products...</span>
                     </div>
                   </td>
@@ -1768,17 +1768,17 @@ export const ProductManagement: React.FC = () => {
                       <td className="py-4 px-4">
                         <div className="flex flex-wrap gap-1">
                           {p.flags?.isNewArrival && (
-                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-semibold">
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100 text-xs font-semibold">
                               New
                             </span>
                           )}
                           {p.flags?.isBestSeller && (
-                            <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-[10px] font-semibold">
+                            <span className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-100 text-xs font-semibold">
                               Best Seller
                             </span>
                           )}
                           {p.flags?.isFeatured && (
-                            <span className="px-2 py-0.5 rounded-full bg-pink-50 text-[#E85D88] border border-pink-100 text-[10px] font-semibold">
+                            <span className="px-2 py-0.5 rounded-full bg-pink-50 text-accent border border-pink-100 text-xs font-semibold">
                               Featured
                             </span>
                           )}
@@ -1795,10 +1795,10 @@ export const ProductManagement: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setViewProduct(p)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#E85D88] hover:bg-rose-50 transition"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-accent hover:bg-rose-50 transition"
                             title="View Details"
                           >
-                            <Eye className="w-4 h-4 text-[#E85D88]" />
+                            <Eye className="w-4 h-4 text-accent" />
                           </button>
 
                           {/* Edit Product */}

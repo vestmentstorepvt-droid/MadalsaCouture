@@ -207,7 +207,7 @@ export const CollectionManagement: React.FC = () => {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search collections..."
-            className="w-full pl-9 pr-20 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+            className="w-full pl-9 pr-20 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
           />
           <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded-lg transition">
             Search
@@ -219,7 +219,7 @@ export const CollectionManagement: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-200 text-[11px] uppercase tracking-wider text-slate-500">
+              <tr className="bg-slate-50/50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
                 <th className="px-6 py-4 font-semibold">Name</th>
                 <th className="px-6 py-4 font-semibold">Type</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
@@ -297,7 +297,7 @@ export const CollectionManagement: React.FC = () => {
                   required
                   value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-[#E85D88] transition"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-ink transition"
                 />
               </div>
               <div>
@@ -305,7 +305,7 @@ export const CollectionManagement: React.FC = () => {
                 <textarea
                   value={form.description}
                   onChange={e => setForm({ ...form, description: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-[#E85D88] transition"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-ink transition"
                   rows={2}
                 />
               </div>
@@ -315,7 +315,7 @@ export const CollectionManagement: React.FC = () => {
                   <select
                     value={form.type}
                     onChange={e => setForm({ ...form, type: e.target.value as 'manual' | 'rule-based' })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-[#E85D88] transition bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-ink transition bg-white"
                   >
                     <option value="manual">Manual</option>
                     <option value="rule-based">Rule-Based</option>
@@ -326,7 +326,7 @@ export const CollectionManagement: React.FC = () => {
                   <select
                     value={form.status}
                     onChange={e => setForm({ ...form, status: e.target.value as 'active' | 'inactive' })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-[#E85D88] transition bg-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:border-ink transition bg-white"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -340,7 +340,7 @@ export const CollectionManagement: React.FC = () => {
                       Assign Products
                     </label>
                     {form.productIds.length > 0 && (
-                      <span className="text-xs font-semibold bg-[#E85D88]/10 text-[#E85D88] px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-semibold bg-ink/10 text-accent px-2 py-0.5 rounded-full">
                         {form.productIds.length} selected
                       </span>
                     )}
@@ -352,7 +352,7 @@ export const CollectionManagement: React.FC = () => {
                       value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
                       placeholder="Search products to add..."
-                      className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:border-[#E85D88] transition"
+                      className="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:border-ink transition"
                     />
                   </div>
                   <div className="max-h-52 overflow-y-auto bg-slate-50 border border-slate-200 rounded-xl p-2 space-y-1">
@@ -367,7 +367,7 @@ export const CollectionManagement: React.FC = () => {
                             type="checkbox"
                             checked={form.productIds.includes(product._id)}
                             onChange={() => toggleProduct(product._id)}
-                            className="w-4 h-4 rounded border-slate-300 text-[#E85D88] focus:ring-[#E85D88]"
+                            className="w-4 h-4 rounded border-slate-300 text-accent focus:ring-ink"
                           />
                           {(product.primaryImage || product.images?.[0]?.url) && (
                             <img src={product.primaryImage || product.images?.[0]?.url} alt={product.title} className="w-8 h-8 rounded-md object-cover bg-slate-200" />
@@ -413,7 +413,7 @@ export const CollectionManagement: React.FC = () => {
                 <div className="border-t border-slate-100 pt-4">
                   <div className="flex items-center justify-between mb-3">
                     <label className="text-xs font-semibold text-slate-600">Product Rules</label>
-                    <button type="button" onClick={addRule} className="text-xs font-semibold text-[#E85D88] hover:text-[#D14D75] bg-pink-50 hover:bg-pink-100 px-2 py-1 rounded transition flex items-center gap-1">
+                    <button type="button" onClick={addRule} className="text-xs font-semibold text-accent hover:text-accent-deep bg-pink-50 hover:bg-pink-100 px-2 py-1 rounded transition flex items-center gap-1">
                       <Plus className="w-3 h-3" /> Add Rule
                     </button>
                   </div>
@@ -426,7 +426,7 @@ export const CollectionManagement: React.FC = () => {
                           <select
                             value={rule.field}
                             onChange={(e) => updateRule(idx, 'field', e.target.value)}
-                            className="w-1/3 px-2 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#E85D88]"
+                            className="w-1/3 px-2 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ink"
                           >
                             <option value="basePrice">Base Price</option>
                             <option value="status">Status</option>
@@ -436,7 +436,7 @@ export const CollectionManagement: React.FC = () => {
                           <select
                             value={rule.operator}
                             onChange={(e) => updateRule(idx, 'operator', e.target.value)}
-                            className="w-1/4 px-2 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#E85D88]"
+                            className="w-1/4 px-2 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ink"
                           >
                             <option value="eq">Equals</option>
                             <option value="gte">Greater &ge;</option>
@@ -448,7 +448,7 @@ export const CollectionManagement: React.FC = () => {
                             value={rule.value}
                             onChange={(e) => updateRule(idx, 'value', e.target.value)}
                             placeholder="Value..."
-                            className="flex-1 px-2 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#E85D88]"
+                            className="flex-1 px-2 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-ink"
                           />
                           <button type="button" onClick={() => removeRule(idx)} className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition">
                             <Trash2 className="w-4 h-4" />

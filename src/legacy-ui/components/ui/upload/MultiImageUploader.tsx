@@ -206,8 +206,8 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
           <label className="text-xs font-semibold text-slate-700 block">
             Product Images & Gallery ({images.length}/{maxFiles})
           </label>
-          <span className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
-            <FolderTree className="w-3.5 h-3.5 text-[#E85D88]" />
+          <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 font-mono">
+            <FolderTree className="w-3.5 h-3.5 text-accent" />
             Folder: <strong className="text-slate-700">{folder}</strong>
           </span>
         </div>
@@ -216,7 +216,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMore}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 text-[#E85D88] hover:bg-pink-100 text-xs font-semibold transition disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 text-accent hover:bg-pink-100 text-xs font-semibold transition disabled:opacity-50"
         >
           <Upload className="w-3.5 h-3.5" />
           {isUploading ? 'Uploading...' : 'Add Images'}
@@ -233,8 +233,8 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
       />
 
       {uploadProgress && (
-        <div className="p-2.5 rounded-xl bg-pink-50/70 border border-pink-200 text-[#E85D88] text-xs font-medium flex items-center gap-2 animate-pulse">
-          <div className="w-4 h-4 border-2 border-[#E85D88] border-t-transparent rounded-full animate-spin shrink-0" />
+        <div className="p-2.5 rounded-xl bg-pink-50/70 border border-pink-200 text-accent text-xs font-medium flex items-center gap-2 animate-pulse">
+          <div className="w-4 h-4 border-2 border-ink border-t-transparent rounded-full animate-spin shrink-0" />
           <span>{uploadProgress}</span>
         </div>
       )}
@@ -259,14 +259,14 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
           onKeyDown={(e) => e.key === 'Enter' && canAddMore && fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 ${
             isDragging
-              ? 'border-[#E85D88] bg-rose-50/60 scale-[1.01] shadow-md'
-              : 'border-slate-200 hover:border-[#E85D88] hover:bg-pink-50/20'
+              ? 'border-ink bg-rose-50/60 scale-[1.01] shadow-md'
+              : 'border-slate-200 hover:border-ink hover:bg-pink-50/20'
           }`}
         >
           <div
             className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-              isDragging ? 'bg-[#E85D88]/10 border-2 border-[#E85D88] border-dashed' : 'bg-pink-50'
-            } text-[#E85D88]`}
+              isDragging ? 'bg-ink/10 border-2 border-ink border-dashed' : 'bg-pink-50'
+            } text-accent`}
           >
             {isDragging ? (
               <ImagePlus className="w-7 h-7 animate-bounce" />
@@ -276,16 +276,16 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
           </div>
           <div>
             {isDragging ? (
-              <p className="text-sm font-bold text-[#E85D88]">Drop your images here!</p>
+              <p className="text-sm font-bold text-accent">Drop your images here!</p>
             ) : (
               <>
                 <p className="text-xs font-semibold text-slate-800">
-                  <span className="text-[#E85D88]">Click to upload</span> or drag & drop images
+                  <span className="text-accent">Click to upload</span> or drag & drop images
                 </p>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-xs text-slate-400 mt-1">
                   Front cover, back view, close-ups, model shoots · PNG, JPG, WebP up to 10 MB
                 </p>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-400 mt-0.5">
                   You can drop multiple files at once (max {maxFiles})
                 </p>
               </>
@@ -300,14 +300,14 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           className={`space-y-3 relative p-4 -m-4 rounded-xl transition-all ${
-            isDragging ? 'bg-pink-50/50 ring-2 ring-inset ring-[#E85D88] border border-dashed border-[#E85D88]' : ''
+            isDragging ? 'bg-pink-50/50 ring-2 ring-inset ring-ink border border-dashed border-ink' : ''
           }`}
         >
           {isDragging && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm rounded-xl">
               <div className="flex flex-col items-center gap-2">
-                <ImagePlus className="w-10 h-10 text-[#E85D88] animate-bounce" />
-                <span className="text-sm font-bold text-[#E85D88]">Drop images here to add</span>
+                <ImagePlus className="w-10 h-10 text-accent animate-bounce" />
+                <span className="text-sm font-bold text-accent">Drop images here to add</span>
               </div>
             </div>
           )}
@@ -320,7 +320,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                   key={idx}
                   className={`relative rounded-xl border overflow-hidden bg-slate-50 flex flex-col justify-between transition-all ${
                     isPrimary
-                      ? 'border-[#E85D88] ring-2 ring-[#E85D88]/20 shadow-xs'
+                      ? 'border-ink ring-2 ring-ink/20 shadow-xs'
                       : 'border-slate-200'
                   }`}
                 >
@@ -334,7 +334,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
 
                     {/* Primary Badge */}
                     {isPrimary && (
-                      <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-[#E85D88] text-white text-[10px] font-bold uppercase tracking-wider shadow-xs flex items-center gap-1">
+                      <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-md bg-ink text-white text-xs font-bold uppercase tracking-wider shadow-xs flex items-center gap-1">
                         <Star className="w-3 h-3 fill-white" /> Primary
                       </span>
                     )}
@@ -354,7 +354,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                       <button
                         type="button"
                         onClick={() => handleSetPrimary(idx)}
-                        className="absolute bottom-1.5 inset-x-1.5 py-1 rounded-md bg-black/60 hover:bg-[#E85D88] text-white text-[10px] font-semibold transition text-center opacity-0 group-hover:opacity-100 backdrop-blur-xs"
+                        className="absolute bottom-1.5 inset-x-1.5 py-1 rounded-md bg-black/60 hover:bg-ink text-white text-xs font-semibold transition text-center opacity-0 group-hover:opacity-100 backdrop-blur-xs"
                       >
                         Make Primary
                       </button>
@@ -366,7 +366,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                     <select
                       value={img.role || 'gallery'}
                       onChange={(e) => handleUpdateRole(idx, e.target.value)}
-                      className="w-full text-[11px] font-medium bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#E85D88]"
+                      className="w-full text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ink"
                     >
                       {IMAGE_ROLE_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -380,7 +380,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                       value={img.altText || ''}
                       onChange={(e) => handleUpdateField(idx, 'altText', e.target.value)}
                       placeholder="Alt text / description"
-                      className="w-full text-[11px] bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-[#E85D88]"
+                      className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ink"
                     />
                   </div>
                 </div>
@@ -393,18 +393,18 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
                 onClick={() => fileInputRef.current?.click()}
                 className={`relative rounded-xl border-2 border-dashed aspect-square flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-200 ${
                   isDragging
-                    ? 'border-[#E85D88] bg-rose-50/60 scale-[1.02]'
-                    : 'border-slate-200 hover:border-[#E85D88] hover:bg-pink-50/20'
+                    ? 'border-ink bg-rose-50/60 scale-[1.02]'
+                    : 'border-slate-200 hover:border-ink hover:bg-pink-50/20'
                 }`}
               >
                 {isDragging ? (
-                  <ImagePlus className="w-7 h-7 text-[#E85D88] animate-bounce" />
+                  <ImagePlus className="w-7 h-7 text-accent animate-bounce" />
                 ) : (
                   <>
                     <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center">
-                      <Upload className="w-5 h-5 text-[#E85D88]" />
+                      <Upload className="w-5 h-5 text-accent" />
                     </div>
-                    <p className="text-[11px] font-semibold text-slate-500 text-center px-2">
+                    <p className="text-xs font-semibold text-slate-500 text-center px-2">
                       Add more or drop here
                     </p>
                   </>
@@ -415,7 +415,7 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
 
           {/* Drag over hint bar */}
           {isDragging && (
-            <div className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-[#E85D88] bg-rose-50/40 flex items-center justify-center gap-2 text-[#E85D88] text-sm font-semibold animate-pulse">
+            <div className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-ink bg-rose-50/40 flex items-center justify-center gap-2 text-accent text-sm font-semibold animate-pulse">
               <ImagePlus className="w-4 h-4" />
               Drop images to add them
             </div>

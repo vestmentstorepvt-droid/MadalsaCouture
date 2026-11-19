@@ -21,11 +21,12 @@ const upload = multer({
   },
 });
 
-// Public — anyone can read comments
-router.get('/', commentController.listComments);
+// Public — anyone can read reviews. A signed-in reader also gets their own review back (`myComment`).
+router.get('/', optionalAuthenticate, commentController.listComments);
 
-// Logged-in users OR guests (guests must provide name + email)
-router.post('/', optionalAuthenticate, upload.array('media', 5), commentController.createComment);
+// Signed-in customers only. Guest reviews were removed: a guest could post as any existing
+// customer by typing their email (and overwrite that customer's review).
+router.post('/', authenticate, upload.array('media', 5), commentController.createComment);
 
 // Authenticated — must be logged in to delete
 router.delete('/', authenticate, commentController.deleteComment);

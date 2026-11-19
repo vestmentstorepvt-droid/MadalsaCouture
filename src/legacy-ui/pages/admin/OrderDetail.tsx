@@ -142,7 +142,7 @@ export const OrderDetail: React.FC = () => {
     return (
       <div className="min-h-screen p-6 bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Package className="w-8 h-8 text-[#E85D88] animate-bounce" />
+          <Package className="w-8 h-8 text-accent animate-bounce" />
           <p className="text-sm font-semibold text-slate-600">Loading order details...</p>
         </div>
       </div>
@@ -263,14 +263,14 @@ export const OrderDetail: React.FC = () => {
                 </label>
                 <input
                   type="number"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                   value={refundAmount}
                   onChange={(e) => setRefundAmount(e.target.value)}
                   max={order.total}
                   min={1}
                   required
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-xs text-slate-400 mt-1">
                   Max refundable: {currency.format(order.total)}
                 </p>
               </div>
@@ -281,7 +281,7 @@ export const OrderDetail: React.FC = () => {
                 </label>
                 <textarea
                   rows={2}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                   placeholder="e.g. Customer return, cancellation prior to dispatch"
                   value={refundReason}
                   onChange={(e) => setRefundReason(e.target.value)}
@@ -320,7 +320,7 @@ export const OrderDetail: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                Order <span className="font-mono text-[#E85D88]">{order.orderNumber}</span>
+                Order <span className="font-mono text-accent">{order.orderNumber}</span>
               </h1>
               <button
                 type="button"
@@ -377,7 +377,7 @@ export const OrderDetail: React.FC = () => {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Package className="w-4 h-4 text-[#E85D88]" />
+                <Package className="w-4 h-4 text-accent" />
                 Purchased Items ({order.items.length})
               </h2>
             </div>
@@ -437,7 +437,7 @@ export const OrderDetail: React.FC = () => {
           {/* Payment & Invoice Breakdown */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-[#E85D88]" />
+              <CreditCard className="w-4 h-4 text-accent" />
               Payment & Invoice Summary
             </h2>
 
@@ -465,7 +465,7 @@ export const OrderDetail: React.FC = () => {
 
               <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                 <span className="font-bold text-base text-slate-900">Total Charged</span>
-                <span className="font-bold text-xl text-[#E85D88]">{currency.format(order.total)}</span>
+                <span className="font-bold text-xl text-accent">{currency.format(order.total)}</span>
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
@@ -516,7 +516,7 @@ export const OrderDetail: React.FC = () => {
           {/* Status Transition History Audit Trail */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <History className="w-4 h-4 text-[#E85D88]" />
+              <History className="w-4 h-4 text-accent" />
               Status Audit Trail
             </h2>
 
@@ -525,12 +525,12 @@ export const OrderDetail: React.FC = () => {
               <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
                 {order.statusHistory.map((h, i) => (
                   <div key={i} className="relative flex items-start justify-between gap-4">
-                    <div className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-[#E85D88] ring-4 ring-white" />
+                    <div className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-ink ring-4 ring-white" />
                     <div>
                       <span className="text-xs font-bold text-slate-800">{h.status}</span>
                       {h.note && <p className="text-xs text-slate-500 mt-0.5">{h.note}</p>}
                       {h.actorEmail && (
-                        <p className="text-[11px] text-slate-400">By: {h.actorEmail}</p>
+                        <p className="text-xs text-slate-400">By: {h.actorEmail}</p>
                       )}
                     </div>
                     <span className="text-xs text-slate-400 shrink-0">{formatDate(h.timestamp)}</span>
@@ -548,7 +548,7 @@ export const OrderDetail: React.FC = () => {
           {/* Status Transition Controller Card */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Truck className="w-4 h-4 text-[#E85D88]" /> Update Lifecycle Status
+              <Truck className="w-4 h-4 text-accent" /> Update Lifecycle Status
             </h2>
 
             <form onSubmit={handleStatusChange} className="space-y-3">
@@ -557,7 +557,7 @@ export const OrderDetail: React.FC = () => {
                   Next Status
                 </label>
                 <select
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                   value={selectedStatus}
                   disabled={isTerminalStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
@@ -576,12 +576,12 @@ export const OrderDetail: React.FC = () => {
                       ))}
                 </select>
                 {isTerminalStatus && (
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     This order is in a final state and cannot be moved to another status.
                   </p>
                 )}
                 {nextAllowed.length > 0 && (
-                  <p className="text-[11px] text-slate-400 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     Valid next hops: {nextAllowed.join(' → ')}
                   </p>
                 )}
@@ -593,7 +593,7 @@ export const OrderDetail: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                   placeholder="e.g. Dispatched via BlueDart AWB# 12345"
                   value={statusNote}
                   onChange={(e) => setStatusNote(e.target.value)}
@@ -617,7 +617,7 @@ export const OrderDetail: React.FC = () => {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
             <h2 className="text-sm font-bold text-slate-900">Customer Profile</h2>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-pink-100 text-[#E85D88] flex items-center justify-center font-bold text-sm">
+              <div className="w-10 h-10 rounded-full bg-pink-100 text-accent flex items-center justify-center font-bold text-sm">
                 {customerName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -635,7 +635,7 @@ export const OrderDetail: React.FC = () => {
           {/* Shipping Address Card */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#E85D88]" /> Delivery Destination
+              <MapPin className="w-4 h-4 text-accent" /> Delivery Destination
             </h2>
             {order.shippingAddress ? (
               <div className="text-xs text-slate-600 space-y-1">

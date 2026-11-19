@@ -17,21 +17,22 @@ const StaticCmsPage: React.FC<StaticCmsPageProps> = ({ slug, title }) => {
   const { data, isLoading, isError, refetch } = useGetStaticPageQuery(slug);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#3D2C24] font-sans antialiased selection:bg-[#B38756]/20">
+    <div className="min-h-screen bg-canvas text-ink">
       {/* Header Banner */}
-      <section className="bg-[#271C16] text-[#FAF7F2] py-16 sm:py-20 px-4 sm:px-6 lg:px-8 text-center relative overflow-hidden">
-        <div className="relative z-10 max-w-4xl mx-auto space-y-7">
+      <section className="relative overflow-hidden border-b border-hairline bg-canvas text-ink py-16 sm:py-24 px-4 sm:px-6 lg:px-8 text-center">
+        <div aria-hidden="true" className="mesh-gradient pointer-events-none absolute inset-x-0 top-0 mx-auto h-full max-w-5xl" />
+        <div className="relative z-10 max-w-4xl mx-auto space-y-6">
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-widest text-[#D4AF37]"
+            className="flex items-center justify-center gap-2 text-sm text-mute"
           >
-            <Link to="/" className="hover:text-[#FFF8ED] transition-colors duration-200">
+            <Link to="/" className="hover:text-ink">
               Home
             </Link>
-            <ChevronRight className="h-3 w-3 text-[#D4AF37]/50" />
-            <span className="text-stone-400">{title}</span>
+            <ChevronRight className="h-3.5 w-3.5 text-faint" aria-hidden="true" />
+            <span className="text-ink">{title}</span>
           </nav>
-          <h1 className="font-serif text-3xl sm:text-5xl font-normal tracking-[0.1em] uppercase text-[#FFF8ED]">
+          <h1 className="text-[32px] leading-10 tracking-[-1.28px] sm:text-5xl sm:leading-[48px] sm:tracking-[-2.4px] text-ink font-semibold">
             {title}
           </h1>
         </div>
@@ -55,7 +56,7 @@ const StaticCmsPage: React.FC<StaticCmsPageProps> = ({ slug, title }) => {
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="border border-[#3D2C24] px-6 py-2.5 text-xs uppercase tracking-widest text-[#3D2C24] hover:bg-[#3D2C24] hover:text-[#FFF8ED] transition-all"
+                className="border px-6 text-ink h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
               >
                 Retry
               </button>
@@ -89,7 +90,7 @@ const StaticCmsPage: React.FC<StaticCmsPageProps> = ({ slug, title }) => {
               .cms-content h1 {
                 font-size: 2rem;
                 padding-bottom: 1rem;
-                border-bottom: 2px solid #D4AF37;
+                border-bottom: 1px solid #ebebeb;
                 margin-bottom: 2rem;
               }
               .cms-content h2 {
@@ -137,7 +138,7 @@ const StaticCmsPage: React.FC<StaticCmsPageProps> = ({ slug, title }) => {
               }
             `}</style>
             <article
-              className="cms-content max-w-none text-sm md:text-base leading-relaxed rounded-2xl border border-[#E2D9CC]/40 bg-gradient-to-br from-white to-[#FEFBF7] p-10 sm:p-12 shadow-[0_10px_30px_rgba(0,0,0,0.04)]"
+              className="cms-content max-w-none text-sm md:text-base leading-relaxed rounded-2xl border border-hairline bg-surface p-10 sm:p-12 shadow-md"
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(data.body)
                   .replace(/&nbsp;/g, ' ')

@@ -4,6 +4,7 @@ import __imp1 from "@/server/repositories/productRepository";
 import __imp2 from "@/server/utils/slugify";
 import __imp3 from "@/server/constants/messages";
 import __imp4 from "@/server/config/logger";
+import { queueShiprocketSync } from "@/server/services/shiprocketCatalog";
 
 const mongoose = __imp0;
 const productRepository = __imp1;
@@ -145,6 +146,7 @@ class ProductService {
     });
 
     logger.info(`Product created: ${product._id} (${product.slug}) by admin ${adminId}`);
+    queueShiprocketSync(product._id); // keep Shiprocket Checkout's catalog in step with the shop
     return product;
   }
 
@@ -393,6 +395,7 @@ class ProductService {
     if (!updated) throw Object.assign(new Error(ERROR.NOT_FOUND), { statusCode: 404 });
 
     logger.info(`Product updated: ${id} by admin ${adminId}`);
+    queueShiprocketSync(id);
     return updated;
   }
 
@@ -425,6 +428,7 @@ class ProductService {
     if (!updated) throw Object.assign(new Error(ERROR.NOT_FOUND), { statusCode: 404 });
 
     logger.info(`Product ${id} status: ${product.status} → ${status} by admin ${adminId}`);
+    queueShiprocketSync(id); // unpublished → sent as inactive
     return updated;
   }
 
@@ -481,6 +485,7 @@ class ProductService {
     if (!deleted) throw Object.assign(new Error(ERROR.NOT_FOUND), { statusCode: 404 });
 
     logger.info(`Product soft-deleted: ${id} by admin ${adminId}`);
+    queueShiprocketSync(id); // sent as inactive with no stock, so it can't be bought
     return deleted;
   }
 

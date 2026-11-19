@@ -55,99 +55,98 @@ const FestiveBanner: React.FC = () => {
   const link = activeBanner.linkUrl || '#claim';
 
   return (
-    <div className="bg-[#F6F5F3] py-16 px-4 relative overflow-hidden border-y border-[#E2D9CC]/50">
-      <div className="mx-auto max-w-6xl text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[10px] font-bold uppercase tracking-[0.2em] text-[#B8860B]">
-          <Sparkles className="w-3 h-3" /> Special Festive Offer
-        </div>
-        <h2 className="text-2xl sm:text-4xl font-serif text-[#6B4D3E] tracking-widest uppercase text-center font-normal">
+    <section aria-labelledby="festive-title" className="relative overflow-hidden border-b border-hairline bg-canvas px-4 py-16 sm:py-24">
+      {/* DESIGN.md: the soft mesh gradient is the page's one decorative element. */}
+      <div aria-hidden="true" className="mesh-gradient pointer-events-none absolute inset-x-0 top-0 mx-auto h-full max-w-5xl" />
+      <div className="relative mx-auto max-w-3xl text-center">
+        <p className="eyebrow inline-flex items-center gap-2">
+          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Festive offer
+        </p>
+        <h2
+          id="festive-title"
+          className="mt-4 text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink sm:text-5xl sm:leading-[48px] sm:tracking-[-2.4px]"
+        >
           {headline}
         </h2>
-        <p className="text-xs sm:text-sm text-slate-700 max-w-3xl mx-auto text-center font-light leading-relaxed">
-          {subtext}
-        </p>
-        <div className="pt-2">
+        <p className="mx-auto mt-4 max-w-xl text-base text-body">{subtext}</p>
+        <div className="mt-8">
           {link.startsWith('/') ? (
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center justify-center border border-[#6B4D3E] bg-[#6B4D3E] px-8 py-3 text-xs tracking-widest text-white font-medium uppercase transition-all duration-300 hover:bg-transparent hover:text-[#6B4D3E]"
-            >
-              CLAIM OFFER NOW
+            <button type="button" onClick={() => setIsModalOpen(true)} className="btn-primary">
+              Claim offer
             </button>
           ) : (
-            <a
-              href={link}
-              className="inline-flex items-center justify-center border border-[#6B4D3E] bg-[#6B4D3E] px-8 py-3 text-xs tracking-widest text-white font-medium uppercase transition-all duration-300 hover:bg-transparent hover:text-[#6B4D3E]"
-            >
-              CLAIM OFFER NOW
+            <a href={link} className="btn-primary">
+              Claim offer
             </a>
           )}
         </div>
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white p-8 sm:p-12 shadow-2xl text-center border border-[#E8D9C7]">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="festive-dialog-title"
+          onKeyDown={(e) => e.key === 'Escape' && setIsModalOpen(false)}
+        >
+          <div className="relative w-full max-w-md rounded-3xl border border-hairline bg-surface p-6 shadow-2xl sm:p-8">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="absolute right-4 top-4 text-slate-400 transition-colors hover:text-black p-1 rounded-full hover:bg-slate-100"
-              aria-label="Close modal"
+              className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full text-mute hover:bg-hairline-soft hover:text-ink"
+              aria-label="Close"
+              autoFocus
             >
               <X className="h-5 w-5" />
             </button>
 
             {isSubmitted ? (
-              <div className="py-6 space-y-3">
-                <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
-                <h3 className="text-xl font-serif text-slate-900 uppercase tracking-wider">Coupon Code Claimed!</h3>
-                <p className="text-xs text-slate-600">Check your email for your exclusive festive discount code.</p>
+              <div className="py-6 text-center" role="status">
+                <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" aria-hidden="true" />
+                <h3 id="festive-dialog-title" className="mt-3 text-xl font-semibold tracking-[-0.4px] text-ink">
+                  Check your inbox
+                </h3>
+                <p className="mt-1 text-sm text-body">Your festive discount code is on its way.</p>
               </div>
             ) : (
               <>
-                <h3 className="text-2xl sm:text-3xl font-serif text-[#6B4D3E] tracking-widest uppercase mb-4">
-                  CLAIM EXCLUSIVE OFFER
+                <h3 id="festive-dialog-title" className="pr-8 text-xl font-semibold tracking-[-0.4px] text-ink">
+                  Get your festive code
                 </h3>
-                <p className="mx-auto max-w-md text-xs sm:text-sm leading-relaxed text-slate-700 mb-8">
-                  Enter your email to receive a special promotional coupon code for your next couture purchase.
-                </p>
-                <form className="space-y-4" onSubmit={handleSubmit}>
+                <p className="mt-1 text-sm text-body">We'll email you a discount code for your next order.</p>
+                <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
                   <div>
-                    <label className="sr-only" htmlFor="firstName">First Name</label>
+                    <label className="field-label" htmlFor="firstName">First name</label>
                     <input
                       id="firstName"
                       name="firstName"
                       type="text"
+                      autoComplete="given-name"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      placeholder="First Name*"
                       required
-                      className="w-full bg-[#FAF7F2] border border-slate-300 rounded-xl px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:border-[#6B4D3E] focus:outline-none transition-colors"
+                      className="field"
                     />
                   </div>
                   <div>
-                    <label className="sr-only" htmlFor="email">Email</label>
+                    <label className="field-label" htmlFor="email">Email</label>
                     <input
                       id="email"
                       name="email"
                       type="email"
+                      autoComplete="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      placeholder="Email Address*"
                       required
-                      className="w-full bg-[#FAF7F2] border border-slate-300 rounded-xl px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:border-[#6B4D3E] focus:outline-none transition-colors"
+                      className="field"
                     />
                   </div>
                   {submitError && (
-                    <p className="text-xs text-red-600 text-center -mt-1">{submitError}</p>
+                    <p className="text-sm text-red-600" role="alert">{submitError}</p>
                   )}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full rounded-xl border border-[#6B4D3E] bg-[#6B4D3E] py-3.5 text-xs uppercase tracking-widest font-semibold text-white transition-all duration-300 hover:bg-[#52392c] disabled:opacity-50"
-                  >
-                    {isSubmitting ? 'SENDING...' : 'SEND COUPON CODE'}
+                  <button type="submit" disabled={isSubmitting} className="btn-primary w-full">
+                    {isSubmitting ? 'Sending…' : 'Send my code'}
                   </button>
                 </form>
               </>
@@ -155,7 +154,7 @@ const FestiveBanner: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

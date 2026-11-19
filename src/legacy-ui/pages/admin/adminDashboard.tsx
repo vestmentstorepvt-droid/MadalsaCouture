@@ -16,7 +16,7 @@ import {
 
 // ─── Status colour map ────────────────────────────────────────────────────────
 const STATUS_COLOR_MAP: Record<string, string> = {
-  Delivered:     '#E85D88',
+  Delivered:     '#c2255c',
   OutForDelivery:'#A070D6',
   Shipped:       '#6366F1',
   Processing:    '#F9A865',
@@ -25,7 +25,7 @@ const STATUS_COLOR_MAP: Record<string, string> = {
   Cancelled:     '#52B2E6',
   Refunded:      '#94A3B8',
 };
-const STATUS_COLOR_FALLBACKS = ['#E85D88', '#A070D6', '#F9A865', '#52B2E6', '#64748B'];
+const STATUS_COLOR_FALLBACKS = ['#c2255c', '#A070D6', '#F9A865', '#52B2E6', '#64748B'];
 
 // ─── Build ?from=&to=&groupBy= params from the time-range dropdown ────────────
 function buildSalesParams(range: string): SalesReportParams {
@@ -174,7 +174,7 @@ export const AdminDashboard: React.FC = () => {
           icon: ShoppingBag,
           changePercentage: 0,
           iconBgColor: 'bg-rose-50',
-          iconColor: 'text-[#E85D88]',
+          iconColor: 'text-accent',
         },
         {
           title: "Today's Revenue",
@@ -198,7 +198,7 @@ export const AdminDashboard: React.FC = () => {
           icon: Package,
           changePercentage: 0,
           iconBgColor: 'bg-rose-50',
-          iconColor: 'text-[#E85D88]',
+          iconColor: 'text-accent',
         },
         {
           title: 'Low Stock Items',
@@ -252,7 +252,7 @@ export const AdminDashboard: React.FC = () => {
       header: 'Order ID',
       render: (row) => (
         <button type="button"
-          className="font-bold text-slate-800 hover:text-[#E85D88] transition"
+          className="font-bold text-slate-800 hover:text-accent transition"
           onClick={() => navigate(row.orderDetailsPath)}>
           {row.orderId}
         </button>
@@ -263,7 +263,7 @@ export const AdminDashboard: React.FC = () => {
       header: 'Customer',
       render: (row) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-slate-200 border border-slate-100 text-[11px] font-semibold text-slate-700 flex items-center justify-center">
+          <div className="w-7 h-7 rounded-full bg-slate-200 border border-slate-100 text-xs font-semibold text-slate-700 flex items-center justify-center">
             {getInitials(row.customerName)}
           </div>
           <span className="font-semibold text-slate-800">{row.customerName}</span>
@@ -297,7 +297,7 @@ export const AdminDashboard: React.FC = () => {
           Refunded:       'bg-slate-100 text-slate-600 border border-slate-200',
         };
         return (
-          <span className={`px-2.5 py-1 rounded-lg text-[11px] font-medium ${styles[row.status] ?? 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
+          <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${styles[row.status] ?? 'bg-slate-100 text-slate-700 border border-slate-200'}`}>
             {row.status}
           </span>
         );
@@ -317,7 +317,7 @@ export const AdminDashboard: React.FC = () => {
       render: (row) => (
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center">
-            <Package className="w-4 h-4 text-[#E85D88]" />
+            <Package className="w-4 h-4 text-accent" />
           </div>
           <span className="font-semibold text-slate-800">{row.name}</span>
         </div>
@@ -327,7 +327,7 @@ export const AdminDashboard: React.FC = () => {
       key: 'revenue',
       header: 'Revenue',
       render: (row) => (
-        <span className="font-bold text-[#E85D88] text-right block">
+        <span className="font-bold text-accent text-right block">
           {formatCurrency(row.revenue)}
         </span>
       ),
@@ -336,16 +336,16 @@ export const AdminDashboard: React.FC = () => {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="p-6 bg-[#FAFAFC] min-h-screen space-y-6">
+    <div className="p-6 bg-canvas min-h-screen space-y-6">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
             Welcome back,{' '}
-            <span className="text-[#E85D88] flex items-center gap-1.5">
+            <span className="text-accent flex items-center gap-1.5">
               Admin
-              <FaRegHandSpock className="inline-block w-6 h-6 text-[#E85D88]" />
+              <FaRegHandSpock className="inline-block w-6 h-6 text-accent" />
             </span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">Here's what's happening with your store today.</p>
@@ -425,7 +425,7 @@ export const AdminDashboard: React.FC = () => {
               pageSize={5}
               headerAction={
                 <button type="button" onClick={() => navigate('/admin/orders')}
-                  className="text-xs font-semibold text-[#E85D88] bg-[#FFF0F5] hover:bg-[#FFE4EE] px-4 py-2 rounded-xl transition">
+                  className="text-xs font-semibold text-accent bg-accent-soft hover:bg-accent-soft px-4 py-2 rounded-xl transition">
                   View All
                 </button>
               }

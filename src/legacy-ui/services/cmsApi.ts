@@ -138,6 +138,16 @@ export interface CmsStaticPage {
 
 // ── RTK Query Slice ───────────────────────────────────────────────────────────
 
+/** GET /api/v1/reviews/featured — recent 4–5★ reviews for the home page. */
+export interface FeaturedReview {
+  _id: string;
+  rating: number;
+  body: string;
+  author: string;
+  createdAt: string;
+  product: { title: string; slug: string; image: string | null } | null;
+}
+
 export const cmsApi = createApi({
   reducerPath: 'cmsApi',
   baseQuery: baseQueryWithErrorLogging,
@@ -145,6 +155,11 @@ export const cmsApi = createApi({
   tagTypes: ['CmsHero', 'CmsAnnouncement', 'CmsCollections', 'CmsBanners', 'CmsVideoCards', 'CmsAbout', 'CmsContact', 'CmsStaticPages'],
 
   endpoints: (builder) => ({
+    getFeaturedReviews: builder.query<FeaturedReview[], number | void>({
+      query: (limit) => `/reviews/featured?limit=${limit ?? 6}`,
+      transformResponse: (response: unknown): FeaturedReview[] =>
+        ((response as { data?: { reviews?: FeaturedReview[] } })?.data?.reviews) ?? [],
+    }),
     getHero: builder.query<CmsHero, void>({
       query: () => ENDPOINTS.CMS.HERO,
       transformResponse: (response: unknown): CmsHero => {
@@ -393,6 +408,7 @@ export const cmsApi = createApi({
 });
 
 export const {
+  useGetFeaturedReviewsQuery,
   useGetHeroQuery,
   useGetAnnouncementBarQuery,
   useGetCollectionsShowcaseQuery,

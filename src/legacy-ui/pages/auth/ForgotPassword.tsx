@@ -59,8 +59,8 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FDF4F7] px-4 py-6 sm:px-6 flex items-center justify-center">
-      <div className="w-full max-w-md rounded-[2rem] border border-[#F7D7E0] bg-white/95 p-8 shadow-[0_40px_120px_rgba(232,93,136,0.12)] backdrop-blur-sm">
+    <div className="min-h-screen w-full bg-canvas px-4 py-6 sm:px-6 flex items-center justify-center">
+      <div className="w-full max-w-md rounded-2xl border border-hairline bg-surface p-8">
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-3 text-center mb-8">
@@ -72,9 +72,9 @@ const ForgotPassword: React.FC = () => {
             {/* Heading */}
             <div className="text-center mb-7">
               <div className="w-14 h-14 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-7 h-7 text-[#E85D88]" />
+                <Mail className="w-7 h-7 text-accent" />
               </div>
-              <h1 className="text-xl font-bold text-slate-800 tracking-tight">Forgot your password?</h1>
+              <h1 className="text-xl font-semibold tracking-[-0.4px] text-ink">Forgot your password?</h1>
               <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
                 No worries — enter the email address associated with your account and we'll send you a reset link.
               </p>
@@ -104,7 +104,7 @@ const ForgotPassword: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
-                    className="h-12 w-full rounded-xl border border-[#F4D3DC] bg-[#FFF8FA] pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-[#E85D88] focus:bg-white focus:ring-2 focus:ring-[#F7B9CC]"
+                    className="h-12 w-full rounded-xl border border-accent-line bg-accent-soft pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-300 focus:border-ink focus:bg-white focus:ring-2 focus:ring-accent-line"
                   />
                 </div>
               </div>
@@ -112,7 +112,7 @@ const ForgotPassword: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#E85D88] px-5 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#d44f72] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-5 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-ink-hover hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isLoading ? (
                   <>
@@ -128,7 +128,7 @@ const ForgotPassword: React.FC = () => {
             <div className="mt-6 text-center">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-1.5 text-sm text-slate-500 font-medium transition hover:text-[#E85D88]"
+                className="inline-flex items-center gap-1.5 text-sm text-slate-500 font-medium transition hover:text-accent"
               >
                 <ArrowLeft size={15} />
                 Back to Sign In
@@ -141,7 +141,7 @@ const ForgotPassword: React.FC = () => {
             <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-5">
               <CheckCircle2 className="w-8 h-8 text-emerald-500" />
             </div>
-            <h2 className="text-xl font-bold text-slate-800 tracking-tight">Check your inbox!</h2>
+            <h2 className="text-xl font-semibold tracking-[-0.4px] text-ink">Check your inbox!</h2>
             <p className="mt-2 text-sm text-slate-500 leading-relaxed">
               We've sent a password reset link to{' '}
               <strong className="text-slate-700">{email}</strong>.{' '}
@@ -162,7 +162,7 @@ const ForgotPassword: React.FC = () => {
                 type="button"
                 onClick={handleResend}
                 disabled={resendCooldown > 0 || isLoading}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#E85D88] hover:text-[#d44f72] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-deep transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <RefreshCw size={14} className="animate-spin" />
@@ -171,12 +171,12 @@ const ForgotPassword: React.FC = () => {
                 )}
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend email'}
               </button>
-              <p className="text-[11px] text-slate-400 mt-1.5">
+              <p className="text-xs text-slate-400 mt-1.5">
                 Or try a different email —{' '}
                 <button
                   type="button"
                   onClick={() => { setStep('form'); setErrorMsg(''); }}
-                  className="text-[#E85D88] hover:underline font-medium"
+                  className="text-accent hover:underline font-medium"
                 >
                   go back
                 </button>
@@ -185,7 +185,7 @@ const ForgotPassword: React.FC = () => {
 
             <Link
               to="/login"
-              className="mt-6 inline-flex items-center gap-1.5 text-sm text-slate-500 font-medium transition hover:text-[#E85D88]"
+              className="mt-6 inline-flex items-center gap-1.5 text-sm text-slate-500 font-medium transition hover:text-accent"
             >
               <ArrowLeft size={15} />
               Return to Sign In

@@ -38,7 +38,7 @@ const CartItemRow: React.FC<{
   onUpdateQty: (qty: number) => void;
   onRemove: () => void;
 }> = ({ item, onUpdateQty, onRemove }) => (
-  <div className="flex items-start gap-4 sm:gap-5 rounded-2xl border border-[#E2D9CC] bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
+  <div className="flex items-start gap-4 sm:gap-5 rounded-2xl border border-hairline bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
     {/* Image */}
     <div className="h-24 w-20 sm:h-28 sm:w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">
       {item.image ? (
@@ -54,7 +54,7 @@ const CartItemRow: React.FC<{
     <div className="flex flex-1 flex-col gap-2.5 min-w-0">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="font-serif text-sm font-semibold uppercase tracking-wider text-slate-900 leading-snug line-clamp-2">
+          <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2">
             {item.name}
           </h3>
           {(item.size || item.color) && (
@@ -76,22 +76,22 @@ const CartItemRow: React.FC<{
       {/* Qty + price row */}
       <div className="flex items-center justify-between gap-2">
         {/* Stepper */}
-        <div className="flex items-center border border-[#E2D9CC] rounded-xl overflow-hidden">
+        <div className="flex items-center border border-hairline rounded-xl overflow-hidden">
           <button
             type="button"
             onClick={() => onUpdateQty(item.quantity - 1)}
-            className="px-3 py-2 text-slate-600 hover:bg-[#FAF7F2] transition"
+            className="px-3 py-2 text-slate-600 hover:bg-canvas transition"
             aria-label="Decrease quantity"
           >
             <Minus className="h-3.5 w-3.5" />
           </button>
-          <span className="px-4 py-2 text-sm font-bold text-slate-800 border-x border-[#E2D9CC] min-w-[2.5rem] text-center bg-white">
+          <span className="px-4 text-sm border-x min-w-[2.5rem] text-center bg-white h-11 rounded-full border border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft">
             {item.quantity}
           </span>
           <button
             type="button"
             onClick={() => onUpdateQty(item.quantity + 1)}
-            className="px-3 py-2 text-slate-600 hover:bg-[#FAF7F2] transition"
+            className="px-3 py-2 text-slate-600 hover:bg-canvas transition"
             aria-label="Increase quantity"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -102,7 +102,7 @@ const CartItemRow: React.FC<{
         <div className="text-right">
           <p className="text-sm font-bold text-slate-900">{formatINR(item.price * item.quantity)}</p>
           {item.quantity > 1 && (
-            <p className="text-[11px] text-slate-400">{formatINR(item.price)} each</p>
+            <p className="text-xs text-slate-400">{formatINR(item.price)} each</p>
           )}
         </div>
       </div>
@@ -112,13 +112,13 @@ const CartItemRow: React.FC<{
 
 // ── Empty Cart ─────────────────────────────────────────────────────────────────
 const EmptyCart: React.FC = () => (
-  <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center gap-6 text-center px-4">
-    <div className="w-24 h-24 rounded-full bg-[#D4AF37]/10 flex items-center justify-center">
-      <ShoppingBag className="h-12 w-12 text-[#D4AF37]" />
+  <div className="min-h-screen bg-canvas flex flex-col items-center justify-center gap-6 text-center px-4">
+    <div className="w-24 h-24 rounded-full bg-ink/10 flex items-center justify-center">
+      <ShoppingBag className="h-12 w-12 text-accent" />
     </div>
     <div className="space-y-2">
-      <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-[#D4AF37]">Shopping Bag</p>
-      <h2 className="font-serif text-2xl uppercase tracking-widest text-slate-800">Your bag is empty</h2>
+      <p className="eyebrow">Shopping Bag</p>
+      <h2 className="text-xl tracking-[-0.4px] text-slate-800 font-semibold">Your bag is empty</h2>
       <p className="text-sm text-slate-500 max-w-sm">
         Discover our luxury collections and add your favourite pieces.
       </p>
@@ -126,13 +126,13 @@ const EmptyCart: React.FC = () => (
     <div className="flex flex-col sm:flex-row gap-3">
       <Link
         to="/products"
-        className="inline-flex items-center gap-2 border border-[#3D2C24] bg-[#3D2C24] px-8 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#FFF8ED] hover:bg-transparent hover:text-[#3D2C24] transition-all"
+        className="inline-flex items-center gap-2 bg-ink px-8 text-white h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover"
       >
         Explore Collections <ArrowRight className="h-4 w-4" />
       </Link>
       <Link
         to="/wishlist"
-        className="inline-flex items-center gap-2 border border-[#D4AF37] text-[#3D2C24] px-8 py-3 text-xs font-semibold uppercase tracking-[0.2em] hover:bg-[#D4AF37]/10 transition-all"
+        className="inline-flex items-center gap-2 border text-ink px-8 h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
       >
         <Heart className="h-4 w-4" /> View Wishlist
       </Link>
@@ -220,16 +220,16 @@ const Cart: React.FC = () => {
   const remaining = shippingThreshold - subtotal;
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-canvas pt-20 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-8">
 
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="text-center space-y-2">
-          <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-[#D4AF37]">Shopping Bag</p>
-          <h1 className="font-serif text-3xl uppercase tracking-wide text-slate-900">
-            Your Bag <span className="text-[#D4AF37]">({itemCount})</span>
+          <p className="eyebrow">Shopping Bag</p>
+          <h1 className="text-[32px] leading-10 tracking-[-1.28px] text-slate-900 font-semibold">
+            Your Bag <span className="text-accent">({itemCount})</span>
           </h1>
-          <div className="mx-auto h-0.5 w-12 bg-[#D4AF37]" />
+          <div className="mx-auto h-0.5 w-12 bg-ink" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -237,7 +237,7 @@ const Cart: React.FC = () => {
           <div className="lg:col-span-2 space-y-3">
             {/* Breadcrumb */}
             <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
-              <Link to="/" className="hover:text-[#D4AF37] transition">Home</Link>
+              <Link to="/" className="hover:text-accent transition">Home</Link>
               <ChevronRight className="w-3 h-3" />
               <span className="font-semibold text-slate-800">Shopping Bag</span>
             </div>
@@ -265,8 +265,8 @@ const Cart: React.FC = () => {
 
 
           {/* ── Summary ───────────────────────────────────────────────── */}
-          <div className="rounded-2xl border border-[#E2D9CC] bg-white p-6 space-y-5 shadow-sm sticky top-24">
-            <h2 className="font-serif text-lg uppercase tracking-wide text-slate-900 border-b border-[#E2D9CC] pb-3">
+          <div className="rounded-2xl border border-hairline bg-white p-6 space-y-5 shadow-sm sticky top-24">
+            <h2 className="text-base text-slate-900 border-b border-hairline pb-3 font-semibold">
               Order Summary
             </h2>
 
@@ -274,11 +274,11 @@ const Cart: React.FC = () => {
             {!freeShipping && (
               <div className="space-y-1.5">
                 <p className="text-xs text-slate-500">
-                  Add <strong className="text-[#3D2C24]">{formatINR(remaining)}</strong> more for free shipping
+                  Add <strong className="text-ink">{formatINR(remaining)}</strong> more for free shipping
                 </p>
                 <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#D4AF37] transition-all duration-500"
+                    className="h-full rounded-full bg-ink transition-all duration-500"
                     style={{ width: `${Math.min((subtotal / shippingThreshold) * 100, 100)}%` }}
                   />
                 </div>
@@ -306,22 +306,22 @@ const Cart: React.FC = () => {
             </div>
 
             {/* Total */}
-            <div className="border-t border-[#E2D9CC] pt-4 flex justify-between">
-              <span className="font-serif text-base font-semibold uppercase tracking-wide text-slate-900">Total</span>
-              <span className="font-serif text-lg font-bold text-[#3D2C24]">{formatINR(subtotal)}</span>
+            <div className="border-t border-hairline pt-4 flex justify-between">
+              <span className="text-base font-semibold text-slate-900">Total</span>
+              <span className="font-serif text-lg font-bold text-ink">{formatINR(subtotal)}</span>
             </div>
 
             {/* CTA — Proceed to Checkout */}
             <Link
               to="/checkout"
-              className="block w-full bg-[#3D2C24] text-white py-3 px-4 text-center font-serif font-semibold uppercase tracking-wide hover:bg-[#2D1C14] transition rounded"
+              className="w-full bg-ink text-white px-4 text-center transition h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover flex items-center justify-center"
             >
               Checkout
             </Link>
 
             <Link
               to="/products"
-              className="flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#3D2C24] transition"
+              className="flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-ink transition"
             >
               Continue Shopping
             </Link>

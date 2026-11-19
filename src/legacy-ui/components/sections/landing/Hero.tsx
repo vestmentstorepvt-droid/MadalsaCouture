@@ -1,53 +1,36 @@
-import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetHeroQuery } from '../../../services/cmsApi';
 import { optimizeImage, optimizeVideo, getCloudinaryVideoPoster } from '../../../utils/imageUtils';
 import { VideoCardsErrorBoundary } from './VideoCardsErrorBoundary';
+import { gsap, MOTION_OK, useGSAP } from '../../../lib/motion';
 
-const FestiveBanner = lazy(() => import('./FestiveBanner'));
-const CollectionList = lazy(() => import('./CollectionList'));
-const PromoBanner = lazy(() => import('./PromoBanner'));
-const DynamicCollection = lazy(() => import('./DynamicCollection'));
+// Home page order (client brief, Nov 2026): banner → video stories → new arrivals → best sellers →
+// western → ethnic → reviews → our story → footer. FestiveBanner / CollectionList / PromoBanner /
+// DynamicCollection are no longer on the home page (files kept for reuse).
 const OurStory = lazy(() => import('./OurStory'));
 const VideoCards = lazy(() => import('./VideoCards'));
+const ProductRow = lazy(() => import('./ProductRow'));
+const Testimonials = lazy(() => import('./Testimonials'));
 const FALLBACK_HERO_IMAGE =
   'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=1920';
+
+// On phones (< sm) the hero fills most of the screen. Mobile banners are designed at
+// 1080x1920 with a crop-safe zone, so object-cover works across phone aspect ratios.
+const MOBILE_HERO_HEIGHT = 'h-[85svh] min-h-[26rem] sm:h-auto sm:min-h-0';
+const SWIPE_THRESHOLD_PX = 50;
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 const HeroSkeleton: React.FC = () => (
   <section
     id="hero"
-    className="relative aspect-[3/4] w-full overflow-hidden bg-[#110E1B] animate-pulse sm:aspect-video"
+    className={`relative ${MOBILE_HERO_HEIGHT} w-full animate-pulse overflow-hidden bg-hairline-soft sm:aspect-[21/9]`}
     aria-hidden="true"
   >
-    <div className="absolute bottom-10 left-4 z-20 w-[calc(100%-2rem)] space-y-4 sm:bottom-16 sm:left-12 sm:w-auto sm:max-w-2xl lg:left-16">
-      <div className="h-6 w-48 bg-white/10 rounded sm:h-8 sm:w-80" />
-      <div className="h-3 w-36 bg-white/10 rounded sm:h-4 sm:w-64" />
-      <div className="h-9 w-32 bg-white/10 rounded sm:h-10 sm:w-40" />
-    </div>
   </section>
 );
 
-// ─── Error state ──────────────────────────────────────────────────────────────
-const HeroError: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
-  <section
-    id="hero"
-    className="relative aspect-[3/4] w-full overflow-hidden bg-[#110E1B] flex items-center justify-center sm:aspect-video"
-  >
-    <div className="text-center text-white space-y-4">
-      <p className="text-sm tracking-widest uppercase text-white/70">
-        Hero section is currently unavailable.
-      </p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="border border-[#D4AF37] px-6 py-3 text-xs font-medium uppercase tracking-[0.3em] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all duration-300"
-      >
-        Retry
-      </button>
-    </div>
-  </section>
-);
+// No active hero (the API answers 404) or a network error: show nothing rather than an error to shoppers.
 
 // ─── Hero media — renders either <video> or <img> based on mediaType ─────────
 interface HeroMediaProps {
@@ -56,10 +39,14 @@ interface HeroMediaProps {
   mobileMediaUrl?: string;
   headline: string;
   loopVideo: boolean;
+  /** Section is full-height on phones; image must fill it instead of using its natural height. */
+  tallMobile: boolean;
+  /** Stacked slide: fill the hero box (whose height is set by the first slide) instead of sizing it. */
+  fill?: boolean;
   onVideoEnded?: () => void;
 }
 
-const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaUrl, headline, loopVideo, onVideoEnded }) => {
+const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaUrl, headline, loopVideo, tallMobile, fill = false, onVideoEnded }) => {
   const [imageFailed, setImageFailed] = useState(false);
   const [fallbackFailed, setFallbackFailed] = useState(false);
 
@@ -88,17 +75,44 @@ const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaU
       <div
         role="img"
         aria-label="Hero image unavailable"
-        className="aspect-video w-full bg-gradient-to-br from-[#3D2C24] via-[#8A6A58] to-[#D8BFAE]"
+        className="aspect-video w-full bg-ink"
       />
     );
   }
 
+  const hasMobileArt = !imageFailed && Boolean(mobileMediaUrl);
+  // Tall phone layout without dedicated mobile art: letterbox the desktop banner
+  // over a blurred copy of itself rather than cropping its text away.
+  const letterboxOnMobile = tallMobile && !hasMobileArt;
+  // Desktop: the whole banner, never taller than the screen below the sticky header
+  // (--site-header-h is set by the navbar). Leftover width is filled by a blurred copy.
+  const desktopFit =
+    'sm:relative sm:mx-auto sm:h-auto sm:max-h-[calc(100svh-var(--site-header-h,108px))] sm:w-auto sm:max-w-full sm:object-contain';
+  const imgClass = fill
+    ? `relative block h-full w-full ${hasMobileArt ? 'object-cover sm:object-contain' : 'object-contain'}`
+    : !tallMobile
+    ? 'block h-auto w-full'
+    : letterboxOnMobile
+      ? `relative block h-full w-full object-contain ${desktopFit}`
+      : `block h-full w-full object-cover object-center ${desktopFit}`;
+
   return (
-    <picture className="block w-full">
-      {!imageFailed && mobileMediaUrl && (
+    <picture className={fill ? 'absolute inset-0 block' : tallMobile ? 'relative block h-full w-full sm:h-auto' : 'block w-full'}>
+      {hasMobileArt && (
         <source
           media="(max-width: 639px)"
-          srcSet={optimizeImage(mobileMediaUrl, 1200)}
+          srcSet={[640, 1080]
+            .map((width) => `${optimizeImage(mobileMediaUrl, width)} ${width}w`)
+            .join(', ')}
+          sizes="100vw"
+        />
+      )}
+      {tallMobile && (
+        <img
+          src={imageFailed ? FALLBACK_HERO_IMAGE : optimizeImage(mediaUrl, 640)}
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 h-full w-full scale-110 object-cover blur-2xl brightness-90 ${letterboxOnMobile || fill ? '' : 'hidden sm:block'}`}
         />
       )}
       <img
@@ -110,10 +124,10 @@ const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaU
           : undefined}
         sizes="100vw"
         alt={headline}
-        className="block h-auto w-full"
+        className={imgClass}
         loading="eager"
         decoding="async"
-        fetchPriority="high"
+        fetchPriority={fill ? 'low' : 'high'}
         onError={() => {
           if (!imageFailed) {
             setImageFailed(true);
@@ -128,7 +142,7 @@ const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaU
 
 // ─── Main Hero component ──────────────────────────────────────────────────────
 const Hero: React.FC = () => {
-  const { data: hero, isLoading, isError, refetch } = useGetHeroQuery();
+  const { data: hero, isLoading, isError } = useGetHeroQuery();
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const mediaItems = hero?.media?.length
     ? hero.media
@@ -137,14 +151,52 @@ const Hero: React.FC = () => {
     : [{ mediaType: 'image' as const, mediaUrl: FALLBACK_HERO_IMAGE }];
   const mediaIndex = currentMediaIndex % mediaItems.length;
   const currentMedia = mediaItems[mediaIndex];
+  const firstIsVideo = mediaItems[0]?.mediaType === 'video';
 
   const advanceSlide = useCallback(() => {
     setCurrentMediaIndex((index) => (index + 1) % mediaItems.length);
   }, [mediaItems.length]);
 
+  // Touch swipe between slides (phones have no other way to page except the dots).
+  const touchStartX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0]?.clientX ?? null;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const startX = touchStartX.current;
+    touchStartX.current = null;
+    const endX = e.changedTouches[0]?.clientX;
+    if (startX === null || endX === undefined || mediaItems.length < 2) return;
+    const dx = endX - startX;
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX) return;
+    setCurrentMediaIndex((index) =>
+      dx < 0 ? (index + 1) % mediaItems.length : (index - 1 + mediaItems.length) % mediaItems.length,
+    );
+  };
+
+  // Hero: settles in from a slight zoom, then drifts slower than the page while you scroll away.
+  const pageRef = useRef<HTMLDivElement>(null);
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        const media = pageRef.current?.querySelector('[data-anim=hero-media]');
+        if (!media) return;
+        gsap.from(media, { scale: 1.08, duration: 1.6, ease: 'power3.out' });
+        gsap.to(media, {
+          yPercent: 14,
+          ease: 'none',
+          scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true },
+        });
+      });
+      return () => mm.revert();
+    },
+    { scope: pageRef, dependencies: [isLoading], revertOnUpdate: true },
+  );
+
   const renderHeroSection = () => {
     if (isLoading) return <HeroSkeleton />;
-    if (isError) return <HeroError onRetry={refetch} />;
+    if (isError) return null;
 
     const headline = hero?.headline || '';
     const subHeadline = hero?.subHeadline || '';
@@ -189,55 +241,76 @@ const Hero: React.FC = () => {
     // Button size classes
     const buttonSizeClass =
       buttonSize === 'small'
-        ? 'px-4 py-2 text-[11px]'
+        ? 'h-9 px-4 text-sm'
         : buttonSize === 'large'
-          ? 'px-8 py-3.5 text-sm sm:text-base'
-          : 'px-6 py-3 text-xs sm:text-sm'; // medium (default)
+          ? 'h-12 px-6 text-base'
+          : 'h-11 px-5 text-sm sm:text-base'; // medium (default)
 
     // Button visual style classes
+    // CMS styles kept (solid / gold_glow / outline) but drawn as DESIGN.md pills over the photo.
     const buttonStyleClass =
-      buttonStyle === 'solid'
-        ? 'bg-[#D4AF37] text-black hover:bg-[#c49f2e] border border-[#D4AF37]'
-        : buttonStyle === 'gold_glow'
-          ? 'bg-gradient-to-r from-[#D4AF37] to-[#F3E5AB] text-black shadow-lg shadow-[#D4AF37]/30 hover:scale-105 border-none'
-          : 'border border-[#D4AF37] bg-black/40 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black'; // outline (default)
+      buttonStyle === 'outline'
+        ? 'border border-white/80 bg-black/20 text-white hover:bg-white hover:text-ink'
+        : 'bg-white text-ink hover:bg-hairline-soft';
 
     return (
       <section
         id="hero"
-        className={`relative w-full overflow-hidden bg-[#110E1B] ${
-          currentMedia.mediaType === 'video' ? 'aspect-[3/4] sm:aspect-video' : ''
+        className={`relative w-full overflow-hidden bg-hairline-soft ${MOBILE_HERO_HEIGHT} ${
+          firstIsVideo ? 'sm:aspect-video' : ''
         }`}
         aria-label="Hero section"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
         {/* Background media */}
         <Link
           to="/products"
           aria-label="Shop all products"
-          className={currentMedia.mediaType === 'video' ? 'absolute inset-0 z-10' : 'relative z-10 block'}
+          data-anim="hero-media"
+          className={firstIsVideo ? 'absolute inset-0 z-10' : 'relative z-10 block h-full sm:h-auto'}
         >
-          <HeroMedia
-            key={`${mediaIndex}-${currentMedia.mediaUrl}-${currentMedia.mobileMediaUrl || ''}`}
-            mediaType={currentMedia.mediaType}
-            mediaUrl={currentMedia.mediaUrl}
-            mobileMediaUrl={currentMedia.mobileMediaUrl}
-            headline={headline}
-            loopVideo={mediaItems.length === 1}
-            onVideoEnded={mediaItems.length > 1 ? advanceSlide : undefined}
-          />
+          {/* Every slide stays mounted and they crossfade. The first image slide is the only one in
+              the flow, so the hero's height never changes when slides change (no page jumps). */}
+          {mediaItems.map((item, index) => {
+            const active = index === mediaIndex;
+            const sizer = index === 0 && !firstIsVideo;
+            // Videos only play while shown; images stay mounted so they are already loaded.
+            if (item.mediaType === 'video' && !active) return null;
+            return (
+              <div
+                key={`${index}-${item.mediaUrl}-${item.mobileMediaUrl || ''}`}
+                aria-hidden={active ? undefined : true}
+                className={`transition-opacity duration-1000 ease-in-out motion-reduce:transition-none ${
+                  sizer ? 'relative h-full sm:h-auto' : 'absolute inset-0'
+                } ${active ? 'opacity-100' : 'opacity-0'}`}
+              >
+                <HeroMedia
+                  mediaType={item.mediaType}
+                  mediaUrl={item.mediaUrl}
+                  mobileMediaUrl={item.mobileMediaUrl}
+                  headline={active ? headline : ''}
+                  loopVideo={mediaItems.length === 1}
+                  tallMobile
+                  fill={!sizer}
+                  onVideoEnded={mediaItems.length > 1 ? advanceSlide : undefined}
+                />
+              </div>
+            );
+          })}
         </Link>
 
         {/* Text content — dynamically aligned & sized via CMS */}
         {(headline || subHeadline || (ctaLabel && ctaUrl)) && (
           <div className={`absolute z-20 flex flex-col max-w-[calc(100%-2rem)] sm:max-w-2xl ${alignClass}`}>
             {headline && (
-              <h1 className={`mt-3 font-serif uppercase tracking-[0.1em] sm:tracking-[0.3em] text-white drop-shadow-md font-normal ${headlineClass}`}>
+              <h1 className={`font-semibold tracking-[-0.04em] text-white drop-shadow-md ${headlineClass}`}>
                 {headline}
               </h1>
             )}
 
             {subHeadline && (
-              <p className={`mt-1.5 sm:mt-2 font-light tracking-[0.08em] sm:tracking-[0.15em] text-white/90 drop-shadow-sm ${subHeadlineClass}`}>
+              <p className={`mt-2 text-white/90 drop-shadow-sm ${subHeadlineClass}`}>
                 {subHeadline}
               </p>
             )}
@@ -254,14 +327,14 @@ const Hero: React.FC = () => {
                         target.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className={`inline-flex items-center gap-2 font-medium uppercase tracking-[0.15em] sm:tracking-[0.3em] backdrop-blur-sm transition-all duration-300 ${buttonSizeClass} ${buttonStyleClass}`}
+                    className={`inline-flex items-center gap-2 rounded-full font-medium backdrop-blur-sm transition-colors duration-150 ${buttonSizeClass} ${buttonStyleClass}`}
                   >
                     {ctaLabel}
                   </a>
                 ) : (
                   <Link
                     to={ctaUrl}
-                    className={`inline-flex items-center gap-2 font-medium uppercase tracking-[0.15em] sm:tracking-[0.3em] backdrop-blur-sm transition-all duration-300 ${buttonSizeClass} ${buttonStyleClass}`}
+                    className={`inline-flex items-center gap-2 rounded-full font-medium backdrop-blur-sm transition-colors duration-150 ${buttonSizeClass} ${buttonStyleClass}`}
                   >
                     {ctaLabel}
                   </Link>
@@ -272,14 +345,19 @@ const Hero: React.FC = () => {
         )}
 
         {mediaItems.length > 1 && (
-          <div className="absolute bottom-5 left-1/2 z-30 flex -translate-x-1/2 gap-2" aria-label="Hero slide indicators">
-              {mediaItems.map((item, index) => (
-                <span
-                  key={`${item.mediaUrl}-${index}`}
-                  aria-current={index === mediaIndex ? 'true' : undefined}
-                  className={`h-2.5 rounded-full transition-all ${index === mediaIndex ? 'w-7 bg-white' : 'w-2.5 bg-white/60'}`}
-                />
-              ))}
+          <div className="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/25 px-2 py-1.5 backdrop-blur-sm" role="group" aria-label="Choose banner">
+            {mediaItems.map((item, index) => (
+              <button
+                type="button"
+                key={`${item.mediaUrl}-${index}`}
+                onClick={() => setCurrentMediaIndex(index)}
+                aria-label={`Banner ${index + 1} of ${mediaItems.length}`}
+                aria-current={index === mediaIndex ? 'true' : undefined}
+                className="flex h-6 items-center px-1"
+              >
+                <span className={`block h-1.5 rounded-full transition-all ${index === mediaIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/60'}`} />
+              </button>
+            ))}
           </div>
         )}
       </section>
@@ -294,19 +372,35 @@ const Hero: React.FC = () => {
   }, [advanceSlide, currentMedia.mediaType, currentMedia.mediaUrl, mediaItems.length, mediaIndex]);
 
   return (
-    <div className="min-h-screen bg-[#110E1B] text-slate-100">
+    <div ref={pageRef} className="min-h-screen bg-canvas text-ink">
       <main id="home">
         {renderHeroSection()}
-        <Suspense fallback={<div className="h-32 w-full flex items-center justify-center bg-[#110E1B]"><div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div></div>}>
-          <FestiveBanner />
-          <CollectionList />
-          <PromoBanner />
-          <DynamicCollection />
-          <VideoCardsErrorBoundary>
-            <Suspense fallback={<div className="h-64 animate-pulse bg-slate-100" aria-label="Loading video stories" />}>
-              <VideoCards />
-            </Suspense>
-          </VideoCardsErrorBoundary>
+        <VideoCardsErrorBoundary>
+          <Suspense fallback={<div className="h-64 animate-pulse bg-hairline-soft" aria-label="Loading video stories" />}>
+            <VideoCards />
+          </Suspense>
+        </VideoCardsErrorBoundary>
+        <Suspense fallback={<div className="h-96" aria-hidden="true" />}>
+          {/* Each row has its own jewel tone; layouts alternate sides. */}
+          <ProductRow
+            slug="new-arrivals"
+            theme={{ script: 'New', caps: 'Arrivals', line: 'The latest pieces from our atelier.', base: '#5e0d1d', glow: '#9a2238', fitMobile: true }}
+          />
+          <ProductRow
+            slug="best-seller"
+            flip
+            theme={{ script: 'Best', caps: 'Sellers', line: 'The pieces our customers order most.', base: '#0a3a2f', glow: '#1f7158', fitMobile: true }}
+          />
+          <ProductRow
+            slug="western-wear"
+            theme={{ script: 'Western', caps: 'Wear', line: 'Dresses for brunches, dates and parties.', base: '#1d1814', glow: '#5a4632' }}
+          />
+          <ProductRow
+            slug="ethnic-wear"
+            flip
+            theme={{ script: 'Ethnic', caps: 'Wear', line: 'Anarkalis, shararas and suits for every celebration.', base: '#550d42', glow: '#952d74', centerBrightness: 1.3, fitMobile: true }}
+          />
+          <Testimonials />
           <OurStory />
         </Suspense>
       </main>

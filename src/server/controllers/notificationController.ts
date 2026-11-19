@@ -69,6 +69,13 @@ class NotificationController {
             isActive: true
           },
           {
+            type: 'order_cancelled',
+            subject: 'Order #{{orderNumber}} cancelled',
+            htmlBody: '<p>Hi {{name}},</p><p>Your order <strong>#{{orderNumber}}</strong> has been cancelled as you requested.</p><p>Reason: {{reason}}</p><p>{{refundNote}}</p><p>We hope to see you again soon. Madalsa Couture</p>',
+            requiredPlaceholders: ['orderNumber'],
+            isActive: true
+          },
+          {
             type: 'exchange_status_update',
             subject: 'Exchange Request Update — Status: {{status}}',
             htmlBody: '<p>Your exchange request (ID: {{exchangeId}}) has been updated to: <strong>{{status}}</strong>.</p>',

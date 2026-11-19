@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Cormorant_Garamond, Geist, Geist_Mono, Great_Vibes } from "next/font/google";
 import "../legacy-ui/styles/tailwind.css";
 
 // Head tags copied from the original index.html so search and social previews stay the same.
@@ -8,7 +9,12 @@ const description =
   "Discover the artistry, heritage, and vision behind Madalsa Couture. Premium bespoke tailoring, hand-embroidered detailing, and ethnic luxury wear.";
 const ogImage =
   "https://res.cloudinary.com/crond4vx/image/upload/w_1200,h_630,c_fill,f_auto,q_auto/v1786913609/Madalsa/gener/new-product/qgzzukhoavzmc6vf4p9p.webp";
-const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || "1078122054657350";
+const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
+// Display pair for the home-page collection banners only (script word + serif capitals).
+const display = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600"], variable: "--font-cormorant", display: "swap" });
+const script = Great_Vibes({ subsets: ["latin"], weight: "400", variable: "--font-great-vibes", display: "swap" });
+const pixelId =process.env.NEXT_PUBLIC_META_PIXEL_ID || "1078122054657350";
 
 export const metadata: Metadata = {
   title,
@@ -25,12 +31,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#FAF7F2",
+  themeColor: "#fafafa",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${display.variable} ${script.variable}`}>
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />

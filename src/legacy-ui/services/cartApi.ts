@@ -150,6 +150,17 @@ export const cartApi = createApi({
       transformResponse: (response: unknown) => extractCart(response),
       invalidatesTags: ['Cart'],
     }),
+
+    // POST /api/v1/cart/remove-ordered — take just-ordered sizes out of the saved cart
+    removeOrderedItemsApi: builder.mutation<BackendCart | null, { items: { variantId: string; quantity: number }[] }>({
+      query: (body) => ({
+        url: ENDPOINTS.CART.REMOVE_ORDERED,
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: unknown) => extractCart(response),
+      invalidatesTags: ['Cart'],
+    }),
   }),
 });
 
@@ -160,4 +171,5 @@ export const {
   useRemoveCartItemApiMutation,
   useClearCartApiMutation,
   useSyncCartApiMutation,
+  useRemoveOrderedItemsApiMutation,
 } = cartApi;

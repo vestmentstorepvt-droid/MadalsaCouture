@@ -1,448 +1,493 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { User, ShoppingBag, Menu, X, ChevronDown, Sparkles, Flame, Shirt, Grid, type LucideIcon } from 'lucide-react';
+import { User, ShoppingBag, Menu, X, ChevronDown, Search, Heart, ArrowRight } from 'lucide-react';
 const madalsaLogo = '/assets/file.png';
 import { useLogout } from '../../../hooks/useLogout';
 import { selectCartItemCount } from '../../../store/slices/cartSlice';
 import type { RootState } from '../../../store';
 import AnnouncementBar from '../../sections/landing/AnnouncementBar';
 import { useGetCollectionsShowcaseQuery } from '../../../services/cmsApi';
+import { useGetWishlistQuery } from '../../../services/wishlistApi';
+import { optimizeImage } from '../../../utils/imageUtils';
+import { ButiPattern } from '../../ui/CollectionBanner';
 
-// CategoryItem interface removed since shopCategories is now built dynamically
+/**
+ * Two tones, like the original site: light at the top of the home page, dark with logo gold
+ * once you scroll (and always on inner pages). Gold is never used as text on the light tone.
+ */
+const navLinkClass = (active: boolean, dark: boolean) =>
+  `relative inline-flex h-10 items-center gap-1 px-3 text-sm font-medium uppercase tracking-[0.12em] transition-colors ` +
+  `after:absolute after:inset-x-3 after:bottom-1 after:h-px after:origin-left after:transition-transform after:duration-300 ` +
+  (dark ? 'after:bg-gold ' : 'after:bg-ink ') +
+  (active
+    ? `after:scale-x-100 ${dark ? 'text-gold' : 'text-ink'}`
+    : `after:scale-x-0 hover:after:scale-x-100 ${dark ? 'text-white/80 hover:text-white' : 'text-ink/75 hover:text-ink'}`);
 
-// SHOP_CATEGORIES is resolved dynamically within the component using useGetCollectionsShowcaseQuery from CMS
+const iconButtonClass = (dark: boolean) =>
+  `relative inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+    dark ? 'text-white hover:bg-white/10 hover:text-gold' : 'text-ink hover:bg-hairline-soft'
+  }`;
+
+/** Closes a popover on outside click or Escape. */
+function useDismiss<T extends HTMLElement = HTMLDivElement>(open: boolean, close: () => void) {
+  const ref = useRef<T>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) close();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    document.addEventListener('mousedown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open, close]);
+  return ref;
+}
+
+const CountBadge = ({ count, dark }: { count: number; dark: boolean }) =>
+  count > 0 ? (
+    <span
+      className={`absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-xs font-medium leading-none tabular-nums ${
+        dark ? 'bg-gold text-ink' : 'bg-ink text-white'
+      }`}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  ) : null;
+
+type MenuName = 'shop' | 'profile' | 'mobile' | 'search';
 
 export const LandingNavbar = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
-  const [navState, setNavState] = useState<'transparent' | 'hidden' | 'solid'>('transparent');
-
-  const { data: collections = [] } = useGetCollectionsShowcaseQuery();
-
-  const sortedCollections = [...collections].sort(
-    (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
-  );
-
-  const shopCategories = [
-    ...sortedCollections.map((col) => {
-      let icon: LucideIcon = Shirt;
-      if (col.slug === 'new-arrival' || col.slug === 'new-arrivals') {
-        icon = Sparkles;
-      } else if (col.slug === 'best-seller' || col.slug === 'best-sellers') {
-        icon = Flame;
-      }
-      return {
-        name: col.name,
-        path: `/collections/${col.slug}`,
-        icon,
-      };
-    }),
-    {
-      name: 'All Products',
-      path: '/products',
-      icon: Grid,
-    },
-  ];
   const location = useLocation();
   const navigate = useNavigate();
   const performLogout = useLogout();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const cartCount = useSelector(selectCartItemCount);
-
-  // Track which pathname the dropdown is open for — closes automatically on navigation
-  const [menuOpenForPath, setMenuOpenForPath] = useState<string | null>(null);
-  const isProfileMenuOpen = menuOpenForPath === location.pathname;
-  const setIsProfileMenuOpen = (open: boolean) =>
-    setMenuOpenForPath(open ? location.pathname : null);
-  const lastScrollYRef = useRef(0);
-  const heroVisibleRef = useRef(true);
-  const productsVisibleRef = useRef(false);
-
-  const isShopActive = location.pathname.startsWith('/products');
-  const isLandingHome = location.pathname === '/';
-  const shouldForceSolidState =
-    !isLandingHome ||
-    location.pathname.startsWith('/product/') ||
-    location.pathname.startsWith('/cart') ||
-    location.pathname.startsWith('/wishlist') ||
-    location.pathname.startsWith('/search') ||
-    location.pathname.startsWith('/checkout') ||
-    location.pathname.startsWith('/account') ||
-    location.pathname.startsWith('/orders') ||
-    location.pathname.startsWith('/profile') ||
-    location.pathname.startsWith('/admin');
-
-  const isSolid = navState === 'solid' || shouldForceSolidState;
-  const isHidden = navState === 'hidden';
-  const textColorClass = isSolid ? 'text-[#FFF8ED]' : 'text-[#2D211A]';
-  const hoverTextClass = isSolid ? 'hover:text-[#D4AF37]' : 'hover:text-[#D4AF37]';
-
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
+  const { data: collections = [] } = useGetCollectionsShowcaseQuery();
+  const { data: wishlist = [] } = useGetWishlistQuery(undefined, { skip: !isAuthenticated || isAdmin });
+  const wishlistCount = Array.isArray(wishlist) ? wishlist.length : 0;
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
-        setMenuOpenForPath(null);
-      }
-    };
-    if (isProfileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isProfileMenuOpen]);
+  // Menus are keyed to the current path, so they close by themselves on navigation.
+  const [openMenu, setOpenMenu] = useState<{ name: MenuName; path: string } | null>(null);
+  const isOpen = (name: MenuName) => openMenu?.name === name && openMenu.path === location.pathname;
+  const toggle = (name: MenuName) => setOpenMenu(isOpen(name) ? null : { name, path: location.pathname });
+  const close = useCallback(() => setOpenMenu(null), []);
 
-  // Handle direct click on profile section: redirect to role-based dashboard if authenticated, or /login if not authenticated
-  const handleProfileClick = () => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    } else {
-      setIsProfileMenuOpen(!isProfileMenuOpen);
+  const shopRef = useDismiss(isOpen('shop'), close);
+
+  // Shop opens on hover (mouse), with a short grace period so the pointer can travel down into
+  // the panel. Click still toggles it for touch and keyboard users.
+  const shopTimer = useRef<number | undefined>(undefined);
+  const hoverOpened = useRef(false);
+  useEffect(() => () => window.clearTimeout(shopTimer.current), []);
+  const openShopOnHover = (e: ReactPointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    window.clearTimeout(shopTimer.current);
+    if (!isOpen('shop')) {
+      hoverOpened.current = true;
+      setOpenMenu({ name: 'shop', path: location.pathname });
     }
   };
+  const closeShopOnLeave = (e: ReactPointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    window.clearTimeout(shopTimer.current);
+    shopTimer.current = window.setTimeout(() => {
+      hoverOpened.current = false;
+      setOpenMenu((m) => (m?.name === 'shop' ? null : m));
+    }, 180);
+  };
+  const clickShop = () => {
+    // A mouse user who opened it by hovering and then clicks expects it to stay open.
+    if (hoverOpened.current && isOpen('shop')) return;
+    hoverOpened.current = false;
+    toggle('shop');
+  };
+  const profileRef = useDismiss(isOpen('profile'), close);
+  const searchRef = useDismiss<HTMLElement>(isOpen('search'), close);
+  const [query, setQuery] = useState('');
 
+  // Dual tone: light only at the very top of the home page.
+  const isHome = location.pathname === '/';
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const updateNavState = () => {
-      const currentScrollY = window.scrollY;
-      const scrollingDown = currentScrollY > lastScrollYRef.current;
-      const atTop = currentScrollY <= 24;
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const dark = !isHome || scrolled;
+  const iconButton = iconButtonClass(dark);
 
-      if (shouldForceSolidState) {
-        setNavState('solid');
-        lastScrollYRef.current = currentScrollY;
-        return;
-      }
-
-      if (atTop) {
-        setNavState('transparent');
-        lastScrollYRef.current = currentScrollY;
-        return;
-      }
-
-      const heroVisible = heroVisibleRef.current;
-      const productsVisible = productsVisibleRef.current;
-
-      if (heroVisible && !productsVisible) {
-        setNavState(scrollingDown ? 'hidden' : 'transparent');
-      } else {
-        setNavState('solid');
-      }
-
-      lastScrollYRef.current = currentScrollY;
+  // Publish the header height so the hero can fit the rest of the screen exactly.
+  useEffect(() => {
+    const el = searchRef.current;
+    if (!el) return;
+    const publish = () => {
+      // Measure without the drop-down search/menu panels.
+      const row = el.querySelector<HTMLElement>('[data-header-main]');
+      const border = parseFloat(getComputedStyle(el).borderBottomWidth) || 0;
+      const height = row ? row.getBoundingClientRect().bottom - el.getBoundingClientRect().top + border : el.offsetHeight;
+      document.documentElement.style.setProperty('--site-header-h', `${Math.round(height)}px`);
     };
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [searchRef]);
 
-    updateNavState();
+  const category = new URLSearchParams(location.search).get('category');
+  const isShopActive =
+    (location.pathname.startsWith('/products') && !category) || location.pathname.startsWith('/collections');
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.target.id === 'hero') {
-            heroVisibleRef.current = entry.isIntersecting;
-          }
+  const shopLinks = [
+    { name: 'All products', path: '/products' },
+    { name: 'New arrivals', path: '/products?category=new-arrivals' },
+    { name: 'Best sellers', path: '/products?category=best-seller' },
+    ...[...collections]
+      .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+      .map((col) => ({ name: col.name, path: `/collections/${col.slug}` })),
+  ];
 
-          if (entry.target.id === 'shop') {
-            productsVisibleRef.current = entry.isIntersecting;
-          }
-        });
+  const sortedCollections = [...collections].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+  const shopOpen = isOpen('shop');
 
-        updateNavState();
-      },
-      {
-        threshold: [0.15, 0.35, 0.6],
-        rootMargin: '-8% 0px -35% 0px',
-      },
-    );
+  const accountLinks = isAdmin
+    ? [
+        { label: 'Admin dashboard', path: '/admin/dashboard' },
+        { label: 'Orders', path: '/admin/orders' },
+        { label: 'Products', path: '/admin/products' },
+      ]
+    : [
+        { label: 'My profile', path: '/profile' },
+        { label: 'My orders', path: '/my-orders' },
+        { label: 'Wishlist', path: '/wishlist' },
+        { label: 'Saved addresses', path: '/addresses' },
+      ];
 
-    const heroSection = document.getElementById('hero');
-    const productsSection = document.getElementById('shop');
+  const handleAccount = () => {
+    if (!isAuthenticated) navigate('/login');
+    else toggle('profile');
+  };
 
-    if (heroSection) {
-      observer.observe(heroSection);
-    }
+  const logout = async () => {
+    close();
+    await performLogout();
+    navigate('/', { replace: true });
+  };
 
-    if (productsSection) {
-      observer.observe(productsSection);
-    }
-
-    window.addEventListener('scroll', updateNavState, { passive: true });
-    window.addEventListener('resize', updateNavState);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('scroll', updateNavState);
-      window.removeEventListener('resize', updateNavState);
-    };
-  }, [shouldForceSolidState]);
+  const submitSearch = (e: FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    close();
+    navigate(q ? `/products?q=${encodeURIComponent(q)}` : '/products');
+  };
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ease-out ${isHidden ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'
-        } ${isSolid
-          ? 'bg-[#271C16]/95 shadow-[0_12px_30px_rgba(0,0,0,0.16)] backdrop-blur-sm'
-          : 'bg-[#FAF7F2] shadow-sm'
-        }`}
+      ref={searchRef}
+      className={`sticky top-0 z-50 w-full border-b transition-[background-color,border-color,box-shadow] duration-300 ${
+        dark
+          ? 'border-white/10 bg-[#171717]/95 shadow-[0_10px_30px_rgba(0,0,0,0.18)] backdrop-blur-md'
+          : 'border-hairline bg-canvas'
+      }`}
     >
-      {/* Announcement bar sits above the navigation and hero media. */}
       <AnnouncementBar />
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between py-1">
-          <div className="flex-1 flex items-center justify-start">
-            <nav className="hidden items-center space-x-8 md:flex">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                `relative py-2 text-sm font-medium tracking-wide transition-colors duration-200 ${isActive ? 'text-[#D4AF37]' : `${textColorClass} ${hoverTextClass}`
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  Home
-                  <span
-                    className={`absolute bottom-0 left-0 h-[1.5px] bg-[#D4AF37] transition-all duration-200 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}
-                  />
-                </>
-              )}
-            </NavLink>
 
-            <div className="group relative py-2">
+      {/* Three columns: links | centred logo | actions. The logo stays dead-centre at every width. */}
+      <div data-header-main className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 sm:px-6 lg:h-[84px] lg:px-8">
+        {/* Left */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => toggle('mobile')}
+            className={`${iconButton} -ml-2 lg:hidden`}
+            aria-label={isOpen('mobile') ? 'Close menu' : 'Open menu'}
+            aria-expanded={isOpen('mobile')}
+            aria-controls="mobile-nav"
+          >
+            {isOpen('mobile') ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => toggle('search')}
+            className={`${iconButton} lg:hidden`}
+            aria-label="Search"
+          >
+            <Search className="h-5 w-5" />
+          </button>
+
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main">
+            {/* Not `relative`: the panel is placed against the whole sticky header, full width. */}
+            <div ref={shopRef} onPointerEnter={openShopOnHover} onPointerLeave={closeShopOnLeave}>
               <button
                 type="button"
-                className={`flex items-center gap-1.5 text-sm font-medium tracking-wide transition-colors duration-200 ${isShopActive ? 'text-[#D4AF37]' : `${textColorClass} group-hover:text-[#D4AF37]`
-                  }`}
+                onClick={clickShop}
+                aria-expanded={shopOpen}
+                aria-controls="shop-menu"
+                className={navLinkClass(isShopActive, dark)}
               >
                 Shop
-                <ChevronDown className="h-4 w-4 transition-transform duration-300 group-hover:rotate-180" />
+                <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${shopOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
+              <div
+                id="shop-menu"
+                className={`absolute inset-x-0 top-full border-t border-gold-deep/50 bg-[#fbf4e6] shadow-[0_24px_48px_rgba(59,11,24,0.18)] transition-[opacity,transform,visibility] duration-300 ease-out before:absolute before:inset-x-0 before:-top-10 before:h-10 motion-reduce:transition-none ${
+                  shopOpen ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0'
+                }`}
+              >
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                  <ButiPattern id="buti-shop-menu" color="#5e0d1d" />
+                </div>
+                <div className="relative mx-auto grid max-w-7xl grid-cols-[minmax(220px,1fr)_3fr] gap-10 px-8 py-9">
+                  {/* Text links */}
+                  <div className="flex flex-col">
+                    <p className="-mb-[0.2em] -mt-[0.3em] self-start pb-[0.15em] pt-[0.3em] font-script text-5xl leading-none text-[#5e0d1d]">
+                      Shop
+                    </p>
+                    <ul className="mt-5 flex flex-col gap-1">
+                      {[{ name: 'All products', path: '/products' }, ...sortedCollections.map((c) => ({ name: c.name, path: `/collections/${c.slug}` }))].map(
+                        (item) => (
+                          <li key={item.path}>
+                            <Link
+                              to={item.path}
+                              onClick={close}
+                              className="group/link inline-flex items-center gap-2 py-1 font-display text-2xl font-medium text-[#3b0b18] transition-colors hover:text-[#9a2238] focus-visible:text-[#9a2238]"
+                            >
+                              {item.name}
+                              <ArrowRight
+                                className="h-4 w-4 -translate-x-1 opacity-0 transition-[opacity,transform] duration-300 group-hover/link:translate-x-0 group-hover/link:opacity-100"
+                                aria-hidden="true"
+                              />
+                            </Link>
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  </div>
 
-              <span
-                className={`absolute bottom-0 left-0 h-[1.5px] bg-[#D4AF37] transition-all duration-200 ${isShopActive ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`}
-              />
-
-              <div className="pointer-events-none invisible absolute left-0 top-full pt-3 opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:visible group-hover:opacity-100">
-                <div className="min-w-48 rounded-xl border border-[#D4AF37]/20 bg-[#181124]/95 px-2 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                  {shopCategories.map((category) => {
-                    const Icon = category.icon;
-
-                    return (
-                      <Link
-                        key={category.name}
-                        to={category.path}
-                        className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-white/5 hover:text-[#D4AF37]"
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                        <span>{category.name}</span>
-                      </Link>
-                    );
-                  })}
+                  {/* Collection tiles */}
+                  <ul className="grid grid-cols-4 gap-5">
+                    {sortedCollections.slice(0, 4).map((col) => (
+                      <li key={col.slug}>
+                        <Link
+                          to={`/collections/${col.slug}`}
+                          onClick={close}
+                          tabIndex={-1}
+                          aria-hidden="true"
+                          className="group/tile relative block aspect-[3/4] overflow-hidden rounded-2xl border border-gold-deep/60 shadow-[0_10px_24px_rgba(59,11,24,0.12)]"
+                        >
+                          {col.imageUrl && (
+                            <img
+                              src={optimizeImage(col.imageUrl, 400)}
+                              alt=""
+                              loading="lazy"
+                              className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover/tile:scale-105"
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#1f050c]/85 via-[#1f050c]/10 to-transparent" />
+                          <p className="absolute inset-x-4 bottom-4 font-display text-xl font-semibold text-[#f6ead2]">
+                            {col.name}
+                            <span className="mt-1.5 block h-px w-8 bg-[#e2c27a] transition-[width] duration-300 group-hover/tile:w-16" />
+                          </p>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </div>
-
             <NavLink
-              to="/about"
-              className={({ isActive }) =>
-                `relative py-2 text-sm font-medium tracking-wide transition-colors duration-200 ${isActive ? 'text-[#D4AF37]' : `${textColorClass} ${hoverTextClass}`
-                }`
-              }
+              to="/products?category=new-arrivals"
+              className={() => navLinkClass(category === 'new-arrivals', dark)}
             >
-              {({ isActive }) => (
-                <>
-                  About Us
-                  <span
-                    className={`absolute bottom-0 left-0 h-[1.5px] bg-[#D4AF37] transition-all duration-200 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'
-                      }`}
-                  />
-                </>
-              )}
+              New in
+            </NavLink>
+            <NavLink
+              to="/products?category=best-seller"
+              className={() => navLinkClass(category === 'best-seller', dark)}
+            >
+              Best sellers
+            </NavLink>
+            <NavLink to="/about" className={({ isActive }) => navLinkClass(isActive, dark)}>
+              Our story
+            </NavLink>
+            <NavLink to="/contact" className={({ isActive }) => navLinkClass(isActive, dark)}>
+              Contact
             </NavLink>
           </nav>
-
-          <div className="flex items-center md:hidden">
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`rounded-full p-2 ${isSolid ? 'text-[#FFF8ED]' : 'text-slate-200'
-                } hover:text-[#D4AF37] focus:outline-none`}
-              aria-label="Toggle Navigation"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center">
-            <Link to="/" className="flex items-center justify-center transition-transform duration-200 hover:scale-105">
-              <img
-                src={madalsaLogo}
-                alt="Madalsa Couture"
-                className="h-12 w-auto object-contain drop-shadow-md sm:h-14 md:h-16"
-              />
-            </Link>
+        {/* Centre: logo */}
+        <Link to="/" className="flex items-center justify-center rounded-md" aria-label="Madalsa Couture, home">
+          <img src={madalsaLogo} alt="" className="h-12 w-auto object-contain lg:h-[64px]" />
+        </Link>
+
+        {/* Right */}
+        <div className="flex items-center justify-end gap-0.5">
+          <div className="relative hidden lg:block">
+            <button type="button" onClick={() => toggle('search')} className={iconButton} aria-label="Search" aria-expanded={isOpen('search')}>
+              <Search className="h-5 w-5" />
+            </button>
           </div>
 
-          <div className="flex-1 flex items-center justify-end space-x-4 sm:space-x-6">
-            {/* Profile Section Button with Auth Check & Role Redirection */}
-            <div className="relative" ref={profileMenuRef}>
-              <button
-                type="button"
-                onClick={handleProfileClick}
-                className={`flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/10 text-sm font-semibold ${textColorClass} transition-colors duration-200 hover:bg-white/15 hover:text-[#D4AF37]`}
-                aria-label="Account Profile"
-                title={isAuthenticated ? `Signed in as ${user?.name ?? 'User'}` : 'Sign In'}
-              >
-                {isAuthenticated ? (
-                  user?.name?.charAt(0)?.toUpperCase() ?? 'U'
-                ) : (
-                  <User className="h-5 w-5 sm:h-6 sm:w-6" />
-                )}
-              </button>
+          {!isAdmin && (
+            <Link
+              to="/wishlist"
+              className={`${iconButton} hidden sm:inline-flex`}
+              aria-label={wishlistCount > 0 ? `Wishlist, ${wishlistCount} items` : 'Wishlist'}
+            >
+              <Heart className="h-5 w-5" />
+              <CountBadge count={wishlistCount} dark={dark} />
+            </Link>
+          )}
 
-              {/* Profile Dropdown Menu when user is logged in */}
-              {isAuthenticated && isProfileMenuOpen ? (
-                <div className="absolute right-0 top-full mt-3 w-56 rounded-2xl border border-[#D4AF37]/20 bg-[#181124]/95 p-2 shadow-[0_20px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                  <div className="border-b border-white/10 px-3 py-2">
-                    <p className="text-sm font-semibold text-slate-100">{user?.name ?? 'Welcome'}</p>
-                    <p className="text-xs text-slate-400">{user?.email ?? 'Signed in'}</p>
-                    <span className="mt-1 inline-block rounded bg-[#D4AF37]/20 px-2 py-0.5 text-[10px] font-semibold text-[#D4AF37] uppercase">
-                      {user?.role ?? 'USER'}
-                    </span>
-                  </div>
-                  <div className="mt-2 space-y-1">
-                    {(isAdmin
-                      ? [
-                        { label: 'Admin Dashboard', path: '/admin/dashboard' },
-                        { label: 'User Management', path: '/admin/user-management' },
-                      ]
-                      : [
-                        { label: 'My Profile', path: '/profile' },
-                        { label: 'My Orders', path: '/my-orders' },
-                        { label: 'Wishlist', path: '/wishlist' },
-                        { label: 'Saved Addresses', path: '/addresses' },
-                      ]
-                    ).map((item) => (
-                      <Link
-                        key={item.label}
-                        to={item.path}
-                        onClick={() => setIsProfileMenuOpen(false)}
-                        className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-slate-200 transition-colors hover:bg-white/5 hover:text-[#D4AF37]"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        setIsProfileMenuOpen(false);
-                        await performLogout();
-                        navigate('/', { replace: true });
-                      }}
-                      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm text-rose-300 transition-colors hover:bg-white/5 hover:text-rose-200"
-                    >
-                      Logout
-                    </button>
-                  </div>
+          <div className="relative" ref={profileRef}>
+            <button
+              type="button"
+              onClick={handleAccount}
+              aria-label={isAuthenticated ? `Account menu for ${user?.name ?? 'you'}` : 'Sign in'}
+              aria-expanded={isAuthenticated ? isOpen('profile') : undefined}
+              className={iconButton}
+            >
+              {isAuthenticated ? (
+                <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${dark ? 'bg-gold text-ink' : 'bg-ink text-white'}`}>
+                  {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+                </span>
+              ) : (
+                <User className="h-5 w-5" />
+              )}
+            </button>
+
+            {isAuthenticated && isOpen('profile') && (
+              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl border border-hairline bg-surface p-1.5 shadow-lg">
+                <div className="border-b border-hairline px-3 pb-3 pt-2">
+                  <p className="truncate text-sm font-medium text-ink">{user?.name ?? 'Welcome'}</p>
+                  <p className="truncate text-xs text-mute">{user?.email}</p>
                 </div>
-              ) : null}
-            </div>
-
-            {!isAdmin && (
-              <Link
-                to="/cart"
-                className={`relative rounded-full p-1 ${textColorClass} transition-colors duration-200 hover:bg-white/5 hover:text-[#D4AF37]`}
-                aria-label="Shopping Cart"
-              >
-                <ShoppingBag className="h-5 w-5 sm:h-6 sm:w-6" />
-                {cartCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-amber-500/40 bg-amber-800/80 text-[10px] font-semibold text-amber-200">
-                    {cartCount}
-                  </span>
-                )}
-              </Link>
+                <div className="pt-1.5">
+                  {accountLinks.map((item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={close}
+                      className="flex h-9 items-center rounded-md px-3 text-sm text-body hover:bg-hairline-soft hover:text-ink"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="flex h-9 w-full items-center rounded-md px-3 text-left text-sm text-body hover:bg-hairline-soft hover:text-ink"
+                  >
+                    Log out
+                  </button>
+                </div>
+              </div>
             )}
           </div>
+
+          {!isAdmin && (
+            <Link
+              to="/cart"
+              className={iconButton}
+              aria-label={cartCount > 0 ? `Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Cart'}
+            >
+              <ShoppingBag className="h-5 w-5" />
+              <CountBadge count={cartCount} dark={dark} />
+            </Link>
+          )}
         </div>
       </div>
 
-      {isMobileMenuOpen && (
-        <div
-          className={`space-y-3 border-b border-amber-900/20 ${isSolid ? 'bg-[#6B4D3E]/95' : 'bg-[#110E1B]/95'
-            } px-4 pb-6 pt-4 backdrop-blur-lg md:hidden`}
-        >
-          <NavLink
-            to="/"
-            end
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={({ isActive }) =>
-              `block text-base font-medium transition-all duration-150 ${isActive ? 'text-[#D4AF37]' : 'text-slate-200 hover:text-[#D4AF37]'
-              }`
-            }
-          >
-            Home
-          </NavLink>
-
-          <div className="space-y-2">
-            <button
-              type="button"
-              onClick={() => setIsMobileShopOpen(!isMobileShopOpen)}
-              className="flex w-full items-center justify-between text-base font-medium text-slate-200 hover:text-[#D4AF37]"
-            >
-              <span>Shop</span>
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-200 ${isMobileShopOpen ? 'rotate-180 text-[#D4AF37]' : ''
-                  }`}
+      {/* Search bar (drops below the header row) */}
+      {isOpen('search') && (
+        <div className="border-t border-hairline bg-canvas text-ink">
+          <form onSubmit={submitSearch} className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3 sm:px-6" role="search">
+            <label htmlFor="site-search" className="sr-only">Search products</label>
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mute" aria-hidden="true" />
+              <input
+                id="site-search"
+                type="search"
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search anarkalis, sharara sets, suits…"
+                className="field pl-9"
               />
+            </div>
+            <button type="submit" className="btn-sm bg-ink text-white hover:bg-ink-hover">
+              Search
             </button>
+          </form>
+        </div>
+      )}
 
-            {isMobileShopOpen && (
-              <div className="my-2 space-y-2 border-l border-[#D4AF37]/20 pl-4">
-                {shopCategories.map((category) => (
-                  <Link
-                    key={category.name}
-                    to={category.path}
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setIsMobileShopOpen(false);
-                    }}
-                    className="block py-1 text-sm text-slate-300 transition-colors hover:text-[#D4AF37]"
-                  >
-                    {category.name}
+      {/* Mobile menu */}
+      {isOpen('mobile') && (
+        <nav id="mobile-nav" aria-label="Mobile" className="max-h-[calc(100dvh-7rem)] overflow-y-auto border-t border-hairline bg-canvas text-ink px-4 pb-6 pt-2 lg:hidden">
+          <p className="eyebrow px-2 pb-1 pt-3">Shop</p>
+          <ul>
+            {shopLinks.map((item) => (
+              <li key={item.path}>
+                <Link to={item.path} onClick={close} className="flex h-11 items-center justify-between rounded-md px-2 text-base text-ink">
+                  {item.name}
+                  <ArrowRight className="h-4 w-4 text-faint" aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="eyebrow mt-3 border-t border-hairline px-2 pb-1 pt-4">Madalsa</p>
+          <ul>
+            {[
+              { name: 'Our story', path: '/about' },
+              { name: 'Contact', path: '/contact' },
+              { name: 'Shipping policy', path: '/shipping-policy' },
+              { name: 'Refunds & exchanges', path: '/refund-policy' },
+            ].map((item) => (
+              <li key={item.path}>
+                <Link to={item.path} onClick={close} className="flex h-11 items-center rounded-md px-2 text-base text-body">
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-hairline pt-4">
+            {isAuthenticated ? (
+              <>
+                <Link to={isAdmin ? '/admin/dashboard' : '/profile'} onClick={close} className="btn-secondary h-11 text-sm">
+                  {isAdmin ? 'Dashboard' : 'My account'}
+                </Link>
+                {!isAdmin ? (
+                  <Link to="/wishlist" onClick={close} className="btn-secondary h-11 text-sm">
+                    Wishlist{wishlistCount > 0 ? ` (${wishlistCount})` : ''}
                   </Link>
-                ))}
-              </div>
+                ) : (
+                  <button type="button" onClick={logout} className="btn-secondary h-11 text-sm">
+                    Log out
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={close} className="btn-secondary h-11 text-sm">
+                  Sign in
+                </Link>
+                <Link to="/signup" onClick={close} className="btn-primary h-11 text-sm">
+                  Create account
+                </Link>
+              </>
             )}
           </div>
-
-          <NavLink
-            to="/about"
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={({ isActive }) =>
-              `block text-base font-medium transition-all duration-150 ${isActive ? 'text-[#D4AF37]' : 'text-slate-200 hover:text-[#D4AF37]'
-              }`
-            }
-          >
-            About Us
-          </NavLink>
-
-          {/* Profile / Account link in Mobile drawer */}
-          <button
-            type="button"
-            onClick={() => {
-              setIsMobileMenuOpen(false);
-              handleProfileClick();
-            }}
-            className="flex w-full items-center justify-between text-base font-medium text-slate-200 hover:text-[#D4AF37] pt-2 border-t border-amber-900/30"
-          >
-            <span>{isAuthenticated ? (isAdmin ? 'Admin Dashboard' : 'My Account') : 'Sign In / Account'}</span>
-            <User className="h-5 w-5 text-[#D4AF37]" />
-          </button>
-        </div>
+        </nav>
       )}
     </header>
   );

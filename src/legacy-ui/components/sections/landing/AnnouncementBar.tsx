@@ -68,31 +68,28 @@ const AnnouncementBar: React.FC = () => {
   if (!msg.trim()) return null;
 
   const barStyle: React.CSSProperties = {
-    backgroundColor: data.backgroundColor || '#D4AF37',
-    color: data.textColor || '#000000',
+    backgroundColor: data.backgroundColor || '#171717',
+    color: data.textColor || '#ffffff',
   };
 
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
     <div
-      className="w-full py-2 px-4 text-center text-xs font-semibold tracking-wider uppercase transition-colors duration-300 relative z-30 shadow-xs flex items-center justify-center gap-3 flex-wrap"
+      className="relative z-30 flex h-9 w-full items-center justify-center gap-3 px-4 text-center text-xs font-medium sm:text-sm"
       style={barStyle}
     >
       {data.link ? (
-        <a
-          href={data.link}
-          className="hover:underline inline-flex items-center gap-2"
-        >
-          <span>{msg}</span>
+        <a href={data.link} className="min-w-0 truncate underline-offset-4 hover:underline" title={msg}>
+          {msg}
         </a>
       ) : (
-        <span>{msg}</span>
+        <span className="min-w-0 truncate" title={msg}>{msg}</span>
       )}
 
       {/* Countdown Clock Badge */}
       {countdown && !countdown.isExpired && (
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/15 text-[11px] font-mono font-bold tracking-normal backdrop-blur-xs">
+        <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 font-mono text-xs tabular-nums">
           <Clock className="w-3 h-3 opacity-70" />
           <span>
             {countdown.days > 0 && `${countdown.days}d `}

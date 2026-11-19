@@ -3,6 +3,7 @@ import __imp0 from "@/server/lib/mongoose";
 import __imp1 from "@/server/repositories/inventoryAuditLogRepository";
 import __imp2 from "@/server/constants/reasonCodes";
 import __imp3 from "@/server/constants/messages";
+import { queueShiprocketSync } from "@/server/services/shiprocketCatalog";
 
 const mongoose = __imp0;
 const inventoryAuditLogRepository = __imp1;
@@ -101,6 +102,7 @@ class InventoryService {
       timestamp: new Date()
     });
 
+    queueShiprocketSync(updated.productId); // new stock level → Shiprocket
     return updated;
   }
 

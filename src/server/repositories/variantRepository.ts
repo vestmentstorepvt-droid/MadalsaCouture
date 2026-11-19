@@ -237,27 +237,31 @@ class VariantRepository {
    * that can itself fail defeats the purpose of a saga — this makes the
    * release idempotent and safe to call more than once for the same order.
    *
-   * Uses an aggregation-pipeline update (`$max`) so the clamp is evaluated
-   * atomically inside MongoDB, no read-then-write race window.
+   * Two guarded single-document updates instead of the original MongoDB
+   * aggregation-pipeline update: the Turso data layer doesn't run pipeline
+   * updates (it silently did nothing, so cancelled orders never gave their
+   * reserved stock back). Each step is still atomic on its own:
+   *   1. reservedStock >= qty → subtract qty;
+   *   2. otherwise (partial release already happened) → clamp to 0.
    */
   async atomicRelease(variantId, qty, options = {}) {
     if (!mongoose.Types.ObjectId.isValid(variantId)) {
       throw new Error('INVALID_VARIANT_ID');
     }
 
-    const updated = await Variant.findOneAndUpdate(
-      { _id: variantId, isDeleted: false },
-      [
-        {
-          $set: {
-            reservedStock: {
-              $max: [{ $subtract: ['$reservedStock', qty] }, 0]
-            }
-          }
-        }
-      ],
+    let updated = await Variant.findOneAndUpdate(
+      { _id: variantId, isDeleted: false, reservedStock: { $gte: qty } },
+      { $inc: { reservedStock: -qty } },
       { new: true, session: options.session || null }
     ).lean();
+
+    if (!updated) {
+      updated = await Variant.findOneAndUpdate(
+        { _id: variantId, isDeleted: false },
+        { $min: { reservedStock: 0 } },
+        { new: true, session: options.session || null }
+      ).lean();
+    }
 
     if (!updated) {
       throw new Error('NOT_FOUND');

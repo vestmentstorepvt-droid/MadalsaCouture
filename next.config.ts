@@ -5,6 +5,8 @@ import type { NextConfig } from "next";
 // doesn't implement to the old Express backend — handy while comparing.
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Lets a second local server run alongside another (e.g. NEXT_DIST_DIR=.next-alt).
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   env: {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "/",
   },

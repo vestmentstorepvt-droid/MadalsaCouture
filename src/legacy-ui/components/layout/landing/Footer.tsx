@@ -58,145 +58,115 @@ const Footer: React.FC = () => {
   const address = contact?.address || 'Madalsa Couture, India';
   const waNumber = phone.replace(/\D/g, '') || '917389453119';
 
+  const columns = [
+    {
+      title: 'Shop',
+      links: [
+        { label: 'All products', to: '/products' },
+        { label: 'New arrivals', to: '/collections/new-arrivals' },
+        { label: 'Best sellers', to: '/collections/best-seller' },
+        { label: 'Western wear', to: '/collections/western-wear' },
+        { label: 'Ethnic wear', to: '/collections/ethnic-wear' },
+      ],
+    },
+    {
+      title: 'Help',
+      links: [
+        { label: 'My orders', to: '/my-orders' },
+        { label: 'Shipping policy', to: '/shipping-policy' },
+        { label: 'Refunds & exchanges', to: '/refund-policy' },
+        { label: 'Contact us', to: '/contact' },
+      ],
+    },
+    {
+      title: 'Madalsa',
+      links: [
+        { label: 'Our story', to: '/about' },
+        { label: 'Terms & conditions', to: '/terms' },
+        { label: 'Privacy policy', to: '/privacy-policy' },
+      ],
+    },
+  ];
+
   return (
-    <footer className="bg-[#FEFBF7] border-t border-[#E8DCC8]">
-      {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-6 py-16 lg:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
-          {/* Brand Section */}
-          <div className="flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <img src={logoImg} alt="Madalsa logo" className="h-14 w-auto object-contain" />
-              </div>
-              <p className="mt-2 max-w-xs text-xs sm:text-sm font-medium leading-relaxed text-[#6B5344]">
-                Curated womenswear with luxurious edits, seasonal drops, and timeless silhouettes.
-              </p>
+    <footer className="border-t border-hairline bg-canvas">
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
+          {/* Brand + contact */}
+          <div className="col-span-2 md:col-span-4">
+            <img src={logoImg} alt="Madalsa Couture" className="h-12 w-auto object-contain" />
+            <p className="mt-4 max-w-xs text-sm text-body">
+              Contemporary womenswear with handcrafted detail, designed in Bhopal.
+            </p>
+            <ul className="mt-6 space-y-3 text-sm text-body">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-mute" aria-hidden="true" />
+                <span>{address}</span>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="h-4 w-4 shrink-0 text-mute" aria-hidden="true" />
+                <a href={`tel:${phone}`} className="hover:text-ink">{phone}</a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Mail className="h-4 w-4 shrink-0 text-mute" aria-hidden="true" />
+                <a href={`mailto:${email}`} className="hover:text-ink">{email}</a>
+              </li>
+            </ul>
+            <div className="mt-6 flex gap-2">
+              <a
+                href="https://www.instagram.com/madalsacouture?mdxt=MXNpcjZ5NDQ5MTh0NA=="
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Madalsa Couture on Instagram"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface text-ink hover:border-ink"
+              >
+                <InstagramIcon className="h-4 w-4" />
+              </a>
+              <a
+                href="https://www.facebook.com/share/1BvRHytGeq/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Madalsa Couture on Facebook"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface text-ink hover:border-ink"
+              >
+                <FacebookIcon className="h-4 w-4" />
+              </a>
+              <a
+                href={`https://wa.me/${waNumber}`}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Chat with us on WhatsApp"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface text-ink hover:border-ink"
+              >
+                <WhatsAppIcon className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
-          {/* Quick Links Section */}
-          <div>
-            <h3 className="font-semibold text-xs uppercase tracking-widest text-[#7A5A45] mb-6 pb-3 border-b border-[#E2CBA6]">
-              Quick Links
-            </h3>
-            <ul className="space-y-3.5">
-              <li>
-                <Link to="/" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/products" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  Shop
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  Terms &amp; Conditions
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy-policy" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/refund-policy" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  Refund Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/shipping-policy" className="text-xs sm:text-sm font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  Shipping Policy
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Section */}
-          <div>
-            <h3 className="font-semibold text-xs uppercase tracking-widest text-[#7A5A45] mb-6 pb-3 border-b border-[#E2CBA6]">
-              Contact Concierge
-            </h3>
-            <ul className="space-y-4 text-xs sm:text-sm text-[#6B5344]">
-              <li className="flex items-start gap-3 group">
-                <MapPin className="w-4 h-4 text-[#A97B45] shrink-0 mt-0.5 transition-colors" />
-                <span className="font-medium">{address}</span>
-              </li>
-              <li className="flex items-center gap-3 group">
-                <Phone className="w-4 h-4 text-[#A97B45] shrink-0 transition-colors" />
-                <a href={`tel:${phone}`} className="font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  {phone}
-                </a>
-              </li>
-              <li className="flex items-center gap-3 group">
-                <Mail className="w-4 h-4 text-[#A97B45] shrink-0 transition-colors" />
-                <a href={`mailto:${email}`} className="font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200">
-                  {email}
-                </a>
-              </li>
-              <li className="flex items-center gap-3 group">
-                <FacebookIcon className="w-4 h-4 text-[#A97B45] shrink-0 transition-colors" />
-                <a
-                  href="https://www.facebook.com/share/1BvRHytGeq/?mibextid=wwXIfr"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200"
-                >
-                  Follow on Facebook
-                </a>
-              </li>
-              <li className="flex items-center gap-3 group">
-                <InstagramIcon className="w-4 h-4 text-[#A97B45] shrink-0 transition-colors" />
-                <a
-                  href="https://www.instagram.com/madalsacouture?mdxt=MXNpcjZ5NDQ5MTh0NA=="
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-[#6B5344] hover:text-[#A97B45] transition-colors duration-200"
-                >
-                  Follow on Instagram
-                </a>
-              </li>
-            </ul>
-          </div>
+          {columns.map((col) => (
+            <nav key={col.title} aria-label={col.title} className="md:col-span-2 lg:col-span-2 [&:nth-of-type(1)]:md:col-start-6">
+              <h2 className="eyebrow mb-4">{col.title}</h2>
+              <ul className="space-y-3">
+                {col.links.map((link) => (
+                  <li key={link.to}>
+                    <Link to={link.to} className="text-sm text-body hover:text-ink">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
       </div>
 
-      {/* Bottom Section */}
-      <div className="border-t border-[#E8DCC8] bg-gradient-to-r from-[#FEFBF7] to-[#FBF8F2]">
-        <div className="max-w-7xl mx-auto px-6 py-6 lg:py-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Left */}
-            <p className="text-xs font-medium text-[#8B6F5E]">
-              Luxury craftsmanship, timeless design.
-            </p>
-
-            {/* Center */}
-            <p className="text-xs text-[#8B6F5E]">
-              © {new Date().getFullYear()} Madalsa Couture. All rights reserved.
-            </p>
-
-            {/* Right */}
-            <a
-              href="#top"
-              onClick={scrollToTop}
-              className="flex items-center gap-2 text-[#8B6F5E] hover:text-[#A97B45] text-xs font-semibold uppercase tracking-widest transition-all duration-300 group/top"
-            >
-              Back to Top
-              <ArrowUp className="w-3.5 h-3.5 transition-transform duration-300 group-hover/top:-translate-y-1" />
-            </a>
-          </div>
+      <div className="border-t border-hairline">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-sm text-mute sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <p>© {new Date().getFullYear()} Madalsa Couture. All rights reserved.</p>
+          <a href="#top" onClick={scrollToTop} className="inline-flex items-center gap-1.5 hover:text-ink">
+            Back to top
+            <ArrowUp className="h-4 w-4" aria-hidden="true" />
+          </a>
         </div>
       </div>
 
@@ -205,9 +175,9 @@ const Footer: React.FC = () => {
         href={`https://wa.me/${waNumber}`}
         target="_blank"
         rel="noreferrer"
-        className="fixed right-6 bottom-6 z-50 inline-flex items-center justify-center rounded-full bg-white p-3 shadow-[0_15px_40px_rgba(0,0,0,0.12)] transition-transform hover:scale-110"
+        className="fixed bottom-5 right-5 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-hairline bg-surface shadow-lg transition-transform hover:scale-105"
         aria-label="WhatsApp contact"
-        title="WhatsApp Concierge"
+        title="Chat on WhatsApp"
       >
         <WhatsAppIcon className="w-6 h-6" />
       </a>

@@ -173,7 +173,7 @@ const EditCouponModalContent: React.FC<EditCouponModalProps & { coupon: Coupon }
   };
 
   const inputClass =
-    'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition placeholder:text-slate-400';
+    'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition placeholder:text-slate-400';
 
   const labelClass = 'text-xs font-semibold text-slate-600 block mb-1';
 
@@ -383,7 +383,7 @@ const ViewCouponModal: React.FC<ViewCouponModalProps> = ({ coupon, onClose }) =>
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2">
-            <Tag className="w-5 h-5 text-[#E85D88]" />
+            <Tag className="w-5 h-5 text-accent" />
             <h2 className="text-lg font-bold text-slate-900">Coupon Details</h2>
           </div>
           <button
@@ -399,7 +399,7 @@ const ViewCouponModal: React.FC<ViewCouponModalProps> = ({ coupon, onClose }) =>
           {/* Code Banner */}
           <div className="flex items-center justify-between p-4 rounded-xl bg-pink-50/60 border border-pink-100">
             <div>
-              <span className="text-xs font-semibold text-[#E85D88] uppercase tracking-wider block mb-0.5">
+              <span className="text-xs font-semibold text-accent uppercase tracking-wider block mb-0.5">
                 Promo Code
               </span>
               <span className="text-xl font-bold font-mono text-slate-900">{coupon.code}</span>
@@ -407,7 +407,7 @@ const ViewCouponModal: React.FC<ViewCouponModalProps> = ({ coupon, onClose }) =>
             <button
               type="button"
               onClick={handleCopy}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-pink-200 text-xs font-semibold text-[#E85D88] hover:bg-pink-50 transition shadow-xs"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-pink-200 text-xs font-semibold text-accent hover:bg-pink-50 transition shadow-xs"
             >
               {copied ? (
                 <>
@@ -431,7 +431,7 @@ const ViewCouponModal: React.FC<ViewCouponModalProps> = ({ coupon, onClose }) =>
 
             <div className="p-3 rounded-xl border border-slate-100 bg-slate-50/50">
               <span className="text-xs text-slate-500 block mb-1">Benefit</span>
-              <span className="font-bold text-[#E85D88]">
+              <span className="font-bold text-accent">
                 {coupon.type === 'percentage'
                   ? `${coupon.value}% OFF`
                   : coupon.type === 'flat'
@@ -610,7 +610,7 @@ export const CouponManagement: React.FC = () => {
   const badgeForType = (t: Coupon['type']) => {
     switch (t) {
       case 'percentage':
-        return 'bg-pink-50 text-[#E85D88] border border-pink-200/60';
+        return 'bg-pink-50 text-accent border border-pink-200/60';
       case 'flat':
         return 'bg-amber-50 text-amber-700 border border-amber-200/60';
       case 'free_shipping':
@@ -730,7 +730,7 @@ export const CouponManagement: React.FC = () => {
           changeText="created coupons"
           icon={Tag}
           iconBgColor="bg-rose-50"
-          iconColor="text-[#E85D88]"
+          iconColor="text-accent"
         />
         <StatsCard
           title="Active Campaigns"
@@ -763,7 +763,7 @@ export const CouponManagement: React.FC = () => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search by code..."
-              className="w-full pl-9 pr-16 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+              className="w-full pl-9 pr-16 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
             />
             {searchInput && (
               <button
@@ -780,7 +780,7 @@ export const CouponManagement: React.FC = () => {
             )}
             <button
               type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 text-xs font-semibold bg-[#E85D88] text-white rounded-lg hover:bg-[#d44874] transition"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 text-xs font-semibold bg-ink text-white rounded-lg hover:bg-ink-hover transition"
             >
               Go
             </button>
@@ -815,7 +815,7 @@ export const CouponManagement: React.FC = () => {
           <button
             type="button"
             onClick={handleClearFilters}
-            className="text-xs text-[#E85D88] hover:underline font-semibold self-end lg:self-center"
+            className="text-xs text-accent hover:underline font-semibold self-end lg:self-center"
           >
             Clear Filters
           </button>
@@ -844,7 +844,7 @@ export const CouponManagement: React.FC = () => {
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-[#E85D88]" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-accent" />
                       <span className="text-sm">Loading coupons...</span>
                     </div>
                   </td>
@@ -873,7 +873,7 @@ export const CouponManagement: React.FC = () => {
                     <tr key={c._id} className="hover:bg-slate-50/80 transition-colors">
                       {/* Code */}
                       <td className="py-4 px-4">
-                        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-pink-50 text-[#E85D88] font-bold font-mono text-xs border border-pink-200/60">
+                        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-pink-50 text-accent font-bold font-mono text-xs border border-pink-200/60">
                           {c.code}
                         </div>
                       </td>
@@ -913,7 +913,7 @@ export const CouponManagement: React.FC = () => {
                         {limit != null && (
                           <div className="w-full h-1.5 bg-slate-100 rounded-full mt-1.5 overflow-hidden">
                             <div
-                              className="h-full bg-linear-to-r from-[#E85D88] to-[#D04873] rounded-full transition-all"
+                              className="h-full bg-linear-to-r from-ink to-ink-hover rounded-full transition-all"
                               style={{ width: `${percentUsed}%` }}
                             />
                           </div>
@@ -961,10 +961,10 @@ export const CouponManagement: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setViewingCoupon(c)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#E85D88] hover:bg-rose-50 transition"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-accent hover:bg-rose-50 transition"
                             title="View Details"
                           >
-                            <Eye className="w-4 h-4 text-[#E85D88]" />
+                            <Eye className="w-4 h-4 text-accent" />
                           </button>
 
                           {/* Edit */}

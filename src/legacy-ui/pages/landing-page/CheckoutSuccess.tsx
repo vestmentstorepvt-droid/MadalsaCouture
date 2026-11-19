@@ -1,8 +1,17 @@
 import React, { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { CheckCircle, Home } from 'lucide-react';
-import { clearCart } from '../../store/slices/cartSlice';
+import type { RootState } from '../../store';
+import { removeFromCart, selectCartItems, updateQuantity } from '../../store/slices/cartSlice';
+import { takeCheckoutItems } from '../../services/shiprocketCheckoutAlternative';
+import { useRemoveOrderedItemsApiMutation } from '../../services/cartApi';
+
+const sameLine = (a: { productId: string; variantId?: string; size?: string; color?: string }, b: typeof a) =>
+  a.productId === b.productId &&
+  (a.variantId ?? '') === (b.variantId ?? '') &&
+  (a.size ?? '') === (b.size ?? '') &&
+  (a.color ?? '') === (b.color ?? '');
 
 /**
  * Checkout Success Page
@@ -10,11 +19,32 @@ import { clearCart } from '../../store/slices/cartSlice';
  */
 const CheckoutSuccess: React.FC = () => {
   const dispatch = useDispatch();
+  const store = useStore<RootState>();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const [removeOrderedItemsApi] = useRemoveOrderedItemsApiMutation();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('orderId') || searchParams.get('oid');
 
   useEffect(() => {
-    dispatch(clearCart());
+    // Take out only what was ordered (remembered when checkout opened); anything added since stays.
+    const ordered = takeCheckoutItems();
+    if (ordered.length) {
+      const bag = selectCartItems(store.getState());
+      for (const item of ordered) {
+        const line = bag.find((b) => sameLine(b, item));
+        if (!line) continue;
+        if (line.quantity > item.quantity) {
+          dispatch(updateQuantity({ ...item, quantity: line.quantity - item.quantity }));
+        } else {
+          dispatch(removeFromCart(item));
+        }
+      }
+      // The saved cart on the server too, or the cart page would bring them back.
+      const withSizes = ordered.filter((i) => i.variantId).map((i) => ({ variantId: i.variantId as string, quantity: i.quantity }));
+      if (isAuthenticated && withSizes.length) {
+        removeOrderedItemsApi({ items: withSizes }).catch(() => { /* the order webhook tidies it too */ });
+      }
+    }
 
     // Track conversion with Meta Pixel once per order, so a page refresh does not double-count it
     try {
@@ -31,13 +61,13 @@ const CheckoutSuccess: React.FC = () => {
   }, [dispatch, orderId]);
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-canvas flex items-center justify-center px-4 py-12">
       <div className="text-center max-w-md">
         <div className="flex justify-center mb-6">
           <CheckCircle className="h-20 w-20 text-emerald-600" />
         </div>
 
-        <h1 className="font-serif text-3xl uppercase tracking-wide text-slate-900 mb-3">
+        <h1 className="text-[32px] leading-10 tracking-[-1.28px] text-slate-900 mb-3 font-semibold">
           Order Confirmed!
         </h1>
 
@@ -58,21 +88,21 @@ const CheckoutSuccess: React.FC = () => {
         <div className="space-y-3">
           <Link
             to="/my-orders"
-            className="block w-full bg-[#3D2C24] text-white py-3 px-4 text-center font-serif font-semibold uppercase tracking-wide hover:bg-[#2D1C14] transition rounded"
+            className="w-full bg-ink text-white px-4 text-center transition h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover flex items-center justify-center"
           >
             View My Orders
           </Link>
 
           <Link
             to="/products"
-            className="flex items-center justify-center gap-2 w-full border border-[#3D2C24] text-[#3D2C24] py-3 px-4 text-center font-serif font-semibold uppercase tracking-wide hover:bg-[#3D2C24] hover:text-white transition rounded"
+            className="flex items-center justify-center gap-2 w-full border text-ink px-4 text-center transition h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
           >
             <Home className="h-4 w-4" /> Continue Shopping
           </Link>
         </div>
 
         <p className="text-xs text-slate-400 mt-8">
-          Questions? <a href="mailto:support@madalsa.com" className="text-[#E85D88] hover:underline">Contact our support team</a>
+          Questions? <a href="mailto:support@madalsa.com" className="text-accent hover:underline">Contact our support team</a>
         </p>
       </div>
     </div>

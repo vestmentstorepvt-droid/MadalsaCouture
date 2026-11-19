@@ -130,7 +130,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-rose-100 text-[#E85D88] flex items-center justify-center font-bold text-base">
+            <div className="w-10 h-10 rounded-full bg-rose-100 text-accent flex items-center justify-center font-bold text-base">
               {user?.name ? user.name.charAt(0).toUpperCase() : <Users className="w-5 h-5" />}
             </div>
             <div>
@@ -228,7 +228,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 {/* Email & Verification */}
                 <div className="p-4 rounded-xl border border-slate-200 space-y-1">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <Mail className="w-4 h-4 text-[#E85D88]" /> Email Address
+                    <Mail className="w-4 h-4 text-accent" /> Email Address
                   </div>
                   <p className="text-sm font-medium text-slate-800 break-all">{user.email}</p>
                   <div className="pt-1">
@@ -255,7 +255,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 {/* Phone */}
                 <div className="p-4 rounded-xl border border-slate-200 space-y-1">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <Phone className="w-4 h-4 text-[#E85D88]" /> Phone Number
+                    <Phone className="w-4 h-4 text-accent" /> Phone Number
                   </div>
                   <p className="text-sm font-medium text-slate-800">
                     {user.phone ? user.phone : <span className="text-slate-400">Not provided</span>}
@@ -266,7 +266,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 {/* Registration Date */}
                 <div className="p-4 rounded-xl border border-slate-200 space-y-1">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <Calendar className="w-4 h-4 text-[#E85D88]" /> Account Created
+                    <Calendar className="w-4 h-4 text-accent" /> Account Created
                   </div>
                   <p className="text-sm font-medium text-slate-800">{formatDate(user.createdAt)}</p>
                   <p className="text-xs text-slate-400">Role: {user.role || 'USER'}</p>
@@ -275,7 +275,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
                 {/* Last Login */}
                 <div className="p-4 rounded-xl border border-slate-200 space-y-1">
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <Clock className="w-4 h-4 text-[#E85D88]" /> Last Login
+                    <Clock className="w-4 h-4 text-accent" /> Last Login
                   </div>
                   <p className="text-sm font-medium text-slate-800">{formatDate(user.lastLoginAt)}</p>
                   <p className="text-xs text-slate-400">
@@ -287,7 +287,7 @@ const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
               {/* Address Details */}
               <div className="p-4 rounded-xl border border-slate-200 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  <MapPin className="w-4 h-4 text-[#E85D88]" /> Primary Address
+                  <MapPin className="w-4 h-4 text-accent" /> Primary Address
                 </div>
                 {user.address && (user.address.addressLine || user.address.city) ? (
                   <div className="text-sm text-slate-700 space-y-0.5">
@@ -518,7 +518,7 @@ export const UserManagement: React.FC = () => {
           changeText="registered accounts"
           icon={Users}
           iconBgColor="bg-rose-50"
-          iconColor="text-[#E85D88]"
+          iconColor="text-accent"
         />
         <StatsCard
           title="Active Accounts (Page)"
@@ -551,7 +551,7 @@ export const UserManagement: React.FC = () => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search by customer name or email..."
-              className="w-full pl-9 pr-20 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+              className="w-full pl-9 pr-20 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
             />
             {searchInput && (
               <button
@@ -568,7 +568,7 @@ export const UserManagement: React.FC = () => {
             )}
             <button
               type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs font-semibold bg-[#E85D88] text-white rounded-lg hover:bg-[#d44874] transition"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 text-xs font-semibold bg-ink text-white rounded-lg hover:bg-ink-hover transition"
             >
               Go
             </button>
@@ -596,7 +596,7 @@ export const UserManagement: React.FC = () => {
                 setSearchTerm('');
                 setCurrentPage(1);
               }}
-              className="text-[#E85D88] hover:underline font-medium"
+              className="text-accent hover:underline font-medium"
             >
               Reset
             </button>
@@ -625,7 +625,7 @@ export const UserManagement: React.FC = () => {
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-[#E85D88]" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-accent" />
                       <span className="text-sm">Loading customer data...</span>
                     </div>
                   </td>
@@ -655,7 +655,7 @@ export const UserManagement: React.FC = () => {
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-rose-50 text-[#E85D88] flex items-center justify-center font-bold text-xs shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-rose-50 text-accent flex items-center justify-center font-bold text-xs shrink-0">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="font-semibold text-slate-900">{user.name}</span>
@@ -666,7 +666,7 @@ export const UserManagement: React.FC = () => {
                     </td>
                     <td className="py-4 px-4 text-slate-600">{user.phone ?? '—'}</td>
                     <td className="py-4 px-4">
-                      <span className="px-2.5 py-0.5 text-xs rounded-full bg-rose-50 text-[#E85D88] font-medium border border-rose-200/60">
+                      <span className="px-2.5 py-0.5 text-xs rounded-full bg-rose-50 text-accent font-medium border border-rose-200/60">
                         {user.role ?? 'USER'}
                       </span>
                     </td>
@@ -688,10 +688,10 @@ export const UserManagement: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedUserId(user._id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-[#E85D88] hover:bg-rose-50 transition"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-accent hover:bg-rose-50 transition"
                           title="View Customer Details"
                         >
-                          <Eye className="w-4 h-4 text-[#E85D88]" />
+                          <Eye className="w-4 h-4 text-accent" />
                         </button>
 
                         {/* Toggle Status Button */}

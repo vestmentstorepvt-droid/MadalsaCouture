@@ -72,7 +72,9 @@ async function generateCheckoutToken(req, res) {
 
       // Add item with actual variant ID from database and user-selected quantity
       items.push({
-        variant_id: variant._id.toString(), // Use database variant ID
+        // The same numeric id the catalog feed gives Shiprocket (catalogController: last 8 hex
+        // digits of the ObjectId). Sending the full ObjectId makes Shiprocket fail with HTTP 500.
+        variant_id: parseInt(variant._id.toString().slice(-8), 16),
         quantity: Math.max(1, parseInt(quantity) || 1) // Use user quantity, min 1
       });
     }

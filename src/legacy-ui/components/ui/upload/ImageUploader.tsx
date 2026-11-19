@@ -194,12 +194,12 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           className={`relative rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center transition-all ${aspectClass} ${
-            isDragging ? 'ring-2 ring-inset ring-[#E85D88] opacity-80' : ''
+            isDragging ? 'ring-2 ring-inset ring-ink opacity-80' : ''
           }`}
         >
           {isDragging && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-              <ImagePlus className="w-8 h-8 text-[#E85D88] animate-bounce" />
+              <ImagePlus className="w-8 h-8 text-accent animate-bounce" />
             </div>
           )}
           {/\.(mp4|mov|webm|ogg|m4v)($|\?)/i.test(imageUrl) || acceptType === 'video' ? (
@@ -250,13 +250,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             isUploading
               ? 'border-slate-200 bg-slate-50 cursor-wait'
               : isDragging
-              ? 'border-[#E85D88] bg-rose-50/60 scale-[1.01] shadow-md cursor-copy'
-              : 'border-slate-200 hover:border-[#E85D88] hover:bg-rose-50/30 cursor-pointer'
+              ? 'border-ink bg-rose-50/60 scale-[1.01] shadow-md cursor-copy'
+              : 'border-slate-200 hover:border-ink hover:bg-rose-50/30 cursor-pointer'
           }`}
         >
           {isUploading ? (
             <>
-              <div className="w-6 h-6 border-2 border-[#E85D88] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-ink border-t-transparent rounded-full animate-spin" />
               <span className="text-xs text-slate-500">
                 {uploadProgress !== null && uploadProgress < 99
                   ? `Uploading ${uploadProgress}%…`
@@ -265,7 +265,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               {uploadProgress !== null && uploadProgress < 99 && (
                 <div className="w-32 bg-slate-200 rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-[#E85D88] h-1.5 rounded-full transition-all duration-300"
+                    className="bg-ink h-1.5 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -273,14 +273,14 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             </>
           ) : isDragging ? (
             <>
-              <div className="w-12 h-12 rounded-full bg-[#E85D88]/10 border-2 border-[#E85D88] border-dashed flex items-center justify-center animate-bounce">
+              <div className="w-12 h-12 rounded-full bg-ink/10 border-2 border-ink border-dashed flex items-center justify-center animate-bounce">
                 {acceptType === 'video' ? (
-                  <Film className="w-6 h-6 text-[#E85D88]" />
+                  <Film className="w-6 h-6 text-accent" />
                 ) : (
-                  <ImagePlus className="w-6 h-6 text-[#E85D88]" />
+                  <ImagePlus className="w-6 h-6 text-accent" />
                 )}
               </div>
-              <p className="text-sm font-semibold text-[#E85D88]">
+              <p className="text-sm font-semibold text-accent">
                 {acceptType === 'video' ? 'Drop video here' : 'Drop image here'}
               </p>
             </>
@@ -288,18 +288,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             <>
               <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center">
                 {acceptType === 'video' ? (
-                  <Film className="w-5 h-5 text-[#E85D88]" />
+                  <Film className="w-5 h-5 text-accent" />
                 ) : (
-                  <Upload className="w-5 h-5 text-[#E85D88]" />
+                  <Upload className="w-5 h-5 text-accent" />
                 )}
               </div>
               <div className="text-center">
                 <p className="text-sm font-medium text-slate-700">
-                  <span className="text-[#E85D88] font-semibold">Click to upload</span> or drag & drop
+                  <span className="text-accent font-semibold">Click to upload</span> or drag & drop
                 </p>
                 <p className="text-xs text-slate-400 mt-0.5">{displayHint}</p>
                 {folder && (
-                  <p className="text-[10px] text-slate-400 font-mono mt-1">📁 {folder}</p>
+                  <p className="text-xs text-slate-400 font-mono mt-1">📁 {folder}</p>
                 )}
               </div>
             </>

@@ -1,6 +1,9 @@
 import type { FC } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { useGetCollectionsShowcaseQuery } from '../../../services/cmsApi';
 import { optimizeImage } from '../../../utils/imageUtils';
+import { SectionHeader } from '../../ui/SectionHeader';
 
 export interface CollectionItem {
   id: string;
@@ -21,12 +24,9 @@ const CollectionList: FC = () => {
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4" aria-hidden="true">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="aspect-[2/3] overflow-hidden rounded-xl sm:rounded-2xl bg-slate-100 shadow-sm animate-pulse"
-            />
+            <div key={index} className="aspect-[3/4] animate-pulse rounded-2xl bg-hairline-soft" />
           ))}
         </div>
       );
@@ -34,64 +34,45 @@ const CollectionList: FC = () => {
 
     if (isError) {
       return (
-        <div className="mt-8 flex flex-col items-center justify-center py-12 text-center space-y-4">
-          <p className="text-slate-500 text-sm">Failed to load collections.</p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="border border-slate-800 px-6 py-2 text-xs uppercase tracking-widest text-slate-800 hover:bg-slate-800 hover:text-white transition-all"
-          >
-            Retry
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-hairline-strong py-12 text-center">
+          <p className="text-sm text-body">We couldn't load the collections.</p>
+          <button type="button" onClick={() => refetch()} className="btn-secondary">
+            Try again
           </button>
         </div>
       );
     }
 
-    if (collections.length === 0) {
-      return (
-        <div className="mt-8 flex items-center justify-center py-12">
-          <p className="text-slate-400 text-sm">No collections available.</p>
-        </div>
-      );
-    }
+    if (collections.length === 0) return null;
 
     return (
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {collections.map((collection) => (
-          <a
-            key={collection._id}
-            href={`/collections/${collection.slug}`}
-            className="group relative block overflow-hidden rounded-xl sm:rounded-2xl bg-slate-100 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
-          >
-            <div className="relative aspect-[2/3] w-full overflow-hidden">
+          <Link key={collection._id} to={`/collections/${collection.slug}`} className="group block rounded-2xl">
+            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-hairline bg-hairline-soft">
               <img
                 src={optimizeImage(collection.imageUrl, 600)}
-                alt={collection.name}
+                alt=""
                 loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                decoding="async"
+                className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-3 sm:px-4 sm:py-4 text-center">
-                <p className="text-[11px] sm:text-sm font-semibold tracking-widest uppercase text-white drop-shadow">
-                  {collection.name}
-                </p>
-              </div>
             </div>
-          </a>
+            <p className="mt-3 flex items-center justify-between text-sm font-medium text-ink">
+              {collection.name}
+              <ArrowRight className="h-4 w-4 text-mute transition-transform group-hover:translate-x-0.5 group-hover:text-ink" aria-hidden="true" />
+            </p>
+          </Link>
         ))}
       </div>
     );
   };
 
   return (
-    <section id="shop" className="scroll-mt-24 bg-white py-10 sm:py-16">
+    <section id="shop" aria-labelledby="collections-title" className="scroll-mt-24 bg-canvas py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-serif text-slate-800 uppercase tracking-widest mb-2">
-            Collection list
-          </h2>
-          <div className="mx-auto mt-3 h-0.5 w-16 sm:w-full rounded-full bg-[#E2CBA6]" />
-        </div>
-        {renderContent()}
+        <SectionHeader id="collections-title" eyebrow="Collections" title="Shop by collection" action={{ label: 'All products', to: '/products' }} />
+        <div className="mt-10">{renderContent()}</div>
       </div>
     </section>
   );

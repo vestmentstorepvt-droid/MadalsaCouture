@@ -105,7 +105,7 @@ const RootLayout = () => {
   return (
     <>
       <ScrollToTop />
-      <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-[#110E1B]"><div className="w-12 h-12 border-4 border-[#D4AF37] border-t-transparent rounded-full animate-spin"></div></div>}>
+      <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-ink"><div className="w-12 h-12 border-4 border-hairline border-t-transparent rounded-full animate-spin"></div></div>}>
         <Outlet />
       </Suspense>
     </>

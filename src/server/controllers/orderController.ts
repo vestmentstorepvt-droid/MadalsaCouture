@@ -135,11 +135,15 @@ class OrderController {
 
   /**
    * POST /api/v1/orders/:id/cancel
+   * Body: { reason, note? } — reason is one of CANCEL_REASONS (src/shared/cancelReasons.ts).
    * Cancel an order on behalf of the authenticated user.
    */
   async cancelMyOrder(req, res, next) {
     try {
-      const order = await orderService.cancelOrder(req.params.id, req.user.id);
+      const order = await orderService.cancelOrder(req.params.id, req.user.id, {
+        reason: req.body?.reason,
+        note: req.body?.note,
+      });
       return sendSuccess(res, { order });
     } catch (error) {
       next(error);

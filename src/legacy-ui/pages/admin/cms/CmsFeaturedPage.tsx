@@ -10,7 +10,7 @@ import {
 import type { CmsFeaturedSection } from '../../../services/cmsAdminApi';
 import { toDatetimeLocal } from '../../../utils/dateTime';
 
-const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]';
+const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink';
 
 
 // ── Backend-aligned form ────────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ const SectionModal: React.FC<{
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Section Title *</label>
             <input className={INPUT} value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="e.g. New Arrivals" required />
-            <p className="text-[11px] text-slate-400 mt-1">The heading shown to customers above this section on the homepage.</p>
+            <p className="text-xs text-slate-400 mt-1">The heading shown to customers above this section on the homepage.</p>
           </div>
 
           {/* Subtitle */}
@@ -100,9 +100,9 @@ const SectionModal: React.FC<{
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Product IDs (one per line)</label>
             <textarea className={`${INPUT} resize-none font-mono text-xs`} rows={5} value={form.productIds} onChange={(e) => set('productIds', e.target.value)} placeholder={'Paste one MongoDB ObjectId per line:\n6789abc123def456\n6789abc123def789'} />
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               These are MongoDB ObjectIds. Copy them from the{' '}
-              <a href="/admin/products" target="_blank" rel="noopener noreferrer" className="text-[#E85D88] hover:underline">Products page</a>.
+              <a href="/admin/products" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Products page</a>.
             </p>
           </div>
 
@@ -111,7 +111,7 @@ const SectionModal: React.FC<{
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Display Order</label>
               <input type="number" className={INPUT} value={form.displayOrder} onChange={(e) => set('displayOrder', e.target.value)} min="0" />
-              <p className="text-[11px] text-slate-400 mt-1">Lower = appears first (0, 1, 2…)</p>
+              <p className="text-xs text-slate-400 mt-1">Lower = appears first (0, 1, 2…)</p>
             </div>
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Visibility Status</label>
@@ -222,7 +222,7 @@ export const CmsFeaturedPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 sm:p-8 bg-[#FAFAFC] space-y-6">
+    <div className="min-h-screen p-6 sm:p-8 bg-canvas space-y-6">
       {/* Toast */}
       {toast && (
         <div role="alert" className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-xl text-xs font-semibold backdrop-blur-md ${toast.type === 'success' ? 'bg-emerald-50/95 border-emerald-200 text-emerald-900' : 'bg-rose-50/95 border-rose-200 text-rose-900'}`}>
@@ -240,7 +240,7 @@ export const CmsFeaturedPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div className="space-y-1">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[11px] font-bold text-[#E85D88]">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-bold text-accent">
             <Sparkles className="w-3 h-3" /> Homepage Curated Sections
           </span>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Featured Sections Studio</h1>
@@ -260,7 +260,7 @@ export const CmsFeaturedPage: React.FC = () => {
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         {isLoading ? (
           <div className="py-20 text-center">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#E85D88] mx-auto mb-2" />
+            <RefreshCw className="w-8 h-8 animate-spin text-accent mx-auto mb-2" />
             <p className="text-sm text-slate-500">Loading sections...</p>
           </div>
         ) : isError ? (
@@ -287,7 +287,7 @@ export const CmsFeaturedPage: React.FC = () => {
                     <td colSpan={5} className="py-16 text-center text-slate-400">
                       <Sparkles className="w-10 h-10 mx-auto mb-2 opacity-30" />
                       <p className="text-sm font-medium">No featured sections yet.</p>
-                      <button onClick={() => setModal({ mode: 'create' })} className="mt-2 text-[#E85D88] text-xs font-bold hover:underline">+ Add your first section</button>
+                      <button onClick={() => setModal({ mode: 'create' })} className="mt-2 text-accent text-xs font-bold hover:underline">+ Add your first section</button>
                     </td>
                   </tr>
                 )}

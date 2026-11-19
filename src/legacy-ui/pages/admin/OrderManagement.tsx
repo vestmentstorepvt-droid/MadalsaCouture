@@ -231,7 +231,7 @@ export const OrderManagement: React.FC = () => {
           changeText="in all time"
           icon={ShoppingBag}
           iconBgColor="bg-pink-50"
-          iconColor="text-[#E85D88]"
+          iconColor="text-accent"
         />
         <StatsCard
           title="In Progress (Page)"
@@ -273,7 +273,7 @@ export const OrderManagement: React.FC = () => {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Order # (e.g. MC-2026)..."
-              className="w-full pl-9 pr-16 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+              className="w-full pl-9 pr-16 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
             />
             {searchInput && (
               <button
@@ -290,7 +290,7 @@ export const OrderManagement: React.FC = () => {
             )}
             <button
               type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 text-xs font-semibold bg-[#E85D88] text-white rounded-lg hover:bg-[#d44874] transition"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-1 text-xs font-semibold bg-ink text-white rounded-lg hover:bg-ink-hover transition"
             >
               Go
             </button>
@@ -325,7 +325,7 @@ export const OrderManagement: React.FC = () => {
           <button
             type="button"
             onClick={handleClearFilters}
-            className="text-xs text-[#E85D88] hover:underline font-semibold self-end lg:self-center"
+            className="text-xs text-accent hover:underline font-semibold self-end lg:self-center"
           >
             Clear Filters
           </button>
@@ -354,7 +354,7 @@ export const OrderManagement: React.FC = () => {
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-[#E85D88]" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-accent" />
                       <span className="text-sm">Loading orders...</span>
                     </div>
                   </td>
@@ -390,7 +390,7 @@ export const OrderManagement: React.FC = () => {
                       {/* Order Number */}
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono font-bold text-xs text-[#E85D88]">
+                          <span className="font-mono font-bold text-xs text-accent">
                             {order.orderNumber}
                           </span>
                           <button
@@ -415,7 +415,7 @@ export const OrderManagement: React.FC = () => {
                             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                               customer.isGuest
                                 ? 'bg-amber-100 text-amber-800'
-                                : 'bg-pink-100 text-[#E85D88]'
+                                : 'bg-pink-100 text-accent'
                             }`}
                           >
                             {customer.name.charAt(0).toUpperCase()}
@@ -424,7 +424,7 @@ export const OrderManagement: React.FC = () => {
                             <span className="font-semibold text-slate-800 text-xs block truncate">
                               {customer.name}
                             </span>
-                            <span className="text-[11px] text-slate-400 block truncate">
+                            <span className="text-xs text-slate-400 block truncate">
                               {customer.email}
                             </span>
                           </div>
@@ -442,7 +442,7 @@ export const OrderManagement: React.FC = () => {
                           {firstItemTitle}
                         </span>
                         {itemsCount > 1 && (
-                          <span className="text-[11px] text-slate-400">
+                          <span className="text-xs text-slate-400">
                             +{itemsCount - 1} more item{itemsCount - 1 > 1 ? 's' : ''}
                           </span>
                         )}
@@ -468,7 +468,7 @@ export const OrderManagement: React.FC = () => {
                           {currency.format(order.total)}
                         </span>
                         {order.discountAmount ? (
-                          <span className="text-[11px] text-emerald-600 font-medium">
+                          <span className="text-xs text-emerald-600 font-medium">
                             Saved {currency.format(order.discountAmount)}
                           </span>
                         ) : null}
@@ -494,10 +494,10 @@ export const OrderManagement: React.FC = () => {
                               e.stopPropagation();
                               navigate(`/admin/orders/${order._id}`);
                             }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-[#E85D88] hover:bg-pink-50 transition"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-accent hover:bg-pink-50 transition"
                             title="View Order Details"
                           >
-                            <Eye className="w-4 h-4 text-[#E85D88]" />
+                            <Eye className="w-4 h-4 text-accent" />
                           </button>
                         </div>
                       </td>

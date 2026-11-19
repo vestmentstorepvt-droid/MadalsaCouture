@@ -149,7 +149,7 @@ export const CreateCoupon: React.FC = () => {
 
   const inputClass = (hasErr?: boolean) =>
     `w-full px-4 py-3 rounded-xl border ${
-      hasErr ? 'border-rose-400 focus:ring-rose-200 focus:border-rose-500' : 'border-slate-200 focus:ring-[#E85D88]/20 focus:border-[#E85D88]'
+      hasErr ? 'border-rose-400 focus:ring-rose-200 focus:border-rose-500' : 'border-slate-200 focus:ring-ink/20 focus:border-ink'
     } bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400`;
 
   const labelClass = 'flex items-center gap-2 text-sm font-semibold text-slate-700 mb-1.5';
@@ -161,7 +161,7 @@ export const CreateCoupon: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate('/admin/coupons')}
-          className="flex items-center gap-2 text-sm text-slate-500 hover:text-[#E85D88] transition mb-4"
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-accent transition mb-4"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Coupons
         </button>
@@ -194,7 +194,7 @@ export const CreateCoupon: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <Tag className="w-4 h-4 text-[#E85D88]" /> Coupon Code *
+                <Tag className="w-4 h-4 text-accent" /> Coupon Code *
               </label>
               <input
                 type="text"
@@ -213,7 +213,7 @@ export const CreateCoupon: React.FC = () => {
 
             <div>
               <label className={labelClass}>
-                <Percent className="w-4 h-4 text-[#E85D88]" /> Discount Type *
+                <Percent className="w-4 h-4 text-accent" /> Discount Type *
               </label>
               <select
                 className={inputClass(Boolean(validationErrors.type))}
@@ -232,9 +232,9 @@ export const CreateCoupon: React.FC = () => {
             <div>
               <label className={labelClass}>
                 {form.type === 'percentage' ? (
-                  <Percent className="w-4 h-4 text-[#E85D88]" />
+                  <Percent className="w-4 h-4 text-accent" />
                 ) : (
-                  <IndianRupee className="w-4 h-4 text-[#E85D88]" />
+                  <IndianRupee className="w-4 h-4 text-accent" />
                 )}
                 Discount Value {form.type !== 'free_shipping' ? '*' : ''}
               </label>
@@ -257,7 +257,7 @@ export const CreateCoupon: React.FC = () => {
 
             <div>
               <label className={labelClass}>
-                <IndianRupee className="w-4 h-4 text-[#E85D88]" /> Minimum Order Value (₹)
+                <IndianRupee className="w-4 h-4 text-accent" /> Minimum Order Value (₹)
               </label>
               <input
                 type="number"
@@ -277,7 +277,7 @@ export const CreateCoupon: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <CalendarDays className="w-4 h-4 text-[#E85D88]" /> Start Date (Optional)
+                <CalendarDays className="w-4 h-4 text-accent" /> Start Date (Optional)
               </label>
               <input
                 type="date"
@@ -292,7 +292,7 @@ export const CreateCoupon: React.FC = () => {
 
             <div>
               <label className={labelClass}>
-                <CalendarDays className="w-4 h-4 text-[#E85D88]" /> End / Expiry Date (Optional)
+                <CalendarDays className="w-4 h-4 text-accent" /> End / Expiry Date (Optional)
               </label>
               <input
                 type="date"
@@ -310,7 +310,7 @@ export const CreateCoupon: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>
-                <Hash className="w-4 h-4 text-[#E85D88]" /> Total Usage Limit (Optional)
+                <Hash className="w-4 h-4 text-accent" /> Total Usage Limit (Optional)
               </label>
               <input
                 type="number"
@@ -329,7 +329,7 @@ export const CreateCoupon: React.FC = () => {
 
             <div>
               <label className={labelClass}>
-                <Users className="w-4 h-4 text-[#E85D88]" /> Limit Per Customer (Optional)
+                <Users className="w-4 h-4 text-accent" /> Limit Per Customer (Optional)
               </label>
               <input
                 type="number"
@@ -350,7 +350,7 @@ export const CreateCoupon: React.FC = () => {
           {/* Row 5: Initial Status */}
           <div className="max-w-xs">
             <label className={labelClass}>
-              <ShieldCheck className="w-4 h-4 text-[#E85D88]" /> Initial Status
+              <ShieldCheck className="w-4 h-4 text-accent" /> Initial Status
             </label>
             <select
               className={inputClass()}

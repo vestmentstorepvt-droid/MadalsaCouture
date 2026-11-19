@@ -39,6 +39,7 @@ const EVENT_TYPE_OPTIONS = [
   { label: 'Order Shipped', value: 'order_shipped' },
   { label: 'Order Out for Delivery', value: 'order_out_for_delivery' },
   { label: 'Order Delivered', value: 'order_delivered' },
+  { label: 'Order Cancelled', value: 'order_cancelled' },
   { label: 'Exchange Status Update', value: 'exchange_status_update' },
   { label: 'Welcome New User', value: 'welcome' },
   { label: 'Password Reset', value: 'password_reset' },
@@ -57,6 +58,7 @@ const TYPE_NAME_MAP: Record<string, string> = {
   order_shipped: 'Order Shipped',
   order_out_for_delivery: 'Out for Delivery',
   order_delivered: 'Order Delivered',
+  order_cancelled: 'Order Cancelled',
   exchange_status_update: 'Exchange Update',
   welcome: 'Welcome Email',
   password_reset: 'Password Reset',
@@ -167,13 +169,13 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ log, onClose }) => {
         <div className="p-6 space-y-4 overflow-y-auto text-sm">
           <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1">Event Type</span>
+              <span className="text-xs font-semibold text-slate-500 block mb-1">Event Type</span>
               <span className="font-semibold text-slate-800 uppercase text-xs">
                 {TYPE_NAME_MAP[log.type] || log.type}
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1">Status</span>
+              <span className="text-xs font-semibold text-slate-500 block mb-1">Status</span>
               <span
                 className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${badge.cls}`}
               >
@@ -182,11 +184,11 @@ const LogDetailModal: React.FC<LogDetailModalProps> = ({ log, onClose }) => {
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1">Total Attempts</span>
+              <span className="text-xs font-semibold text-slate-500 block mb-1">Total Attempts</span>
               <span className="font-bold text-slate-800">{log.attempts || 1}</span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1">Sent At</span>
+              <span className="text-xs font-semibold text-slate-500 block mb-1">Sent At</span>
               <span className="text-xs text-slate-600">{formatDate(log.createdAt)}</span>
             </div>
           </div>
@@ -381,7 +383,7 @@ const EditTemplateModalContent: React.FC<EditTemplateModalProps & { template: No
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="e.g. Your Order #{{orderNumber}} is Confirmed!"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
               required
             />
           </div>
@@ -390,18 +392,18 @@ const EditTemplateModalContent: React.FC<EditTemplateModalProps & { template: No
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
             <div>
               <span className="text-xs font-semibold text-slate-800 block">Automatic Sending</span>
-              <span className="text-[11px] text-slate-500">
+              <span className="text-xs text-slate-500">
                 Turn ON to automatically send this email whenever this event happens.
               </span>
             </div>
             <button
               type="button"
               onClick={() => setIsActive(!isActive)}
-              className="text-[#E85D88] hover:opacity-80 transition flex items-center gap-2"
+              className="text-accent hover:opacity-80 transition flex items-center gap-2"
             >
               <span className="text-xs font-bold">{isActive ? 'ENABLED' : 'DISABLED'}</span>
               {isActive ? (
-                <ToggleRight className="w-8 h-8 text-[#E85D88]" />
+                <ToggleRight className="w-8 h-8 text-accent" />
               ) : (
                 <ToggleLeft className="w-8 h-8 text-slate-300" />
               )}
@@ -413,9 +415,9 @@ const EditTemplateModalContent: React.FC<EditTemplateModalProps & { template: No
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-[#E85D88]" /> Required Information Checklist:
+                  <Info className="w-4 h-4 text-accent" /> Required Information Checklist:
                 </span>
-                <span className="text-[11px] text-slate-500">Must be included in email</span>
+                <span className="text-xs text-slate-500">Must be included in email</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {requiredPlaceholders.map((p) => {
@@ -493,8 +495,8 @@ const EditTemplateModalContent: React.FC<EditTemplateModalProps & { template: No
             {editorMode === 'preview' && (
               <div className="rounded-2xl border border-slate-200 bg-slate-100 p-4 space-y-3">
                 <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden">
-                  <div className="bg-[#1A1423] px-6 py-4 text-center border-b border-amber-500/20">
-                    <p className="font-serif tracking-[0.25em] text-[#D4AF37] text-sm uppercase font-bold">
+                  <div className="bg-ink px-6 py-4 text-center border-b border-amber-500/20">
+                    <p className="text-accent text-sm font-semibold">
                       Madalsa Couture
                     </p>
                   </div>
@@ -507,7 +509,7 @@ const EditTemplateModalContent: React.FC<EditTemplateModalProps & { template: No
                       dangerouslySetInnerHTML={{ __html: renderedPreview }}
                     />
                   </div>
-                  <div className="bg-slate-50 px-6 py-3 border-t border-slate-100 text-center text-[11px] text-slate-400 font-sans">
+                  <div className="bg-slate-50 px-6 py-3 border-t border-slate-100 text-center text-xs text-slate-400 font-sans">
                     © 2026 Madalsa Couture. All rights reserved.
                   </div>
                 </div>
@@ -521,7 +523,7 @@ const EditTemplateModalContent: React.FC<EditTemplateModalProps & { template: No
                 onChange={(e) => setHtmlBody(e.target.value)}
                 rows={10}
                 placeholder="<p>Dear {{name}}, your order {{orderNumber}} is confirmed!</p>"
-                className="w-full px-3.5 py-2.5 font-mono text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] bg-slate-900 text-slate-100"
+                className="w-full px-3.5 py-2.5 font-mono text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink bg-slate-900 text-slate-100"
                 required
               />
             )}
@@ -635,7 +637,7 @@ export const Notifications: React.FC = () => {
           type="button"
           onClick={() => setActiveTab('logs')}
           className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${activeTab === 'logs'
-              ? 'bg-[#E85D88] text-white shadow-xs'
+              ? 'bg-ink text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
         >
@@ -645,7 +647,7 @@ export const Notifications: React.FC = () => {
           type="button"
           onClick={() => setActiveTab('templates')}
           className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${activeTab === 'templates'
-              ? 'bg-[#E85D88] text-white shadow-xs'
+              ? 'bg-ink text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
         >
@@ -710,7 +712,7 @@ export const Notifications: React.FC = () => {
                     setLogPage(1);
                   }}
                   placeholder="Search recipient email..."
-                  className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+                  className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
                 />
               </div>
 
@@ -748,7 +750,7 @@ export const Notifications: React.FC = () => {
                   setStatusFilter('ALL');
                   setLogPage(1);
                 }}
-                className="text-xs text-[#E85D88] hover:underline font-semibold self-end lg:self-center"
+                className="text-xs text-accent hover:underline font-semibold self-end lg:self-center"
               >
                 Clear Filters
               </button>
@@ -776,7 +778,7 @@ export const Notifications: React.FC = () => {
                     <tr>
                       <td colSpan={7} className="py-12 text-center text-slate-500">
                         <div className="flex flex-col items-center justify-center gap-2">
-                          <RefreshCw className="w-6 h-6 animate-spin text-[#E85D88]" />
+                          <RefreshCw className="w-6 h-6 animate-spin text-accent" />
                           <span className="text-sm">Loading delivery logs...</span>
                         </div>
                       </td>
@@ -843,7 +845,7 @@ export const Notifications: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setInspectLog(log)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-[#E85D88] hover:bg-pink-50 transition"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-accent hover:bg-pink-50 transition"
                               title="Inspect Delivery Details"
                             >
                               <Eye className="w-4 h-4" />
@@ -876,7 +878,7 @@ export const Notifications: React.FC = () => {
         <div className="space-y-6">
           {isLoadingTemplates ? (
             <div className="py-12 text-center text-slate-500">
-              <RefreshCw className="w-6 h-6 animate-spin text-[#E85D88] mx-auto mb-2" />
+              <RefreshCw className="w-6 h-6 animate-spin text-accent mx-auto mb-2" />
               <p className="text-xs">Loading email templates...</p>
             </div>
           ) : templates.length === 0 ? (
@@ -891,15 +893,15 @@ export const Notifications: React.FC = () => {
                 return (
                   <div
                     key={tpl.type}
-                    className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:border-[#E85D88]/40 transition"
+                    className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover:border-ink/40 transition"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-50 text-[#E85D88]">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-pink-50 text-accent">
                           {TYPE_NAME_MAP[tpl.type] || tpl.type}
                         </span>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${tpl.isActive
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${tpl.isActive
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : 'bg-slate-100 text-slate-500 border-slate-200'
                             }`}
@@ -921,7 +923,7 @@ export const Notifications: React.FC = () => {
                           {placeholders.map((p) => (
                             <span
                               key={p}
-                              className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200"
+                              className="text-xs font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200"
                             >
                               {'{{' + p + '}}'}
                             </span>
@@ -931,13 +933,13 @@ export const Notifications: React.FC = () => {
                     </div>
 
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-xs text-slate-400">
                         {tpl.updatedAt ? `Updated ${formatDate(tpl.updatedAt)}` : 'Default Template'}
                       </span>
                       <button
                         type="button"
                         onClick={() => setEditTemplate(tpl)}
-                        className="px-3 py-1.5 rounded-xl bg-pink-50 text-[#E85D88] text-xs font-semibold hover:bg-pink-100 transition flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-xl bg-pink-50 text-accent text-xs font-semibold hover:bg-pink-100 transition flex items-center gap-1.5"
                       >
                         <Edit3 className="w-3.5 h-3.5" /> Edit Template
                       </button>

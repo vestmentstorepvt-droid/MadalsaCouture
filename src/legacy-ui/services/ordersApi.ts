@@ -94,6 +94,10 @@ export interface Order {
   paymentStatus: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
   statusHistory?: OrderStatusHistoryEntry[];
   notes?: string | null;
+  /** Set when the customer cancelled: why and when. */
+  cancellation?: { by: string; reason: string; reasonLabel: string; note?: string | null; at: string } | null;
+  /** The order in Shiprocket's shipping panel; an AWB means it's with the courier. */
+  shiprocketShipping?: { orderId?: number | string; status?: string; awb?: string | null; courier?: string | null } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -215,10 +219,11 @@ export const ordersApi = createApi({
     }),
 
     // ── Customer: cancel order
-    cancelOrder: builder.mutation<Order, string>({
-      query: (id) => ({
+    cancelOrder: builder.mutation<Order, { id: string; reason: string; note?: string }>({
+      query: ({ id, reason, note }) => ({
         url: `${ENDPOINTS.ORDERS}/${id}/cancel`,
         method: 'POST',
+        body: { reason, note },
       }),
       transformResponse: (response: unknown): Order => {
         if (response && typeof response === 'object') {

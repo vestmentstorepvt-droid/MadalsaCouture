@@ -5,7 +5,7 @@ import { ShieldCheck, Truck, CreditCard, ArrowLeft, AlertCircle } from 'lucide-r
 
 import { selectCartItems, selectCartSubtotal } from '../../store/slices/cartSlice';
 import { optimizeImage } from '../../utils/imageUtils';
-import { generateCheckoutToken, openShiprocketCheckoutRedirect } from '../../services/shiprocketCheckoutAlternative';
+import { generateCheckoutToken, openShiprocketCheckout, rememberCheckoutItems } from '../../services/shiprocketCheckoutAlternative';
 
 declare global {
   interface Window {
@@ -71,7 +71,13 @@ const Checkout: React.FC = () => {
       setError(null);
 
       const token = await generateCheckoutToken(cartForBackend);
-      openShiprocketCheckoutRedirect(token);
+      // Remembered so the success page takes exactly these out of the bag.
+      rememberCheckoutItems(
+        cartItems.map(({ productId, variantId, size, color, quantity }) => ({ productId, variantId, size, color, quantity }))
+      );
+      await openShiprocketCheckout(token);
+      // Checkout now sits over this page; if the shopper closes it, the button works again.
+      setIsProcessing(false);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Checkout failed. Please try again.';
@@ -82,12 +88,12 @@ const Checkout: React.FC = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center text-center px-4">
+      <div className="min-h-screen bg-canvas flex items-center justify-center text-center px-4">
         <div className="space-y-4">
-          <p className="font-serif text-xl text-slate-800 uppercase tracking-widest">Your cart is empty</p>
+          <p className="text-xl tracking-[-0.4px] text-slate-800 font-semibold">Your cart is empty</p>
           <Link
             to="/products"
-            className="inline-block border border-[#3D2C24] px-6 py-3 text-xs uppercase tracking-widest text-[#3D2C24] hover:bg-[#3D2C24] hover:text-white transition-all"
+            className="inline-block border px-6 text-ink h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
           >
             Continue Shopping
           </Link>
@@ -97,16 +103,16 @@ const Checkout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] pb-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-canvas pb-16 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
         <div className="text-center mb-10 space-y-2 pt-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-[#D4AF37]">Secure Checkout</p>
-          <h1 className="font-serif text-3xl uppercase tracking-wide text-slate-900">Checkout</h1>
-          <div className="mx-auto h-0.5 w-12 bg-[#D4AF37]" />
+          <p className="eyebrow">Secure Checkout</p>
+          <h1 className="text-[32px] leading-10 tracking-[-1.28px] text-slate-900 font-semibold">Checkout</h1>
+          <div className="mx-auto h-0.5 w-12 bg-ink" />
         </div>
 
-        <div className="rounded-2xl border border-[#E2D9CC] bg-white p-6 space-y-5 shadow-sm">
-          <h2 className="font-serif text-lg uppercase tracking-wider text-slate-900">Order Summary</h2>
+        <div className="rounded-2xl border border-hairline bg-white p-6 space-y-5 shadow-sm">
+          <h2 className="text-base text-slate-900 font-semibold">Order Summary</h2>
 
           <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
             {cartItems.map((item) => (
@@ -119,9 +125,9 @@ const Checkout: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-slate-800 truncate">{item.name}</p>
                   {(item.size || item.color) && (
-                    <p className="text-[11px] text-slate-500">{[item.size, item.color].filter(Boolean).join(' · ')}</p>
+                    <p className="text-xs text-slate-500">{[item.size, item.color].filter(Boolean).join(' · ')}</p>
                   )}
-                  <p className="text-[11px] text-stone-500">Qty: {item.quantity}</p>
+                  <p className="text-xs text-stone-500">Qty: {item.quantity}</p>
                 </div>
                 <p className="text-sm font-semibold text-slate-800 shrink-0">
                   {formatINR(item.price * item.quantity)}
@@ -130,7 +136,7 @@ const Checkout: React.FC = () => {
             ))}
           </div>
 
-          <div className="border-t border-[#E2D9CC] pt-4 space-y-2 text-sm">
+          <div className="border-t border-hairline pt-4 space-y-2 text-sm">
             <div className="flex justify-between text-slate-600">
               <span>Subtotal</span>
               <span>{formatINR(cartSubtotal)}</span>
@@ -153,7 +159,7 @@ const Checkout: React.FC = () => {
 
           <button
             disabled={isProcessing}
-            className="w-full bg-[#3D2C24] text-white py-3 px-4 text-center font-serif font-semibold uppercase tracking-wide hover:bg-[#2D1C14] transition rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-ink text-white px-4 text-center transition disabled:opacity-50 disabled:cursor-not-allowed h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover"
             onClick={handleCheckoutClick}
           >
             {isProcessing ? (
@@ -166,22 +172,22 @@ const Checkout: React.FC = () => {
             )}
           </button>
 
-          <ul className="grid grid-cols-3 gap-2 pt-2 text-[11px] text-slate-500 text-center">
+          <ul className="grid grid-cols-3 gap-2 pt-2 text-xs text-slate-500 text-center">
             <li className="flex flex-col items-center gap-1">
-              <Truck className="h-4 w-4 text-[#D4AF37]" /> Fast Shipping
+              <Truck className="h-4 w-4 text-accent" /> Fast Shipping
             </li>
             <li className="flex flex-col items-center gap-1">
-              <CreditCard className="h-4 w-4 text-[#D4AF37]" /> Secure Payment
+              <CreditCard className="h-4 w-4 text-accent" /> Secure Payment
             </li>
             <li className="flex flex-col items-center gap-1">
-              <ShieldCheck className="h-4 w-4 text-[#D4AF37]" /> Protected Checkout
+              <ShieldCheck className="h-4 w-4 text-accent" /> Protected Checkout
             </li>
           </ul>
         </div>
 
         <Link
           to="/cart"
-          className="mt-6 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#3D2C24] transition"
+          className="mt-6 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-ink transition"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to Cart
         </Link>

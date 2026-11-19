@@ -233,13 +233,13 @@ const AdjustStockModalContent: React.FC<AdjustStockModalProps & { item: Inventor
           {/* Current vs Projected Stock Preview Card */}
           <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+              <span className="text-xs font-semibold text-slate-500 block mb-1">
                 Current Stock
               </span>
               <span className="text-xl font-bold text-slate-800">{item.stock}</span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1">Adjustment</span>
+              <span className="text-xs font-semibold text-slate-500 block mb-1">Adjustment</span>
               <span
                 className={`text-xl font-bold font-mono ${
                   signedDelta > 0
@@ -253,12 +253,12 @@ const AdjustStockModalContent: React.FC<AdjustStockModalProps & { item: Inventor
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 block mb-1">
+              <span className="text-xs font-semibold text-slate-500 block mb-1">
                 New Projected Stock
               </span>
               <span
                 className={`text-xl font-bold ${
-                  projectedStock < 0 ? 'text-rose-600' : 'text-[#E85D88]'
+                  projectedStock < 0 ? 'text-rose-600' : 'text-accent'
                 }`}
               >
                 {Math.max(0, projectedStock)}
@@ -310,7 +310,7 @@ const AdjustStockModalContent: React.FC<AdjustStockModalProps & { item: Inventor
               min={1}
               value={deltaValue}
               onChange={(e) => setDeltaValue(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
               placeholder="e.g. 10"
               required
             />
@@ -324,7 +324,7 @@ const AdjustStockModalContent: React.FC<AdjustStockModalProps & { item: Inventor
             <select
               value={reasonCode}
               onChange={(e) => setReasonCode(e.target.value as InventoryReasonCode)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] bg-white"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink bg-white"
             >
               {REASON_CODE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -344,7 +344,7 @@ const AdjustStockModalContent: React.FC<AdjustStockModalProps & { item: Inventor
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. Received PO #5092 from vendor / Fabric flaw check"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
             />
           </div>
 
@@ -399,7 +399,7 @@ const InventoryLogModal: React.FC<InventoryLogModalProps> = ({ item, onClose }) 
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2">
-            <History className="w-5 h-5 text-[#E85D88]" />
+            <History className="w-5 h-5 text-accent" />
             <div>
               <h2 className="text-base font-bold text-slate-900">Inventory Audit History</h2>
               <p className="text-xs text-slate-500">
@@ -423,7 +423,7 @@ const InventoryLogModal: React.FC<InventoryLogModalProps> = ({ item, onClose }) 
             <div className="text-center py-10">
               <History className="w-8 h-8 text-slate-300 mx-auto mb-2" />
               <p className="text-xs font-semibold text-slate-600">No manual adjustments logged yet.</p>
-              <p className="text-[11px] text-slate-400">Stock updates will automatically generate an audit entry.</p>
+              <p className="text-xs text-slate-400">Stock updates will automatically generate an audit entry.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -455,11 +455,11 @@ const InventoryLogModal: React.FC<InventoryLogModalProps> = ({ item, onClose }) 
 
                     {log.note && <p className="text-slate-600">{log.note}</p>}
                     {log.actorEmail && (
-                      <p className="text-[11px] text-slate-400">By: {log.actorEmail}</p>
+                      <p className="text-xs text-slate-400">By: {log.actorEmail}</p>
                     )}
                   </div>
 
-                  <span className="text-[11px] text-slate-400 shrink-0">
+                  <span className="text-xs text-slate-400 shrink-0">
                     {formatDate(log.timestamp)}
                   </span>
                 </div>
@@ -624,7 +624,7 @@ export const InventoryManagement: React.FC = () => {
                 setCurrentPage(1);
               }}
               placeholder="Search product, SKU, color..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
             />
           </div>
 
@@ -661,7 +661,7 @@ export const InventoryManagement: React.FC = () => {
               setStatusFilter('ALL');
               setCurrentPage(1);
             }}
-            className="text-xs text-[#E85D88] hover:underline font-semibold self-end lg:self-center"
+            className="text-xs text-accent hover:underline font-semibold self-end lg:self-center"
           >
             Clear Filters
           </button>
@@ -689,7 +689,7 @@ export const InventoryManagement: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <RefreshCw className="w-6 h-6 animate-spin text-[#E85D88]" />
+                      <RefreshCw className="w-6 h-6 animate-spin text-accent" />
                       <span className="text-sm">Loading inventory...</span>
                     </div>
                   </td>
@@ -729,7 +729,7 @@ export const InventoryManagement: React.FC = () => {
                             </span>
                           )}
                           {item.color && (
-                            <span className="px-2 py-0.5 rounded-md bg-pink-50 text-[#E85D88] font-medium">
+                            <span className="px-2 py-0.5 rounded-md bg-pink-50 text-accent font-medium">
                               {item.color}
                             </span>
                           )}
@@ -751,7 +751,7 @@ export const InventoryManagement: React.FC = () => {
                       <td className="py-4 px-4 text-xs text-slate-600">
                         <span className="font-medium text-slate-800">{available} units</span>
                         {item.reservedStock ? (
-                          <span className="text-[10px] text-purple-600 block">
+                          <span className="text-xs text-purple-600 block">
                             ({item.reservedStock} reserved)
                           </span>
                         ) : null}
@@ -772,7 +772,7 @@ export const InventoryManagement: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setAdjustTarget(item)}
-                            className="px-3 py-1.5 rounded-xl bg-pink-50 border border-pink-200 text-[#E85D88] text-xs font-semibold hover:bg-pink-100 transition flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-xl bg-pink-50 border border-pink-200 text-accent text-xs font-semibold hover:bg-pink-100 transition flex items-center gap-1"
                           >
                             <Plus className="w-3.5 h-3.5" /> Adjust
                           </button>

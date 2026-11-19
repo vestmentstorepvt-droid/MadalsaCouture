@@ -42,8 +42,8 @@ interface AnnouncementForm {
 const EMPTY_FORM: AnnouncementForm = {
   message: '✨ Free Shipping on Orders Above ₹4,999 | Festive Sale is LIVE!',
   link: '/collections',
-  backgroundColor: '#D4AF37',
-  textColor: '#000000',
+  backgroundColor: '#171717',
+  textColor: '#ffffff',
   countdownTarget: null,
   status: 'active',
   startsAt: null,
@@ -132,8 +132,8 @@ export const CmsAnnouncementPage: React.FC = () => {
       setForm({
         message: (d.message as string) || (d.text as string) || '',
         link: (d.link as string) || '',
-        backgroundColor: (d.backgroundColor as string) || '#D4AF37',
-        textColor: (d.textColor as string) || '#000000',
+        backgroundColor: (d.backgroundColor as string) || '#171717',
+        textColor: (d.textColor as string) || '#ffffff',
         countdownTarget: (d.countdownTarget as string) || null,
         status: (d.status as 'active' | 'inactive') || (d.isActive ? 'active' : 'inactive'),
         startsAt: (d.startsAt as string) || null,
@@ -183,7 +183,7 @@ export const CmsAnnouncementPage: React.FC = () => {
   const messageLength = form.message.length;
 
   return (
-    <div className="min-h-screen p-6 sm:p-8 bg-[#FAFAFC] text-slate-800 space-y-6">
+    <div className="min-h-screen p-6 sm:p-8 bg-canvas text-slate-800 space-y-6">
       {/* Toast Alert */}
       {toast && (
         <div
@@ -211,8 +211,8 @@ export const CmsAnnouncementPage: React.FC = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-[#D4AF37]" /> Global Store Header
+            <span className="px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-accent" /> Global Store Header
             </span>
             <div className="flex items-center gap-1.5">
               <div
@@ -262,7 +262,7 @@ export const CmsAnnouncementPage: React.FC = () => {
 
       {isLoading ? (
         <div className="py-28 text-center text-slate-500 bg-white rounded-3xl border border-slate-200">
-          <RefreshCw className="w-9 h-9 animate-spin text-[#E85D88] mx-auto mb-3" />
+          <RefreshCw className="w-9 h-9 animate-spin text-accent mx-auto mb-3" />
           <p className="text-sm font-bold text-slate-800">Synchronizing Announcement Bar...</p>
           <p className="text-xs text-slate-400 mt-1">Connecting to MongoDB singleton...</p>
         </div>
@@ -279,12 +279,12 @@ export const CmsAnnouncementPage: React.FC = () => {
           {/* ── Left Column: Form Controls (7 cols) ─────────────────────────── */}
           <div className="xl:col-span-7 space-y-5">
             {/* 1-Click Luxury Presets Bar */}
-            <div className="bg-linear-to-r from-[#1E1727] to-[#120E16] text-white p-4 sm:p-5 rounded-3xl border border-white/10 shadow-lg space-y-3">
+            <div className="bg-linear-to-r from-ink to-ink text-white p-4 sm:p-5 rounded-3xl border border-white/10 shadow-lg space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-accent flex items-center gap-1.5">
                   <Wand2 className="w-3.5 h-3.5" /> 1-Click Campaign Themes
                 </span>
-                <span className="text-[10px] text-white/50 font-mono">Quick Load</span>
+                <span className="text-xs text-white/50 font-mono">Quick Load</span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {LUXURY_PRESETS.map((p) => (
@@ -292,15 +292,15 @@ export const CmsAnnouncementPage: React.FC = () => {
                     key={p.name}
                     type="button"
                     onClick={() => applyPreset(p)}
-                    className="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#D4AF37]/50 text-left transition group"
+                    className="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-hairline text-left transition group"
                   >
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="w-2.5 h-2.5 rounded-full border border-white/30" style={{ backgroundColor: p.bg }} />
-                      <span className="text-xs font-bold text-white group-hover:text-[#D4AF37] transition block truncate">
+                      <span className="text-xs font-bold text-white group-hover:text-accent transition block truncate">
                         {p.name}
                       </span>
                     </div>
-                    <span className="text-[10px] text-white/60 line-clamp-1 block">
+                    <span className="text-xs text-white/60 line-clamp-1 block">
                       {p.desc}
                     </span>
                   </button>
@@ -344,12 +344,12 @@ export const CmsAnnouncementPage: React.FC = () => {
                 <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-5">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-pink-50 text-[#E85D88] flex items-center justify-center font-bold text-xs">
+                      <div className="w-8 h-8 rounded-xl bg-pink-50 text-accent flex items-center justify-center font-bold text-xs">
                         01
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Announcement Message & Link</h2>
-                        <p className="text-[11px] text-slate-400">The primary announcement copy and optional click-through URL</p>
+                        <p className="text-xs text-slate-400">The primary announcement copy and optional click-through URL</p>
                       </div>
                     </div>
                   </div>
@@ -358,7 +358,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-700">Announcement Message *</label>
-                      <span className={`text-[11px] font-mono ${messageLength > 120 ? 'text-rose-500' : 'text-slate-400'}`}>
+                      <span className={`text-xs font-mono ${messageLength > 120 ? 'text-rose-500' : 'text-slate-400'}`}>
                         {messageLength}/140
                       </span>
                     </div>
@@ -368,10 +368,10 @@ export const CmsAnnouncementPage: React.FC = () => {
                       onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                       placeholder="✨ Free Shipping on Orders Above ₹4,999 | Festive Sale is LIVE!"
                       maxLength={140}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                       required
                     />
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-400 leading-relaxed">
                       💡 Tip: Keep under 90 characters for optimal visibility on mobile screens.
                     </p>
                   </div>
@@ -386,7 +386,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                       value={form.link}
                       onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}
                       placeholder="/collections/festive-wear or https://..."
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                     />
                   </div>
                 </div>
@@ -402,7 +402,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Color Palette & Contrast</h2>
-                        <p className="text-[11px] text-slate-400">Choose luxury color combinations for maximum elegance</p>
+                        <p className="text-xs text-slate-400">Choose luxury color combinations for maximum elegance</p>
                       </div>
                     </div>
                   </div>
@@ -438,7 +438,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                             }`}
                           >
                             <span className="w-4 h-4 rounded-full border border-slate-300 shadow-xs shrink-0" style={{ backgroundColor: p.hex }} />
-                            <span className="text-[10px] font-semibold truncate text-slate-700">{p.label}</span>
+                            <span className="text-xs font-semibold truncate text-slate-700">{p.label}</span>
                           </button>
                         );
                       })}
@@ -476,7 +476,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                             }`}
                           >
                             <span className="w-4 h-4 rounded-full border border-slate-300 shadow-xs shrink-0" style={{ backgroundColor: p.hex }} />
-                            <span className="text-[10px] font-semibold truncate text-slate-700">{p.label}</span>
+                            <span className="text-xs font-semibold truncate text-slate-700">{p.label}</span>
                           </button>
                         );
                       })}
@@ -495,7 +495,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Urgency Countdown Clock</h2>
-                        <p className="text-[11px] text-slate-400">Display a real-time ticking countdown badge (e.g. Sale Ends in 05h : 22m)</p>
+                        <p className="text-xs text-slate-400">Display a real-time ticking countdown badge (e.g. Sale Ends in 05h : 22m)</p>
                       </div>
                     </div>
                     {form.countdownTarget && (
@@ -520,13 +520,13 @@ export const CmsAnnouncementPage: React.FC = () => {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, countdownTarget: e.target.value || null }))
                         }
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ink/20"
                       />
                     </div>
 
                     {/* Quick Timer Helpers */}
                     <div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
                         Quick Duration Shortcuts
                       </span>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -561,7 +561,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                       </div>
                       <div>
                         <h2 className="text-sm font-bold text-slate-900">Campaign Schedule & Visibility</h2>
-                        <p className="text-[11px] text-slate-400">Automate start and end times or toggle visibility instantly</p>
+                        <p className="text-xs text-slate-400">Automate start and end times or toggle visibility instantly</p>
                       </div>
                     </div>
                   </div>
@@ -569,30 +569,58 @@ export const CmsAnnouncementPage: React.FC = () => {
                   {/* Scheduling Dates */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1 flex items-center gap-1">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-1 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" /> Start Schedule (Optional)
                       </label>
-                      <input
-                        type="datetime-local"
-                        value={toDatetimeLocal(form.startsAt)}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, startsAt: e.target.value || null }))
-                        }
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
-                      />
+                      {/* Browsers give datetime fields no clear button, so the optional date gets its own. */}
+                      <div className="flex gap-2">
+                        <input
+                          type="datetime-local"
+                          value={toDatetimeLocal(form.startsAt)}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, startsAt: e.target.value || null }))
+                          }
+                          className="min-w-0 flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ink/20"
+                        />
+                        {form.startsAt && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, startsAt: null }))}
+                            aria-label="Clear start date"
+                            className="shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">{form.startsAt ? '' : 'No start date: shows as soon as it is turned on.'}</p>
                     </div>
                     <div>
-                      <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1 flex items-center gap-1">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-600 block mb-1 flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-slate-400" /> End Schedule (Optional)
                       </label>
-                      <input
-                        type="datetime-local"
-                        value={toDatetimeLocal(form.endsAt)}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, endsAt: e.target.value || null }))
-                        }
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
-                      />
+                      {/* Browsers give datetime fields no clear button, so the optional date gets its own. */}
+                      <div className="flex gap-2">
+                        <input
+                          type="datetime-local"
+                          value={toDatetimeLocal(form.endsAt)}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, endsAt: e.target.value || null }))
+                          }
+                          className="min-w-0 flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-ink/20"
+                        />
+                        {form.endsAt && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, endsAt: null }))}
+                            aria-label="Clear end date"
+                            className="shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">{form.endsAt ? '' : 'No end date: keeps showing until you turn it off.'}</p>
                     </div>
                   </div>
 
@@ -602,7 +630,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                       <span className="text-xs font-bold text-slate-900 block">
                         Site-Wide Announcement Visibility
                       </span>
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-xs text-slate-500">
                         When published, the announcement bar is pinned to the very top of every storefront page.
                       </span>
                     </div>
@@ -643,11 +671,11 @@ export const CmsAnnouncementPage: React.FC = () => {
 
           {/* ── Right Column: Live Storefront Workbench (5 cols) ─────────────── */}
           <div className="xl:col-span-5 sticky top-6 space-y-4">
-            <div className="bg-[#120E16] text-white p-5 rounded-3xl border border-white/10 shadow-2xl space-y-4">
+            <div className="bg-ink text-white p-5 rounded-3xl border border-white/10 shadow-2xl space-y-4">
               {/* Workbench Top Bar */}
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#D4AF37] animate-pulse" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-ink animate-pulse" />
                   <span className="text-xs font-bold uppercase tracking-wider text-white">
                     Live Header Simulation
                   </span>
@@ -659,7 +687,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                     type="button"
                     onClick={() => setPreviewDevice('desktop')}
                     className={`p-1.5 rounded-lg transition ${
-                      previewDevice === 'desktop' ? 'bg-[#D4AF37] text-black font-bold' : 'text-white/70 hover:text-white'
+                      previewDevice === 'desktop' ? 'bg-ink text-black font-bold' : 'text-white/70 hover:text-white'
                     }`}
                     title="Desktop View"
                   >
@@ -669,7 +697,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                     type="button"
                     onClick={() => setPreviewDevice('tablet')}
                     className={`p-1.5 rounded-lg transition ${
-                      previewDevice === 'tablet' ? 'bg-[#D4AF37] text-black font-bold' : 'text-white/70 hover:text-white'
+                      previewDevice === 'tablet' ? 'bg-ink text-black font-bold' : 'text-white/70 hover:text-white'
                     }`}
                     title="Tablet View"
                   >
@@ -679,7 +707,7 @@ export const CmsAnnouncementPage: React.FC = () => {
                     type="button"
                     onClick={() => setPreviewDevice('mobile')}
                     className={`p-1.5 rounded-lg transition ${
-                      previewDevice === 'mobile' ? 'bg-[#D4AF37] text-black font-bold' : 'text-white/70 hover:text-white'
+                      previewDevice === 'mobile' ? 'bg-ink text-black font-bold' : 'text-white/70 hover:text-white'
                     }`}
                     title="Mobile View"
                   >
@@ -699,16 +727,16 @@ export const CmsAnnouncementPage: React.FC = () => {
                 }`}
               >
                 {/* Browser Address Header */}
-                <div className="bg-[#1A1423] px-3.5 py-2 border-b border-white/10 flex items-center justify-between">
+                <div className="bg-ink px-3.5 py-2 border-b border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 rounded-full bg-rose-500/80" />
                     <div className="w-2 h-2 rounded-full bg-amber-500/80" />
                     <div className="w-2 h-2 rounded-full bg-emerald-500/80" />
                   </div>
-                  <span className="text-[10px] text-white/50 font-mono truncate max-w-[160px]">
+                  <span className="text-xs text-white/50 font-mono truncate max-w-[160px]">
                     madalsacouture.com
                   </span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-[#D4AF37] font-mono">
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-white/10 text-accent font-mono">
                     LIVE
                   </span>
                 </div>
@@ -723,39 +751,39 @@ export const CmsAnnouncementPage: React.FC = () => {
                 >
                   <span className="line-clamp-2">{form.message || '✨ Your Announcement Message Goes Here'}</span>
                   {form.countdownTarget && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/20 text-[10px] font-mono font-bold tracking-normal backdrop-blur-xs">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/20 text-xs font-mono font-bold tracking-normal backdrop-blur-xs">
                       <Clock className="w-2.5 h-2.5 opacity-70" /> 05h : 22m : 18s
                     </span>
                   )}
                 </div>
 
                 {/* Mock Navbar & Hero header underneath */}
-                <div className="p-4 bg-[#140F1B] border-t border-white/5 space-y-3">
+                <div className="p-4 bg-ink border-t border-white/5 space-y-3">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                    <span className="font-serif text-xs uppercase tracking-[0.2em] text-[#D4AF37]">
+                    <span className="text-xs text-accent font-semibold">
                       Madalsa Couture
                     </span>
-                    <div className="flex items-center gap-3 text-[10px] text-white/70">
+                    <div className="flex items-center gap-3 text-xs text-white/70">
                       <span>Home</span>
                       <span>Shop</span>
                       <span>About Us</span>
                     </div>
                   </div>
                   <div className="h-20 rounded-xl bg-linear-to-b from-white/5 to-transparent flex items-center justify-center text-center p-3">
-                    <span className="text-[11px] text-white/40 font-mono">Homepage Hero Section Body</span>
+                    <span className="text-xs text-white/40 font-mono">Homepage Hero Section Body</span>
                   </div>
                 </div>
               </div>
 
               {/* Status Info Chips */}
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-white/70 pt-2 border-t border-white/10">
+              <div className="grid grid-cols-2 gap-2 text-xs text-white/70 pt-2 border-t border-white/10">
                 <div className="flex items-center gap-1.5">
                   <span className="text-white/40 font-mono">Background:</span>
                   <span className="font-bold text-white font-mono uppercase">{form.backgroundColor}</span>
                 </div>
                 <div className="flex items-center gap-1.5 justify-end">
                   <span className="text-white/40 font-mono">Status:</span>
-                  <span className="font-bold text-[#D4AF37] capitalize">{form.status}</span>
+                  <span className="font-bold text-accent capitalize">{form.status}</span>
                 </div>
               </div>
             </div>

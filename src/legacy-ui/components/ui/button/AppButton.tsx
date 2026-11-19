@@ -29,7 +29,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
 }) => {
   // Base structural classes matching theme tokens
   const baseStyles =
-    'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#E85D88] focus:ring-offset-2 focus:ring-offset-[#110E1B] disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]';
+    'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 focus:ring-offset-ink disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98]';
 
   // Size variations
   const sizeStyles: Record<ButtonSize, string> = {
@@ -42,19 +42,19 @@ export const AppButton: React.FC<AppButtonProps> = ({
   const variantStyles: Record<ButtonVariant, string> = {
     // Primary pink accent button matching "+ Add Customer" image
     primary:
-      'bg-gradient-to-r from-[#E85D88] to-[#D04873] hover:from-[#d64f78] hover:to-[#be3b64] text-white shadow-md shadow-[#E85D88]/20 border border-[#E85D88]/30',
+      'bg-ink hover:from-ink-hover hover:to-ink-hover text-white shadow-md shadow-black/20 border border-ink/30',
     
     // Secondary subtle background for internal cards/actions
     secondary:
-      'bg-[#2B1B28] hover:bg-[#392435] text-slate-200 border border-[#2B1B28] hover:border-[#E85D88]/40',
+      'bg-ink hover:bg-ink text-slate-200 border border-ink hover:border-ink/40',
     
     // Outline style for table actions or filters
     outline:
-      'bg-transparent border border-[#2B1B28] text-slate-300 hover:text-white hover:bg-[#1E1627] hover:border-[#E85D88]/50',
+      'bg-transparent border border-ink text-slate-300 hover:text-white hover:bg-ink hover:border-ink/50',
     
     // Ghost button for clean navigation/icon triggers
     ghost:
-      'bg-transparent text-slate-400 hover:text-white hover:bg-[#1E1627]',
+      'bg-transparent text-slate-400 hover:text-white hover:bg-ink',
     
     // Danger state for destructive operations
     danger:

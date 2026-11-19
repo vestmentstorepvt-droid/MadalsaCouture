@@ -37,7 +37,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`rich-text-editor-wrapper bg-white rounded-lg border border-slate-200 overflow-hidden focus-within:ring-2 focus-within:ring-[#E85D88]/20 focus-within:border-[#E85D88] ${className}`}>
+    <div className={`rich-text-editor-wrapper bg-white rounded-lg border border-slate-200 overflow-hidden focus-within:ring-2 focus-within:ring-ink/20 focus-within:border-ink ${className}`}>
       <style>{`
         .ql-toolbar.ql-snow {
           border: none;

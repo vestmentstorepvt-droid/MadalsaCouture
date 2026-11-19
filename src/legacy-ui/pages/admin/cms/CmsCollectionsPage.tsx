@@ -21,7 +21,7 @@ const useToast = () => {
 };
 
 const INPUT =
-  'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] bg-white transition-colors';
+  'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink bg-white transition-colors';
 
 const FieldHint: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <p className="text-xs text-slate-400 mt-1 leading-relaxed">{children}</p>
@@ -41,8 +41,8 @@ const ToggleSwitch: React.FC<{
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-[#E85D88]/40 ${
-        checked ? 'bg-[#E85D88]' : 'bg-slate-200'
+      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-ink/40 ${
+        checked ? 'bg-ink' : 'bg-slate-200'
       }`}
     >
       <span
@@ -179,7 +179,7 @@ export const CmsCollectionsPage: React.FC = () => {
   const activeCount = items.filter((i) => i.isActive !== false).length;
 
   return (
-    <div className="min-h-screen p-6 bg-[#FAFAFC]">
+    <div className="min-h-screen p-6 bg-canvas">
       {/* Toasts */}
       <div className="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
         {toasts.map((t) => (
@@ -206,7 +206,7 @@ export const CmsCollectionsPage: React.FC = () => {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[11px] font-bold text-[#E85D88]">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-xs font-bold text-accent">
                 <Sparkles className="h-3 w-3" /> Homepage Collections
               </span>
               <div className="flex items-center gap-1.5">
@@ -267,7 +267,7 @@ export const CmsCollectionsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleAddItem}
-                      className="text-[#E85D88] hover:underline font-medium"
+                      className="text-accent hover:underline font-medium"
                     >
                       + Add your first collection
                     </button>
@@ -283,7 +283,7 @@ export const CmsCollectionsPage: React.FC = () => {
                   {/* Card header */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white">
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-rose-50 text-[#E85D88] text-xs font-bold flex items-center justify-center">
+                      <span className="w-6 h-6 rounded-full bg-rose-50 text-accent text-xs font-bold flex items-center justify-center">
                         {index + 1}
                       </span>
                       <span className="text-sm font-semibold text-slate-700">

@@ -226,6 +226,46 @@ class CartService {
   }
 
   /**
+   * Take ordered items out of the cart once an order is placed: each ordered size is removed, or
+   * its quantity reduced if the cart holds more than was ordered. Anything else stays.
+   *
+   * @param {string} userId
+   * @param {{ variantId: string, quantity: number }[]} ordered
+   */
+  async removeOrderedItems(userId, ordered = []) {
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart || !cart.items?.length) return cart ? this.formatCartResponse(cart) : null;
+
+    const remaining = new Map();
+    for (const o of ordered) {
+      if (!o?.variantId) continue;
+      const key = String(o.variantId);
+      remaining.set(key, (remaining.get(key) || 0) + Math.max(1, Number(o.quantity) || 1));
+    }
+    if (!remaining.size) return this.formatCartResponse(cart);
+
+    const kept = [];
+    for (const item of cart.items) {
+      const key = item.variantId ? String(item.variantId._id || item.variantId) : null;
+      const left = key ? remaining.get(key) || 0 : 0;
+      if (!left) {
+        kept.push(item);
+        continue;
+      }
+      if (item.quantity > left) {
+        item.quantity -= left;
+        remaining.set(key, 0);
+        kept.push(item);
+      } else {
+        remaining.set(key, left - item.quantity);
+      }
+    }
+    cart.items = kept;
+    await cart.save();
+    return this.formatCartResponse(cart);
+  }
+
+  /**
    * Clear all items from cart
    */
   async clearCart(userId) {

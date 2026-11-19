@@ -241,8 +241,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
 
           {/* Upload Progress */}
           {isUploading && uploadProgressMsg && (
-            <div className="p-2.5 rounded-xl bg-pink-50/70 border border-pink-200 text-[#E85D88] text-xs font-medium flex items-center gap-2 animate-pulse">
-              <div className="w-4 h-4 border-2 border-[#E85D88] border-t-transparent rounded-full animate-spin shrink-0" />
+            <div className="p-2.5 rounded-xl bg-pink-50/70 border border-pink-200 text-accent text-xs font-medium flex items-center gap-2 animate-pulse">
+              <div className="w-4 h-4 border-2 border-ink border-t-transparent rounded-full animate-spin shrink-0" />
               <span>{uploadProgressMsg}</span>
             </div>
           )}
@@ -259,8 +259,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
             onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 select-none ${
               isDragging
-                ? 'border-[#E85D88] bg-rose-50/60 scale-[1.01] shadow-md'
-                : 'border-slate-200 hover:border-[#E85D88] hover:bg-pink-50/30'
+                ? 'border-ink bg-rose-50/60 scale-[1.01] shadow-md'
+                : 'border-slate-200 hover:border-ink hover:bg-pink-50/30'
             }`}
           >
             <input
@@ -273,23 +273,23 @@ const UploadModal: React.FC<UploadModalProps> = ({
             />
             <div
               className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200 ${
-                isDragging ? 'bg-[#E85D88]/10 border-2 border-[#E85D88] border-dashed' : 'bg-pink-50'
-              } text-[#E85D88]`}
+                isDragging ? 'bg-ink/10 border-2 border-ink border-dashed' : 'bg-pink-50'
+              } text-accent`}
             >
               <Upload className={`w-6 h-6 ${isDragging ? 'animate-bounce' : ''}`} />
             </div>
             <div>
               {isDragging ? (
-                <p className="text-sm font-bold text-[#E85D88]">Release to add files!</p>
+                <p className="text-sm font-bold text-accent">Release to add files!</p>
               ) : (
                 <>
                   <p className="text-sm font-semibold text-slate-800">
-                    <span className="text-[#E85D88]">Click to browse</span> or drag & drop files
+                    <span className="text-accent">Click to browse</span> or drag & drop files
                   </p>
                   <p className="text-xs text-slate-400 mt-0.5">
                     PNG, JPG, WEBP, MP4, PDF up to 10 MB each
                   </p>
-                  <p className="text-[11px] text-slate-300 mt-1">You can drop multiple files at once</p>
+                  <p className="text-xs text-slate-300 mt-1">You can drop multiple files at once</p>
                 </>
               )}
             </div>
@@ -299,13 +299,13 @@ const UploadModal: React.FC<UploadModalProps> = ({
           {selectedFiles.length > 0 && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase">
+                <p className="text-xs font-semibold text-slate-500 uppercase">
                   Queued ({selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''})
                 </p>
                 <button
                   type="button"
                   onClick={() => setSelectedFiles([])}
-                  className="text-[11px] text-rose-500 hover:underline font-medium"
+                  className="text-xs text-rose-500 hover:underline font-medium"
                 >
                   Clear all
                 </button>
@@ -325,7 +325,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                         <span className="truncate text-slate-700 font-medium">{file.name}</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 ml-2">
-                        <span className="text-slate-400 text-[11px] font-mono">{formatBytes(file.size)}</span>
+                        <span className="text-slate-400 text-xs font-mono">{formatBytes(file.size)}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveFile(idx)}
@@ -370,9 +370,9 @@ const UploadModal: React.FC<UploadModalProps> = ({
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="e.g. summer-2026, hero, bridal"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
             />
-            <p className="text-[11px] text-slate-400 mt-1">Separate multiple tags with commas.</p>
+            <p className="text-xs text-slate-400 mt-1">Separate multiple tags with commas.</p>
           </div>
 
           <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
@@ -454,7 +454,7 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
 
           {/* Quick Copy Link Box */}
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase block">
+            <span className="text-xs font-semibold text-slate-500 uppercase block">
               Public CDN Delivery URL
             </span>
             <div className="flex items-center gap-2">
@@ -467,7 +467,7 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
               <button
                 type="button"
                 onClick={() => onCopyUrl(asset.url)}
-                className="px-3 py-1.5 rounded-lg bg-pink-50 text-[#E85D88] text-xs font-semibold hover:bg-pink-100 transition flex items-center gap-1 shrink-0"
+                className="px-3 py-1.5 rounded-lg bg-pink-50 text-accent text-xs font-semibold hover:bg-pink-100 transition flex items-center gap-1 shrink-0"
               >
                 <Copy className="w-3.5 h-3.5" /> Copy
               </button>
@@ -486,25 +486,25 @@ const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
           {/* Metadata Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
             <div>
-              <span className="text-[11px] font-semibold text-slate-400 block mb-0.5">Format</span>
+              <span className="text-xs font-semibold text-slate-400 block mb-0.5">Format</span>
               <span className="font-bold text-slate-800 uppercase text-xs">
                 {asset.format || 'Auto'}
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-400 block mb-0.5">Dimensions</span>
+              <span className="text-xs font-semibold text-slate-400 block mb-0.5">Dimensions</span>
               <span className="font-bold text-slate-800 text-xs">
                 {asset.width && asset.height ? `${asset.width} × ${asset.height}` : '—'}
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-400 block mb-0.5">File Size</span>
+              <span className="text-xs font-semibold text-slate-400 block mb-0.5">File Size</span>
               <span className="font-bold text-slate-800 text-xs">
                 {formatBytes(asset.bytes || asset.size)}
               </span>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-400 block mb-0.5">References</span>
+              <span className="text-xs font-semibold text-slate-400 block mb-0.5">References</span>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
                   (asset.referenceCount ?? 0) > 0
@@ -842,7 +842,7 @@ ${inUseCount} of them are currently in use and may break images on the storefron
           changeText="catalog & lookbook images"
           icon={ImageIcon}
           iconBgColor="bg-pink-50"
-          iconColor="text-[#E85D88]"
+          iconColor="text-accent"
         />
         <StatsCard
           title="Videos (this page)"
@@ -878,7 +878,7 @@ ${inUseCount} of them are currently in use and may break images on the storefron
                 setCurrentPage(1);
               }}
               placeholder="Search filename or public ID..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition"
+              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition"
             />
           </div>
 
@@ -916,7 +916,7 @@ ${inUseCount} of them are currently in use and may break images on the storefron
               setSelectedResourceType('ALL');
               setCurrentPage(1);
             }}
-            className="text-xs text-[#E85D88] hover:underline font-semibold self-end lg:self-center"
+            className="text-xs text-accent hover:underline font-semibold self-end lg:self-center"
           >
             Clear Filters
           </button>
@@ -925,9 +925,9 @@ ${inUseCount} of them are currently in use and may break images on the storefron
 
       {/* Bulk Actions Bar */}
       {activeSelected.length > 0 && (
-        <div className="flex items-center justify-between bg-[#E85D88]/10 border border-[#E85D88]/20 rounded-2xl p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
+        <div className="flex items-center justify-between bg-ink/10 border border-ink/20 rounded-2xl p-4 shadow-sm animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center gap-4">
-            <span className="text-sm font-semibold text-[#E85D88]">
+            <span className="text-sm font-semibold text-accent">
               {activeSelected.length} asset{activeSelected.length > 1 ? 's' : ''} selected
             </span>
           </div>
@@ -947,12 +947,12 @@ ${inUseCount} of them are currently in use and may break images on the storefron
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         {isLoading ? (
           <div className="py-20 text-center text-slate-500">
-            <RefreshCw className="w-8 h-8 animate-spin text-[#E85D88] mx-auto mb-3" />
+            <RefreshCw className="w-8 h-8 animate-spin text-accent mx-auto mb-3" />
             <p className="text-sm font-semibold text-slate-700">Loading media library...</p>
           </div>
         ) : assets.length === 0 ? (
           <div className="py-20 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-16 h-16 rounded-2xl bg-pink-50 flex items-center justify-center text-[#E85D88]">
+            <div className="w-16 h-16 rounded-2xl bg-pink-50 flex items-center justify-center text-accent">
               <ImageIcon className="w-8 h-8" />
             </div>
             <p className="font-bold text-slate-800 text-base">No media assets found</p>
@@ -975,7 +975,7 @@ ${inUseCount} of them are currently in use and may break images on the storefron
                 type="checkbox"
                 checked={assets.length > 0 && activeSelected.length === assets.length}
                 onChange={toggleSelectAll}
-                className="w-4 h-4 rounded border-slate-300 text-[#E85D88] focus:ring-[#E85D88] cursor-pointer"
+                className="w-4 h-4 rounded border-slate-300 text-accent focus:ring-ink cursor-pointer"
               />
               <span className="text-xs font-semibold text-slate-500 cursor-pointer" onClick={toggleSelectAll}>
                 Select All
@@ -989,7 +989,7 @@ ${inUseCount} of them are currently in use and may break images on the storefron
                 return (
                   <div
                     key={assetId}
-                    className={`group relative bg-slate-50 rounded-2xl border ${isSelected ? 'border-[#E85D88] ring-1 ring-[#E85D88]' : 'border-slate-200'} overflow-hidden shadow-xs hover:shadow-md hover:border-[#E85D88]/40 transition-all flex flex-col justify-between`}
+                    className={`group relative bg-slate-50 rounded-2xl border ${isSelected ? 'border-ink ring-1 ring-ink' : 'border-slate-200'} overflow-hidden shadow-xs hover:shadow-md hover:border-ink/40 transition-all flex flex-col justify-between`}
                   >
                 {/* Thumbnail / Image Box */}
                 <div
@@ -1001,7 +1001,7 @@ ${inUseCount} of them are currently in use and may break images on the storefron
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleSelect(assetId)}
-                      className="w-4 h-4 rounded border-slate-300 text-[#E85D88] focus:ring-[#E85D88] cursor-pointer bg-white"
+                      className="w-4 h-4 rounded border-slate-300 text-accent focus:ring-ink cursor-pointer bg-white"
                     />
                   </div>
 
@@ -1018,14 +1018,14 @@ ${inUseCount} of them are currently in use and may break images on the storefron
 
                   {/* Format tag badge */}
                   {asset.format && (
-                    <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded-md bg-black/60 text-white font-mono text-[9px] uppercase tracking-wider backdrop-blur-xs">
+                    <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded-md bg-black/60 text-white font-mono text-xs uppercase tracking-wider backdrop-blur-xs">
                       {asset.format}
                     </span>
                   )}
 
                   {/* Reference count badge */}
                   {(asset.referenceCount ?? 0) > 0 && (
-                    <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-amber-500/90 text-white font-sans text-[9px] font-bold backdrop-blur-xs">
+                    <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md bg-amber-500/90 text-white font-sans text-xs font-bold backdrop-blur-xs">
                       {asset.referenceCount} in use
                     </span>
                   )}
@@ -1076,7 +1076,7 @@ ${inUseCount} of them are currently in use and may break images on the storefron
                   >
                     {asset.filename || asset.cloudinaryPublicId}
                   </p>
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+                  <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
                     <span>{formatBytes(asset.bytes || asset.size)}</span>
                     <span>
                       {asset.width && asset.height ? `${asset.width}×${asset.height}` : ''}

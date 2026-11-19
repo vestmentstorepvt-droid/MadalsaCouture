@@ -4,6 +4,8 @@ import { REVIEW_FOLDER } from "@/server/modules/mediaLibrary/mediaUpload.routes"
 import __imp0 from "@/server/models/commentModel";
 import __imp1 from "@/server/models/productModel";
 import __imp2 from "@/server/models/userModel";
+import OrderModel from "@/server/models/orderModel";
+import OrderItemModel from "@/server/models/orderItemModel";
 import __imp3 from "@/server/services/mediaService";
 import __imp4 from "@/server/config/logger";
 import __imp5 from "@/server/utils/response";
@@ -16,19 +18,46 @@ const mediaService = __imp3;
 const logger = __imp4;
 const { sendSuccess, sendError, sendValidationError } = __imp5;
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const Order = OrderModel;
+const OrderItem = OrderItemModel;
 
-const serializeComment = (c) => ({
-  _id: c._id,
-  body: c.body,
-  rating: c.rating,
-  user: c.userId
-    ? { _id: c.userId._id, name: c.authorName || c.userId.name }
-    : (c.authorName ? { _id: null, name: c.authorName } : null),
-  isGuest: !!c.isGuest,
-  media: (c.media || []).map((m) => ({ url: m.url, type: m.type })),
-  createdAt: c.createdAt,
-});
+/** Orders that count as "received" for the Verified buyer badge. */
+const RECEIVED_STATUSES = ['Delivered', 'ExchangeRequested', 'ExchangeApproved', 'ExchangeCompleted'];
+
+/** Public name: first name + last initial ("Priya S."). Email is never shown. */
+const publicName = (raw) => {
+  const parts = String(raw || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'Customer';
+  return parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.` : parts[0];
+};
+
+const serializeComment = (c, verifiedUserIds = new Set()) => {
+  const userId = c.userId?._id ? String(c.userId._id) : c.userId ? String(c.userId) : null;
+  return {
+    _id: c._id,
+    body: c.body,
+    rating: c.rating,
+    user: userId || c.authorName ? { _id: userId, name: publicName(c.authorName || c.userId?.name) } : null,
+    isGuest: !!c.isGuest,
+    isVerifiedBuyer: !!userId && verifiedUserIds.has(userId),
+    media: (c.media || []).map((m) => ({ url: m.url, type: m.type })),
+    createdAt: c.createdAt,
+    updatedAt: c.updatedAt,
+  };
+};
+
+/** Which of these users have received an order containing this product. */
+const findVerifiedBuyers = async (productId, userIds) => {
+  const ids = [...new Set(userIds.filter(Boolean).map(String))];
+  if (!ids.length) return new Set();
+  const orders = await Order.find({ userId: { $in: ids }, status: { $in: RECEIVED_STATUSES } }).select('_id userId').lean();
+  if (!orders.length) return new Set();
+  const items = await OrderItem.find({ productId: String(productId), orderId: { $in: orders.map((o) => String(o._id)) } })
+    .select('orderId')
+    .lean();
+  const ownerByOrder = new Map(orders.map((o) => [String(o._id), String(o.userId)]));
+  return new Set(items.map((i) => ownerByOrder.get(String(i.orderId))).filter(Boolean));
+};
 
 class CommentController {
   /**
@@ -66,10 +95,20 @@ class CommentController {
       const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
       distAgg.forEach((d) => { if (distribution[d._id] !== undefined) distribution[d._id] = d.count; });
 
+      // The signed-in reader's own review, whichever page it is on (for "Edit your review").
+      const myRaw = req.user
+        ? await Comment.findOne({ productId, userId: req.user.id, isDeleted: false }).populate('userId', 'name').lean()
+        : null;
+      const verified = await findVerifiedBuyers(productId, [
+        ...comments.map((c) => c.userId?._id ?? c.userId),
+        myRaw?.userId?._id ?? myRaw?.userId,
+      ]);
+
       return sendSuccess(
         res,
         {
-          comments: comments.map(serializeComment),
+          comments: comments.map((c) => serializeComment(c, verified)),
+          myComment: myRaw ? serializeComment(myRaw, verified) : null,
           avgRating,
           ratingCount,
           distribution,
@@ -84,8 +123,8 @@ class CommentController {
 
   /**
    * POST /api/v1/products/:productId/comments
-   * Logged-in users OR guests (guest must send name + email; a user record is
-   * created/reused for that email). Accepts optional multipart `media` files.
+   * Signed-in customers only; the author is the account (no name/email in the request).
+   * One review per customer per product: posting again updates it. Optional media.
    */
   async createComment(req, res, next) {
     try {
@@ -100,11 +139,16 @@ class CommentController {
       if (body.trim().length > 1000) {
         return sendValidationError(res, 'Comment must be 1000 characters or fewer.');
       }
-      if (rating !== undefined && rating !== null) {
+      // A star rating is required.
+      if (rating === null) {
+        return sendValidationError(res, 'Please choose a star rating.');
+      }
+      {
         const r = Number(rating);
         if (!Number.isInteger(r) || r < 1 || r > 5) {
           return sendValidationError(res, 'Rating must be an integer between 1 and 5.');
         }
+        rating = r;
       }
 
       // Verify product exists
@@ -113,28 +157,11 @@ class CommentController {
         return sendError(res, 'NOT_FOUND', 'Product not found.', 404);
       }
 
-      // Resolve author: logged-in user, or guest (find-or-create by email)
-      let userId;
-      let authorName = null;
-      let isGuest = false;
-      if (req.user) {
-        userId = req.user.id;
-      } else {
-        const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
-        const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-        if (name.length < 2) return sendValidationError(res, 'Please enter your name (min 2 characters).');
-        if (!EMAIL_RE.test(email)) return sendValidationError(res, 'Please enter a valid email address.');
-
-        let user = await User.findOne({ email });
-        if (!user) {
-          user = await User.create({ name, email, role: 'USER', authProvider: 'local' });
-        } else if (user.status !== 'active' || user.isDeleted) {
-          return sendError(res, 'FORBIDDEN', 'This account cannot post reviews.', 403);
-        }
-        userId = user._id;
-        authorName = name;
-        isGuest = true;
-      }
+      // The author is always the signed-in account; its name comes from the profile.
+      if (!req.user) return sendError(res, 'UNAUTHORIZED', 'Please log in to write a review.', 401);
+      const userId = req.user.id;
+      const authorName = null;
+      const isGuest = false;
 
       // Upload optional media
       const media = [];
@@ -192,7 +219,8 @@ class CommentController {
         .populate('userId', 'name email')
         .lean();
 
-      return sendSuccess(res, { comment: serializeComment(populated) }, 201);
+      const verified = await findVerifiedBuyers(productId, [userId]);
+      return sendSuccess(res, { comment: serializeComment(populated, verified) }, 201);
     } catch (error) {
       next(error);
     }

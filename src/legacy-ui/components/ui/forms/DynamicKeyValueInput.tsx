@@ -38,7 +38,7 @@ export const DynamicKeyValueInput: React.FC<DynamicKeyValueInputProps> = ({
         <button
           type="button"
           onClick={handleAdd}
-          className="text-[10px] font-semibold text-[#E85D88] hover:text-[#d44874] flex items-center gap-1 transition-colors"
+          className="text-xs font-semibold text-accent hover:text-accent-deep flex items-center gap-1 transition-colors"
         >
           <Plus className="h-3 w-3" /> ADD ROW
         </button>
@@ -54,14 +54,14 @@ export const DynamicKeyValueInput: React.FC<DynamicKeyValueInputProps> = ({
               value={item.label}
               onChange={(e) => handleChange(index, 'label', e.target.value)}
               placeholder={labelPlaceholder}
-              className="w-full sm:w-1/3 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition placeholder:text-slate-400"
+              className="w-full sm:w-1/3 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition placeholder:text-slate-400"
             />
             <input
               type="text"
               value={item.value}
               onChange={(e) => handleChange(index, 'value', e.target.value)}
               placeholder={valuePlaceholder}
-              className="flex-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition placeholder:text-slate-400"
+              className="flex-1 w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition placeholder:text-slate-400"
             />
             <button
               type="button"

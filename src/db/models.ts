@@ -227,7 +227,9 @@ export const MODELS: Record<CollectionName, ModelConfig> = {
     unique: [{ paths: ["slug"] }, { paths: ["name"], caseInsensitive: true }],
   },
   orders: {
-    fields: f("orderNumber userId guestEmail items shippingAddress couponId couponCode discountAmount shippingCharge taxAmount subtotal total paymentMethod shiprocketOrderId source status statusHistory notes isDeleted deletedAt"),
+    // shiprocketShipping: the order in Shiprocket's shipping panel { orderId, shipmentId, status, awb, courier, error } (shiprocketShipping.ts)
+    // cancellation: { by, reason, reasonLabel, note, at } when the customer cancels (orderService.cancelOrder)
+    fields: f("orderNumber userId guestEmail items shippingAddress couponId couponCode discountAmount shippingCharge taxAmount subtotal total paymentMethod shiprocketOrderId shiprocketShipping cancellation source status statusHistory notes isDeleted deletedAt"),
     subdocs: { statusHistory: { defaults: () => ({ timestamp: new Date().toISOString(), actorId: null, actorEmail: null, note: null }) }, shippingAddress: { defaults: () => ({ deliveryPhone: null }) } },
     timestamps: true,
     defaults: () => ({
@@ -240,6 +242,7 @@ export const MODELS: Record<CollectionName, ModelConfig> = {
       shippingCharge: 0,
       taxAmount: 0,
       shiprocketOrderId: null,
+      shiprocketShipping: null,
       source: "native",
       status: "Created",
       statusHistory: [],
@@ -247,7 +250,7 @@ export const MODELS: Record<CollectionName, ModelConfig> = {
       isDeleted: false,
       deletedAt: null,
     }),
-    sqlPaths: ["orderNumber", "userId", "status", "isDeleted", "createdAt", "couponCode", "couponId", "shiprocketOrderId", "paymentMethod", "total", "guestEmail"],
+    sqlPaths: ["orderNumber", "userId", "status", "isDeleted", "createdAt", "couponCode", "couponId", "shiprocketOrderId", "paymentMethod", "total", "guestEmail", "source"],
     unique: [{ paths: ["orderNumber"] }, { paths: ["shiprocketOrderId"], sparse: true }],
   },
   orderitems: {
@@ -560,5 +563,6 @@ export const MODELS: Record<CollectionName, ModelConfig> = {
   shiprocket_id_counters: { timestamps: false, sqlPaths: [] },
   payments: { timestamps: true, sqlPaths: ["orderId"] },
   shipments: { timestamps: true, sqlPaths: ["orderId"] },
-  shiprocketorders: { timestamps: true, sqlPaths: [] },
+  // Shiprocket webhook deliveries as received (see shiprocketOrderRoutes / shiprocketOrderImport).
+  shiprocketorders: { timestamps: true, sqlPaths: ["kind", "processed", "orderId", "awb"] },
 };

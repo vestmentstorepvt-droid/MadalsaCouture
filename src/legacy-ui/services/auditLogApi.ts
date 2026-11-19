@@ -12,6 +12,20 @@ export interface AuditLog {
   createdAt: string;
 }
 
+/**
+ * The server stores audit entries as { module, actorEmail/actorId, timestamp }; the admin pages
+ * read { entity, performedBy, createdAt }. Map one onto the other (keeping any value already there).
+ */
+export function normalizeAuditLog(raw: unknown): AuditLog {
+  const l = (raw ?? {}) as Record<string, unknown>;
+  return {
+    ...(l as unknown as AuditLog),
+    entity: (l.entity as string) ?? (l.module && l.module !== 'unknown' ? (l.module as string) : '—'),
+    performedBy: (l.performedBy as AuditLog['performedBy']) ?? ((l.actorEmail as string) || (l.actorId as string) || '—'),
+    createdAt: (l.createdAt as string) ?? (l.timestamp as string),
+  };
+}
+
 export interface AuditLogParams {
   page?: number;
   limit?: number;
@@ -45,13 +59,13 @@ export const auditLogApi = createApi({
             const inner = r.data as Record<string, unknown>;
             if (Array.isArray(inner.logs)) {
               const meta = r.meta as { pagination?: typeof fallback } | undefined;
-              return { data: inner.logs as AuditLog[], pagination: meta?.pagination ?? fallback };
+              return { data: inner.logs.map(normalizeAuditLog), pagination: meta?.pagination ?? fallback };
             }
           }
 
           // Shape: { data: [...], pagination: {...} }
           if (Array.isArray(r.data)) {
-            return { data: r.data as AuditLog[], pagination: (r.pagination as typeof fallback) ?? fallback };
+            return { data: r.data.map(normalizeAuditLog), pagination: (r.pagination as typeof fallback) ?? fallback };
           }
         }
 

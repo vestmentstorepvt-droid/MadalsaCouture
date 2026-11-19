@@ -15,6 +15,7 @@ import {
   type OrderItem,
 } from '../../../services/ordersApi';
 import { optimizeImage } from '../../../utils/imageUtils';
+import { CancelHint, CancelOrderSheet, CancellationNote, cancelState } from '../../../components/features/orders/CancelOrder';
 
 
 
@@ -44,8 +45,6 @@ function getStatusConfig(status: string) {
   return STATUS_CONFIG[status] ?? { label: status, color: 'bg-slate-100 text-slate-700 border-slate-200', dot: 'bg-slate-400' };
 }
 
-const cancellableStatuses = ['Created', 'Pending', 'Paid', 'Processing'];
-
 // ── Toast ──────────────────────────────────────────────────────────────────────
 interface Toast { message: string; type: 'success' | 'error' }
 const ToastBanner: React.FC<{ toast: Toast | null }> = ({ toast }) => {
@@ -67,41 +66,6 @@ function useToast() {
   }, []);
   return { toast, show };
 }
-
-// ── Cancel confirm modal ───────────────────────────────────────────────────────
-const CancelModal: React.FC<{
-  open: boolean; isCancelling: boolean;
-  onConfirm: () => void; onCancel: () => void;
-}> = ({ open, isCancelling, onConfirm, onCancel }) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 max-w-sm mx-4 w-full">
-        <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
-          <X className="w-6 h-6 text-rose-500" />
-        </div>
-        <h3 className="text-base font-bold text-slate-900 text-center">Cancel Order?</h3>
-        <p className="text-xs text-slate-500 text-center mt-1 leading-relaxed">
-          This action cannot be undone. The order will be marked as Cancelled and any applicable refund will be processed.
-        </p>
-        <div className="flex gap-3 mt-5">
-          <button type="button" onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-            Keep Order
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isCancelling}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition disabled:opacity-60"
-          >
-            {isCancelling ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
-            {isCancelling ? 'Cancelling…' : 'Yes, Cancel'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ── Exchange Modal ─────────────────────────────────────────────────────────────
 const ExchangeModal: React.FC<{
@@ -145,9 +109,9 @@ const ExchangeModal: React.FC<{
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h3 className="font-serif font-bold text-slate-900 flex items-center gap-2 text-base">
-              <RotateCcw className="w-4.5 h-4.5 text-[#D4AF37]" /> Request Item Exchange
+              <RotateCcw className="w-4.5 h-4.5 text-accent" /> Request Item Exchange
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Specify your reason and preferred replacement details.</p>
+            <p className="text-xs text-slate-500 mt-0.5">Specify your reason and preferred replacement details.</p>
           </div>
           <button type="button" onClick={onCancel} className="p-1 rounded-full text-slate-400 hover:text-slate-600">
             <X className="w-4 h-4" />
@@ -155,7 +119,7 @@ const ExchangeModal: React.FC<{
         </div>
 
         {/* Selected Product summary */}
-        <div className="bg-[#FFFDF9] rounded-2xl border border-[#E8D9C7] p-3.5 flex items-center gap-3">
+        <div className="bg-surface rounded-2xl border border-hairline p-3.5 flex items-center gap-3">
           <div className="w-14 h-14 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-stone-200">
             {item.productImage || item.image ? (
               <img src={optimizeImage(item.productImage || item.image, 400)} alt={item.name} className="w-full h-full object-cover" />
@@ -167,10 +131,10 @@ const ExchangeModal: React.FC<{
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-bold text-xs text-slate-900 truncate">{item.productTitle || item.name}</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Current Size: <span className="font-semibold text-slate-700">{item.size || 'Standard'}</span> • Color: <span className="font-semibold text-slate-700">{item.color || 'Standard'}</span>
             </p>
-            <p className="text-[11px] text-slate-400 font-mono">Qty: {item.quantity}</p>
+            <p className="text-xs text-slate-400 font-mono">Qty: {item.quantity}</p>
           </div>
         </div>
 
@@ -183,7 +147,7 @@ const ExchangeModal: React.FC<{
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-xl border border-[#E8D9C7] bg-[#FFFDF9] px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition"
+              className="w-full border bg-surface px-3.5 outline-none focus:border-hairline focus:ring-2 focus:ring-hairline transition h-11 rounded-full border-hairline-strong text-ink text-sm font-medium transition-colors hover:bg-hairline-soft"
               required
             >
               {categories.map((cat) => (
@@ -204,7 +168,7 @@ const ExchangeModal: React.FC<{
               value={requestedSize}
               onChange={(e) => setRequestedSize(e.target.value)}
               placeholder="e.g. Need Size L instead of M / Change color to Black"
-              className="w-full rounded-xl border border-[#E8D9C7] bg-[#FFFDF9] px-3.5 py-2 text-xs text-slate-800 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition"
+              className="w-full border bg-surface px-3.5 outline-none focus:border-hairline focus:ring-2 focus:ring-hairline transition h-11 rounded-full border-hairline-strong text-ink text-sm font-medium transition-colors hover:bg-hairline-soft"
             />
           </div>
 
@@ -218,7 +182,7 @@ const ExchangeModal: React.FC<{
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               placeholder="Provide specific details for our client care team (e.g. fitting issue across bust/shoulders, exact defect location, or any special instructions)..."
-              className="w-full rounded-xl border border-[#E8D9C7] bg-[#FFFDF9] px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition resize-none"
+              className="w-full border bg-surface px-3.5 outline-none focus:border-hairline focus:ring-2 focus:ring-hairline transition resize-none h-11 rounded-full border-hairline-strong text-ink text-sm font-medium transition-colors hover:bg-hairline-soft"
             />
           </div>
 
@@ -235,7 +199,7 @@ const ExchangeModal: React.FC<{
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#3D2C24] text-[#FFF8ED] text-xs font-semibold hover:bg-[#2C1F19] transition disabled:opacity-60"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-ink text-white text-xs font-semibold hover:bg-ink transition disabled:opacity-60"
             >
               {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
               {isSubmitting ? 'Submitting…' : 'Submit Exchange Request'}
@@ -258,24 +222,24 @@ const OrderCard: React.FC<{
 
   const [expanded, setExpanded] = useState(false);
   const statusCfg = getStatusConfig(order.status);
-  const canCancel = cancellableStatuses.includes(order.status);
+  const canCancel = cancelState(order) === 'can_cancel';
   const firstImage = order.items[0]?.productImage || order.items[0]?.image || '';
 
   return (
-    <div className="rounded-2xl border border-[#E8D9C7] bg-white shadow-sm overflow-hidden">
+    <div className="rounded-2xl border border-hairline bg-white shadow-sm overflow-hidden">
       {/* Card header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-[#FFFDF9] border-b border-[#F0E8DC]">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-surface border-b border-hairline">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#D4AF37]">Order</p>
+          <p className="eyebrow">Order</p>
           <p className="font-mono text-sm font-bold text-slate-900">#{order.orderNumber}</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold ${statusCfg.color}`}>
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${statusCfg.color}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
             {statusCfg.label}
           </span>
           <div className="text-right">
-            <p className="text-[10px] text-slate-400">Placed</p>
+            <p className="text-xs text-slate-400">Placed</p>
             <p className="text-xs font-semibold text-slate-700">{formatDate(order.createdAt)}</p>
           </div>
         </div>
@@ -297,47 +261,53 @@ const OrderCard: React.FC<{
         {/* Info grid */}
         <div className="flex-1 min-w-0 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
           <div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Items</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wider">Items</p>
             <p className="text-sm font-semibold text-slate-800 truncate">
               {order.items.length > 1 ? `${order.items.length} items` : (order.items[0]?.productTitle || order.items[0]?.name || 'Product')}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Total</p>
-            <p className="text-sm font-bold text-[#3D2C24]">{formatINR(order.total)}</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wider">Total</p>
+            <p className="text-sm font-bold text-ink">{formatINR(order.total)}</p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Payment</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wider">Payment</p>
             <p className="text-xs font-semibold text-slate-700 capitalize">{order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online'}</p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Qty</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wider">Qty</p>
             <p className="text-xs font-semibold text-slate-700">{order.items.reduce((s, i) => s + i.quantity, 0)} units</p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Payment Status</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wider">Payment Status</p>
             <p className="text-xs font-semibold text-slate-700">{order.paymentStatus}</p>
           </div>
           {order.shippingAddress && (
             <div>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">City</p>
+              <p className="text-xs text-slate-400 uppercase tracking-wider">City</p>
               <p className="text-xs font-semibold text-slate-700">{order.shippingAddress.city}</p>
             </div>
           )}
         </div>
       </div>
 
+      {order.status === 'Cancelled' && (
+        <div className="px-5 pb-4">
+          <CancellationNote order={order} />
+        </div>
+      )}
+
       {/* Expanded details */}
       {expanded && (
-        <div className="border-t border-[#F0E8DC] px-5 py-4 space-y-4 bg-slate-50/50">
+        <div className="border-t border-hairline px-5 py-4 space-y-4 bg-slate-50/50">
           {/* Items list */}
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
               <ShoppingBag className="w-3 h-3" /> Items Ordered
             </p>
             <div className="space-y-2">
               {order.items.map((item, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 bg-white rounded-xl px-3 py-2.5 border border-[#E8D9C7]">
+                <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-700 bg-white rounded-xl px-3 py-2.5 border border-hairline">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold truncate">{item.productTitle || item.name}</p>
                     {(item.size || item.color) && (
@@ -353,7 +323,7 @@ const OrderCard: React.FC<{
                       <button
                         type="button"
                         onClick={() => onExchange(order, item)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#D4AF37] text-[11px] font-bold text-[#B8860B] hover:bg-[#D4AF37]/10 transition shrink-0"
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-hairline text-xs font-bold text-accent hover:bg-ink/10 transition shrink-0"
                       >
                         <RotateCcw className="w-3 h-3" /> Exchange
                       </button>
@@ -366,7 +336,7 @@ const OrderCard: React.FC<{
           </div>
 
           {/* Pricing breakdown */}
-          <div className="bg-white rounded-xl border border-[#E8D9C7] p-3 space-y-1.5 text-xs">
+          <div className="bg-white rounded-xl border border-hairline p-3 space-y-1.5 text-xs">
             <p className="font-bold text-slate-700 flex items-center gap-1.5 mb-2"><CreditCard className="w-3 h-3" /> Price Breakdown</p>
             <div className="flex justify-between text-slate-600"><span>Subtotal</span><span>{formatINR(order.subtotal)}</span></div>
             {!!order.discountAmount && order.discountAmount > 0 && (
@@ -378,14 +348,14 @@ const OrderCard: React.FC<{
             {!!order.shippingCharge && order.shippingCharge > 0 && (
               <div className="flex justify-between text-slate-600"><span>Shipping</span><span>{formatINR(order.shippingCharge)}</span></div>
             )}
-            <div className="flex justify-between font-bold text-slate-900 border-t border-[#F0E8DC] pt-1.5 mt-1">
+            <div className="flex justify-between font-bold text-slate-900 border-t border-hairline pt-1.5 mt-1">
               <span>Total</span><span>{formatINR(order.total)}</span>
             </div>
           </div>
 
           {/* Shipping address */}
           {order.shippingAddress && (
-            <div className="bg-white rounded-xl border border-[#E8D9C7] p-3 text-xs">
+            <div className="bg-white rounded-xl border border-hairline p-3 text-xs">
               <p className="font-bold text-slate-700 flex items-center gap-1.5 mb-2"><MapPin className="w-3 h-3" /> Shipping Address</p>
               <p className="text-slate-600 leading-relaxed">
                 {order.shippingAddress.name || order.shippingAddress.fullName}<br />
@@ -397,24 +367,24 @@ const OrderCard: React.FC<{
 
           {/* Tracking Timeline */}
           {order.statusHistory && order.statusHistory.length > 0 && (
-            <div className="bg-white rounded-xl border border-[#E8D9C7] p-4 text-xs">
+            <div className="bg-white rounded-xl border border-hairline p-4 text-xs">
               <p className="font-bold text-slate-700 flex items-center gap-1.5 mb-4">
                 <Truck className="w-3.5 h-3.5" /> Order Tracking
               </p>
-              <div className="relative pl-3 space-y-4 before:absolute before:inset-y-2 before:left-[17px] before:w-px before:bg-[#F0E8DC]">
+              <div className="relative pl-3 space-y-4 before:absolute before:inset-y-2 before:left-[17px] before:w-px before:bg-canvas">
                 {order.statusHistory.map((history, idx) => (
                   <div key={idx} className="relative flex items-start gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#D4AF37] ring-4 ring-white z-10 mt-0.5" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-ink ring-4 ring-white z-10 mt-0.5" />
                     <div>
                       <p className="font-semibold text-slate-800">{getStatusConfig(history.status).label}</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 mt-0.5">
                         {new Date(history.timestamp).toLocaleString('en-IN', {
                           day: '2-digit', month: 'short', year: 'numeric',
                           hour: '2-digit', minute: '2-digit'
                         })}
                       </p>
                       {history.note && (
-                        <p className="text-[10px] text-slate-400 mt-1 italic line-clamp-2">Note: {history.note}</p>
+                        <p className="text-xs text-slate-400 mt-1 italic line-clamp-2">Note: {history.note}</p>
                       )}
                     </div>
                   </div>
@@ -426,15 +396,16 @@ const OrderCard: React.FC<{
       )}
 
       {/* Actions footer */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-t border-[#F0E8DC]">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 border-t h-11 rounded-full border border-hairline-strong bg-surface text-ink text-sm font-medium transition-colors hover:bg-hairline-soft">
         <button
           type="button"
           onClick={() => setExpanded(e => !e)}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[#D4AF37] hover:text-[#B8860B] transition"
+          className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent transition"
         >
           {expanded ? <><ChevronUp className="w-3.5 h-3.5" /> Hide Details</> : <><ChevronDown className="w-3.5 h-3.5" /> View Details</>}
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          <CancelHint order={order} />
           {canCancel && (
             <button
               type="button"
@@ -454,8 +425,8 @@ const OrderCard: React.FC<{
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 const OrderSkeleton = () => (
-  <div className="animate-pulse rounded-2xl border border-[#E8D9C7] bg-white overflow-hidden">
-    <div className="h-16 bg-[#FFFDF9] border-b border-[#F0E8DC]" />
+  <div className="animate-pulse rounded-2xl border border-hairline bg-white overflow-hidden">
+    <div className="h-16 bg-surface border-b border-hairline" />
     <div className="flex gap-4 p-5">
       <div className="w-20 h-20 rounded-xl bg-slate-200 flex-shrink-0" />
       <div className="flex-1 space-y-2">
@@ -538,11 +509,11 @@ const MyOrdersPage: React.FC = () => {
   }), [allOrders]);
 
   // ── Cancel handler ────────────────────────────────────────────────────────
-  const handleCancel = async () => {
+  const handleCancel = async (reason: string, note: string) => {
     if (!cancelTarget) return;
     try {
-      await cancelOrder(cancelTarget).unwrap();
-      showToast('Order cancelled successfully.');
+      await cancelOrder({ id: cancelTarget, reason, note }).unwrap();
+      showToast("Your order has been cancelled. We've emailed you a confirmation.");
       refetch();
     } catch (err: unknown) {
       const e = err as { data?: { message?: string } };
@@ -581,9 +552,9 @@ const MyOrdersPage: React.FC = () => {
 
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="pt-8">
-          <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-[#D4AF37]">Luxury Client Care</p>
-          <h1 className="font-serif text-4xl uppercase tracking-wide text-slate-900 mt-1">My Orders</h1>
-          <div className="h-0.5 w-12 bg-[#D4AF37] mt-3" />
+          <p className="eyebrow">Luxury Client Care</p>
+          <h1 className="text-4xl text-slate-900 mt-1 font-semibold">My Orders</h1>
+          <div className="h-0.5 w-12 bg-ink mt-3" />
         </div>
 
         {/* ── Stats ─────────────────────────────────────────────────── */}
@@ -594,8 +565,8 @@ const MyOrdersPage: React.FC = () => {
             { label: 'Active', value: stats.active, color: 'text-blue-800 bg-blue-50' },
             { label: 'Delivered', value: stats.delivered, color: 'text-green-800 bg-green-50' },
           ].map(s => (
-            <div key={s.label} className={`${s.color} rounded-2xl border border-[#E8D9C7] px-4 py-3 shadow-sm`}>
-              <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{s.label}</p>
+            <div key={s.label} className={`${s.color}rounded-2xl border px-4 h-11 rounded-full border-hairline-strong bg-surface text-ink text-sm font-medium transition-colors hover:bg-hairline-soft`}>
+              <p className="text-xs font-bold uppercase tracking-wider opacity-70">{s.label}</p>
               <p className="text-2xl font-black mt-0.5">{s.value}</p>
             </div>
           ))}
@@ -610,7 +581,7 @@ const MyOrdersPage: React.FC = () => {
                 key={f.value}
                 type="button"
                 onClick={() => { setStatusFilter(f.value); setPage(1); }}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition ${statusFilter === f.value ? 'bg-[#3D2C24] text-[#D4AF37]' : 'border border-[#E8D9C7] bg-white text-slate-600 hover:border-[#D4AF37]'}`}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition ${statusFilter === f.value ? 'bg-ink text-accent' : 'border border-hairline bg-white text-slate-600 hover:border-hairline'}`}
               >
                 {f.label}
               </button>
@@ -619,8 +590,8 @@ const MyOrdersPage: React.FC = () => {
 
           {/* Search + Sort */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <label className="flex-1 flex items-center gap-2 rounded-2xl border border-[#E8D9C7] bg-white px-4 py-2.5 text-sm shadow-sm">
-              <Search className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+            <label className="flex-1 flex items-center gap-2 rounded-2xl border bg-white px-4 text-sm h-11 rounded-full border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft">
+              <Search className="w-4 h-4 text-accent flex-shrink-0" />
               <input
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
@@ -631,14 +602,14 @@ const MyOrdersPage: React.FC = () => {
             <select
               value={sortValue}
               onChange={(e) => { setSortValue(e.target.value as typeof sortValue); setPage(1); }}
-              className="rounded-2xl border border-[#E8D9C7] bg-white px-4 py-2.5 text-sm text-slate-700 outline-none cursor-pointer shadow-sm"
+              className="rounded-2xl border bg-white px-4 text-sm text-slate-700 outline-none cursor-pointer h-11 rounded-full border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
               <option value="high">Total: High → Low</option>
               <option value="low">Total: Low → High</option>
             </select>
-            <button type="button" onClick={() => refetch()} className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl border border-[#E8D9C7] bg-white text-sm text-slate-500 hover:text-[#D4AF37] transition shadow-sm">
+            <button type="button" onClick={() => refetch()} className="flex items-center gap-1.5 px-4 rounded-2xl border bg-white text-sm text-slate-500 hover:text-accent transition h-11 rounded-full border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft">
               <RefreshCw className="w-4 h-4" /> Refresh
             </button>
           </div>
@@ -659,15 +630,15 @@ const MyOrdersPage: React.FC = () => {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto">
-              <PackageOpen className="w-8 h-8 text-[#D4AF37]" />
+            <div className="w-16 h-16 rounded-full bg-ink/10 flex items-center justify-center mx-auto">
+              <PackageOpen className="w-8 h-8 text-accent" />
             </div>
             <h2 className="font-serif text-2xl text-slate-800">No orders found</h2>
             <p className="text-sm text-slate-500 max-w-xs mx-auto">
               {searchTerm ? `No orders match "${searchTerm}"` : 'Your order history will appear here.'}
             </p>
             {!searchTerm && (
-              <Link to="/products" className="inline-flex items-center gap-2 mt-2 border border-[#3D2C24] bg-[#3D2C24] px-8 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#FFF8ED] hover:bg-transparent hover:text-[#3D2C24] transition-all">
+              <Link to="/products" className="inline-flex items-center gap-2 mt-2 bg-ink px-8 text-white h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover">
                 Start Shopping <ArrowRight className="w-4 h-4" />
               </Link>
             )}
@@ -691,7 +662,7 @@ const MyOrdersPage: React.FC = () => {
                   type="button"
                   onClick={() => setPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-xl border border-[#E8D9C7] text-sm text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition"
+                  className="px-4 border text-sm text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition h-11 rounded-full border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft"
                 >
                   Previous
                 </button>
@@ -700,7 +671,7 @@ const MyOrdersPage: React.FC = () => {
                   type="button"
                   onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-xl border border-[#E8D9C7] text-sm text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition"
+                  className="px-4 border text-sm text-slate-700 disabled:opacity-40 hover:bg-slate-50 transition h-11 rounded-full border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft"
                 >
                   Next
                 </button>
@@ -710,12 +681,12 @@ const MyOrdersPage: React.FC = () => {
         )}
       </div>
 
-      {/* Cancel modal */}
-      <CancelModal
-        open={cancelTarget !== null}
-        isCancelling={isCancelling}
-        onConfirm={() => void handleCancel()}
-        onCancel={() => setCancelTarget(null)}
+      {/* Cancel sheet: items, required reason, what happens to the money */}
+      <CancelOrderSheet
+        order={allOrders.find((o) => o._id === cancelTarget) ?? null}
+        isSubmitting={isCancelling}
+        onConfirm={(reason, note) => void handleCancel(reason, note)}
+        onClose={() => setCancelTarget(null)}
       />
 
       {/* Exchange modal */}

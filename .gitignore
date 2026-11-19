@@ -13,3 +13,5 @@ npm-debug.log*
 next-env.d.ts
 /.data/
 /backups/
+/.next-alt/
+/.next-build/

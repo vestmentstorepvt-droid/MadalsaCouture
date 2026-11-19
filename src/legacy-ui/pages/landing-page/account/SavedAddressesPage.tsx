@@ -16,7 +16,7 @@ import {
 } from '../../../services/addressApi';
 
 
-const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-[#E8D9C7] bg-[#FFFDF9] text-sm text-slate-800 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition placeholder:text-slate-400';
+const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-hairline bg-surface text-sm text-slate-800 outline-none focus:border-hairline focus:ring-2 focus:ring-hairline transition placeholder:text-slate-400';
 const INPUT_ERR = 'w-full px-4 py-2.5 rounded-xl border border-rose-400 bg-rose-50 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-rose-300/30 transition';
 
 // ── Toast ──────────────────────────────────────────────────────────────────────
@@ -130,16 +130,16 @@ const AddressModal: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-[#E8D9C7] bg-white shadow-2xl">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-hairline bg-white shadow-2xl">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-[#F0E8DC] flex items-center justify-between px-6 py-4 rounded-t-3xl">
+        <div className="sticky top-0 bg-white border-b border-hairline flex items-center justify-between px-6 py-4 rounded-t-3xl">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-[#D4AF37]">Address Editor</p>
+            <p className="eyebrow">Address Editor</p>
             <h3 className="text-lg font-serif font-semibold text-slate-900 mt-0.5">
               {mode === 'add' ? 'Add New Address' : 'Edit Address'}
             </h3>
           </div>
-          <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full border border-[#E8D9C7] text-slate-500 hover:bg-slate-50 transition">
+          <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full border border-hairline text-slate-500 hover:bg-slate-50 transition">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -159,13 +159,13 @@ const AddressModal: React.FC<{
                   placeholder={placeholder}
                   className={errors[key] ? INPUT_ERR : INPUT}
                 />
-                {errors[key] && <p className="text-[11px] text-rose-500 mt-1">{errors[key]}</p>}
+                {errors[key] && <p className="text-xs text-rose-500 mt-1">{errors[key]}</p>}
               </div>
             ))}
           </div>
 
           {/* Label + isDefault */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#F0E8DC]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-hairline">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">Address Type</label>
               <div className="flex gap-2">
@@ -174,7 +174,7 @@ const AddressModal: React.FC<{
                     key={t}
                     type="button"
                     onClick={() => onChange('label', t)}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-semibold transition ${form.label === t ? 'bg-[#3D2C24] text-[#FFF8ED] border-[#3D2C24]' : 'border-[#E8D9C7] text-slate-700 hover:bg-slate-50'}`}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-semibold transition ${form.label === t ? 'bg-ink text-white border-ink' : 'border-hairline text-slate-700 hover:bg-slate-50'}`}
                   >
                     {t === 'Home' ? <Home className="w-3.5 h-3.5" /> : t === 'Office' ? <Briefcase className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
                     {t}
@@ -185,27 +185,27 @@ const AddressModal: React.FC<{
             <label className="flex items-center gap-3 cursor-pointer">
               <div
                 onClick={() => onChange('isDefault', !form.isDefault)}
-                className={`w-11 h-6 rounded-full transition-colors relative ${form.isDefault ? 'bg-[#D4AF37]' : 'bg-slate-200'}`}
+                className={`w-11 h-6 rounded-full transition-colors relative ${form.isDefault ? 'bg-ink' : 'bg-slate-200'}`}
               >
                 <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.isDefault ? 'translate-x-6' : 'translate-x-1'}`} />
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-800">Set as default</p>
-                <p className="text-[10px] text-slate-400">Used by default at checkout</p>
+                <p className="text-xs text-slate-400">Used by default at checkout</p>
               </div>
             </label>
           </div>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl border border-[#E8D9C7] text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+            <button type="button" onClick={onClose} className="px-6 border text-sm text-slate-700 hover:bg-slate-50 transition h-11 rounded-full border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft">
               Cancel
             </button>
             <button
               type="button"
               onClick={onSubmit}
               disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#3D2C24] text-[#FFF8ED] text-sm font-semibold hover:bg-[#2C1F19] transition disabled:opacity-60"
+              className="flex items-center gap-2 px-6 bg-ink text-white text-sm transition disabled:opacity-60 h-11 rounded-full font-medium transition-colors hover:bg-ink-hover"
             >
               {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               {isSubmitting ? 'Saving…' : mode === 'add' ? 'Save Address' : 'Update Address'}
@@ -230,17 +230,17 @@ const AddressCard: React.FC<{
       <MapPin className="w-3.5 h-3.5" />;
 
   return (
-    <div className={`relative rounded-2xl border bg-white p-5 shadow-sm hover:shadow-md transition-shadow ${address.isDefault ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]/30' : 'border-[#E8D9C7]'}`}>
+    <div className={`relative rounded-2xl border bg-white p-5 shadow-sm hover:shadow-md transition-shadow ${address.isDefault ? 'border-hairline ring-1 ring-hairline' : 'border-hairline'}`}>
       {/* Default badge */}
       {address.isDefault && (
-        <div className="absolute top-4 right-4 flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[10px] font-black text-[#B8860B]">
-          <Star className="w-3 h-3 fill-[#D4AF37] text-[#D4AF37]" /> DEFAULT
+        <div className="absolute top-4 right-4 flex items-center gap-1 px-2.5 py-1 rounded-full bg-ink/10 border border-hairline text-xs font-black text-accent">
+          <Star className="w-3 h-3 fill-ink text-accent" /> DEFAULT
         </div>
       )}
 
       {/* Label */}
       <div className="flex items-center gap-2 mb-3">
-        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs ${address.isDefault ? 'bg-[#D4AF37]' : 'bg-slate-500'}`}>
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs ${address.isDefault ? 'bg-ink' : 'bg-slate-500'}`}>
           {labelIcon}
         </div>
         <span className="text-xs font-black uppercase tracking-wider text-slate-700">{address.label ?? 'Address'}</span>
@@ -266,11 +266,11 @@ const AddressCard: React.FC<{
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-3 border-t border-[#F0E8DC]">
+      <div className="flex items-center gap-2 pt-3 border-t border-hairline">
         <button
           type="button"
           onClick={onEdit}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E8D9C7] text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-hairline text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
         >
           <Pencil className="w-3 h-3" /> Edit
         </button>
@@ -280,7 +280,7 @@ const AddressCard: React.FC<{
               type="button"
               onClick={onSetDefault}
               disabled={isSettingDefault}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#D4AF37]/50 text-xs font-semibold text-[#B8860B] hover:bg-[#D4AF37]/5 transition disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-hairline text-xs font-semibold text-accent hover:bg-ink/5 transition disabled:opacity-50"
             >
               {isSettingDefault ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Star className="w-3 h-3" />}
               Set Default
@@ -334,7 +334,7 @@ const ConfirmModal: React.FC<{
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 const Skeleton = () => (
-  <div className="animate-pulse rounded-2xl border border-[#E8D9C7] bg-white p-5">
+  <div className="animate-pulse rounded-2xl border border-hairline bg-white p-5">
     <div className="flex gap-2 mb-3"><div className="w-7 h-7 rounded-lg bg-slate-200" /><div className="h-4 w-20 rounded-full bg-slate-200" /></div>
     <div className="space-y-2 mb-4">
       <div className="h-4 w-40 rounded-full bg-slate-200" />
@@ -443,26 +443,26 @@ const SavedAddressesPage: React.FC = () => {
         {/* ── Header ────────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-8">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-[#D4AF37]">Delivery Preferences</p>
-            <h1 className="font-serif text-4xl uppercase tracking-wide text-slate-900 mt-1">Saved Addresses</h1>
-            <div className="h-0.5 w-12 bg-[#D4AF37] mt-3" />
+            <p className="eyebrow">Delivery Preferences</p>
+            <h1 className="text-4xl text-slate-900 mt-1 font-semibold">Saved Addresses</h1>
+            <div className="h-0.5 w-12 bg-ink mt-3" />
           </div>
           <button
             type="button"
             onClick={openAdd}
-            className="self-start sm:self-auto flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#3D2C24] text-[#FFF8ED] text-sm font-semibold hover:bg-[#2C1F19] transition shadow-md"
+            className="self-start sm:self-auto flex items-center gap-2 px-5 rounded-2xl bg-ink text-white text-sm transition h-11 rounded-full font-medium transition-colors hover:bg-ink-hover"
           >
             <Plus className="w-4 h-4" /> Add New Address
           </button>
         </div>
 
         {/* ── Stats bar ────────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl border border-[#E8D9C7] px-5 py-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl border border-hairline px-5 py-4 shadow-sm">
           <div className="flex items-center gap-2 text-sm text-slate-600">
-            <MapPin className="w-4 h-4 text-[#D4AF37]" />
+            <MapPin className="w-4 h-4 text-accent" />
             <span><strong>{addresses.length}</strong> saved {addresses.length === 1 ? 'destination' : 'destinations'}</span>
           </div>
-          <button type="button" onClick={() => refetch()} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-[#D4AF37] transition">
+          <button type="button" onClick={() => refetch()} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-accent transition">
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </button>
         </div>
@@ -480,12 +480,12 @@ const SavedAddressesPage: React.FC = () => {
           </div>
         ) : addresses.length === 0 ? (
           <div className="text-center py-20 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto">
-              <MapPin className="w-8 h-8 text-[#D4AF37]" />
+            <div className="w-16 h-16 rounded-full bg-ink/10 flex items-center justify-center mx-auto">
+              <MapPin className="w-8 h-8 text-accent" />
             </div>
             <h2 className="font-serif text-2xl text-slate-800">No saved addresses yet</h2>
             <p className="text-sm text-slate-500 max-w-xs mx-auto">Save your go-to delivery locations for faster checkout.</p>
-            <button type="button" onClick={openAdd} className="inline-flex items-center gap-2 mt-2 border border-[#3D2C24] bg-[#3D2C24] px-8 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#FFF8ED] hover:bg-transparent hover:text-[#3D2C24] transition-all">
+            <button type="button" onClick={openAdd} className="inline-flex items-center gap-2 mt-2 bg-ink px-8 text-white h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover">
               <Plus className="w-4 h-4" /> Create First Address
             </button>
           </div>

@@ -22,6 +22,7 @@ import addressRouter from "./routes/addressRoutes";
 import wishlistRouter from "./routes/wishlistRoutes";
 import cartRouter from "./routes/cartRoutes";
 import catalogRouter from "./routes/catalogRoutes";
+import shiprocketOrderRouter from "./routes/shiprocketOrderRoutes";
 import inventoryRouter from "./routes/inventoryRoutes";
 import heroRoutes from "./modules/cms/hero/hero.routes";
 import announcementBarRoutes from "./modules/cms/announcementBar/announcementBar.routes";
@@ -34,6 +35,8 @@ import featuredSectionRoutes from "./modules/cms/featuredSections/featuredSectio
 import videoCardRoutes from "./modules/cms/videoCards/videoCard.routes";
 import mediaRouter from "./modules/mediaLibrary/media.routes";
 import mediaUploadRouter from "./modules/mediaLibrary/mediaUpload.routes";
+import featuredReviewsRouter from "./modules/reviews/featuredReviews.routes";
+import auditLogRouter from "./modules/auditLogs/auditLog.routes";
 import dashboardRouter from "./modules/dashboard/dashboard.routes";
 import notificationRouter from "./modules/notifications/notification.routes";
 import adminAlertsRouter from "./routes/adminNotificationRoutes";
@@ -82,6 +85,8 @@ app.use("/api/v1/addresses", addressRouter);
 app.use("/api/v1/wishlist", wishlistRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/fastrr", catalogRouter);
+// Shiprocket webhooks (tracking + orders). The path avoids "shiprocket"/"sr"/"kr", which Shiprocket rejects.
+app.use("/api/v1/webhooks/store", shiprocketOrderRouter);
 
 app.use("/api/v1/admin/products/:productId/variants", variantRoutes.productVariantRouter);
 app.use("/api/v1/admin/variants", variantRoutes.variantRouter);
@@ -108,11 +113,14 @@ app.use("/api/v1/cms/video-cards", videoCardRoutes.publicRouter);
 
 // Direct-to-storage uploads (new: Vercel caps request bodies at 4.5 MB)
 app.use("/api/v1/uploads", mediaUploadRouter.publicRouter);
+// New (redesign): site-wide featured reviews for the home page
+app.use("/api/v1/reviews", featuredReviewsRouter);
 app.use("/api/v1/admin/media", mediaUploadRouter.adminRouter);
 app.use("/api/v1/admin/media", mediaRouter);
 app.use("/api/v1/admin", dashboardRouter);
 app.use("/api/v1/admin/notifications", notificationRouter);
 app.use("/api/v1/admin/alerts", adminAlertsRouter);
+app.use("/api/v1/admin/audit-logs", auditLogRouter); // admin-only, read-only (the router checks both)
 app.use("/api/v1/admin", adminUsersRouter);
 
 // 404 + global error handler

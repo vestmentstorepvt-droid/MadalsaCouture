@@ -16,11 +16,11 @@ import { AppButton } from '../../components/ui/button/AppButton';
 import { PASSWORD_POLICY_HINT, validatePasswordPolicy } from '../../utils/passwordPolicy';
 
 // ── Shared styles ──────────────────────────────────────────────────────────────
-const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88] transition';
+const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink transition';
 const INPUT_ERR = 'w-full px-4 py-2.5 rounded-xl border border-rose-400 text-sm bg-rose-50 focus:outline-none focus:ring-2 focus:ring-rose-300/30 focus:border-rose-500 transition';
 
 const FieldError: React.FC<{ msg?: string }> = ({ msg }) =>
-  msg ? <p className="text-[11px] text-rose-500 mt-1">{msg}</p> : null;
+  msg ? <p className="text-xs text-rose-500 mt-1">{msg}</p> : null;
 
 // ── Password visibility toggle ─────────────────────────────────────────────────
 const PasswordInput: React.FC<{
@@ -88,7 +88,7 @@ const SectionCard: React.FC<{
         <span className="text-slate-400">{icon}</span>
         <div>
           <h2 className="text-sm font-black text-slate-900">{title}</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">{subtitle}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
         </div>
       </div>
     </div>
@@ -188,17 +188,17 @@ const ProfileInfoCard: React.FC = () => {
                 readOnly
                 aria-label="Email (read only — use Change Email section below)"
               />
-              <p className="text-[11px] text-slate-400 mt-1">To change your email address, use the <span className="font-bold text-slate-600">Change Email</span> section below.</p>
+              <p className="text-xs text-slate-400 mt-1">To change your email address, use the <span className="font-bold text-slate-600">Change Email</span> section below.</p>
             </div>
 
             {/* Role pill */}
             <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <Shield className="w-4 h-4 text-[#E85D88]" />
+              <Shield className="w-4 h-4 text-accent" />
               <span className="text-xs font-bold text-slate-700">Role</span>
-              <span className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-gradient-to-br from-[#E85D88] to-[#c03a6b] text-white shadow-sm">
+              <span className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-ink text-white shadow-sm">
                 <Sparkles className="w-2.5 h-2.5" /> {authUser?.role ?? 'ADMIN'}
               </span>
-              <span className="text-[10px] text-slate-400">Role cannot be changed via this page.</span>
+              <span className="text-xs text-slate-400">Role cannot be changed via this page.</span>
             </div>
 
             <div className="flex justify-end pt-1">
@@ -283,7 +283,7 @@ const ChangePasswordCard: React.FC = () => {
               {[8, 12, 16].map((len, i) => (
                 <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${fields.newPassword.length >= len ? ['bg-rose-400', 'bg-amber-400', 'bg-emerald-500'][i] : 'bg-slate-200'}`} />
               ))}
-              <span className="text-[10px] text-slate-400 ml-2 self-center">
+              <span className="text-xs text-slate-400 ml-2 self-center">
                 {fields.newPassword.length < 8 ? 'Weak' : fields.newPassword.length < 12 ? 'Fair' : fields.newPassword.length < 16 ? 'Good' : 'Strong'}
               </span>
             </div>
@@ -351,7 +351,7 @@ const ChangeEmailCard: React.FC = () => {
               <p className="text-xs text-slate-500 mt-1">A verification link was sent to <strong className="text-slate-800">{sentTo}</strong>.</p>
               <p className="text-xs text-slate-500">Please check your inbox and click the link to confirm the change.</p>
             </div>
-            <button type="button" onClick={() => setSentTo(null)} className="text-xs font-bold text-[#E85D88] hover:underline transition">
+            <button type="button" onClick={() => setSentTo(null)} className="text-xs font-bold text-accent hover:underline transition">
               Change Again
             </button>
           </div>
@@ -386,26 +386,26 @@ export const AdminProfile: React.FC = () => {
   const userInitial = ((authUser?.name || authUser?.email || 'A').charAt(0) || 'A').toUpperCase();
 
   return (
-    <div className="min-h-screen p-6 sm:p-8 bg-[#FAFAFC] space-y-6">
+    <div className="min-h-screen p-6 sm:p-8 bg-canvas space-y-6">
 
       {/* ── Hero header ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
         {/* Gradient banner */}
-        <div className="h-12 bg-gradient-to-br from-[#1A1428] via-[#261B3A] to-[#0D0B14] relative">
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #E85D88 0%, transparent 60%), radial-gradient(circle at 80% 20%, #c03a6b 0%, transparent 50%)' }} />
+        <div className="h-12 bg-ink relative">
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #c2255c 0%, transparent 60%), radial-gradient(circle at 80% 20%, #c03a6b 0%, transparent 50%)' }} />
         </div>
 
         {/* Avatar + info row */}
         <div className="px-6 py-3">
           <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-5">
             {/* Avatar */}
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#E85D88] to-[#c03a6b] flex items-center justify-center text-white text-3xl font-black border-4 border-white shadow-xl shadow-[#E85D88]/20 flex-shrink-0">
+            <div className="w-20 h-20 rounded-3xl bg-ink flex items-center justify-center text-white text-3xl font-black border-4 border-white shadow-xl shadow-black/20 flex-shrink-0">
               {userInitial}
             </div>
             <div className="flex-1 min-w-0 pb-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl font-black text-slate-900 truncate">{authUser?.name ?? 'Admin User'}</h1>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-gradient-to-br from-[#E85D88] to-[#c03a6b] text-white shadow-sm">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-ink text-white shadow-sm">
                   <Sparkles className="w-2.5 h-2.5" /> {authUser?.role ?? 'ADMIN'}
                 </span>
                 {profileLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-slate-400" />}

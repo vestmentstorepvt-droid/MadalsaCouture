@@ -86,10 +86,10 @@ export const CmsContactPage: React.FC = () => {
     }
   };
 
-  const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20 focus:border-[#E85D88]';
+  const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink';
 
   return (
-    <div className="min-h-screen p-6 sm:p-8 bg-[#FAFAFC] space-y-6">
+    <div className="min-h-screen p-6 sm:p-8 bg-canvas space-y-6">
       {/* Toast */}
       {toast && (
         <div role="alert" className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-xl text-xs font-semibold backdrop-blur-md ${toast.type === 'success' ? 'bg-emerald-50/95 border-emerald-200 text-emerald-900' : 'bg-rose-50/95 border-rose-200 text-rose-900'}`}>
@@ -103,7 +103,7 @@ export const CmsContactPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div className="space-y-1">
-          <span className="px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 w-fit">
+          <span className="px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 w-fit">
             <Phone className="w-3 h-3" /> Business Contact Info
           </span>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Contact Info Studio</h1>
@@ -124,7 +124,7 @@ export const CmsContactPage: React.FC = () => {
 
       {isLoading ? (
         <div className="py-28 text-center bg-white rounded-3xl border border-slate-200">
-          <RefreshCw className="w-9 h-9 animate-spin text-[#E85D88] mx-auto mb-3" />
+          <RefreshCw className="w-9 h-9 animate-spin text-accent mx-auto mb-3" />
           <p className="text-sm font-bold text-slate-800">Loading contact info...</p>
         </div>
       ) : showError ? (
@@ -144,7 +144,7 @@ export const CmsContactPage: React.FC = () => {
                   <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-xs">01</div>
                   <div>
                     <h2 className="text-sm font-bold text-slate-900">Primary Contact Details</h2>
-                    <p className="text-[11px] text-slate-400">Phone number and email address shown to customers</p>
+                    <p className="text-xs text-slate-400">Phone number and email address shown to customers</p>
                   </div>
                 </div>
 
@@ -154,7 +154,7 @@ export const CmsContactPage: React.FC = () => {
                       <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone Number
                     </label>
                     <input type="tel" className={INPUT} value={form.phone ?? ''} onChange={(e) => set('phone', e.target.value)} placeholder="+91 98765 43210" />
-                    <p className="text-[11px] text-slate-400 mt-1">Include country code. Customers can call or WhatsApp this number.</p>
+                    <p className="text-xs text-slate-400 mt-1">Include country code. Customers can call or WhatsApp this number.</p>
                   </div>
 
                   <div>
@@ -162,7 +162,7 @@ export const CmsContactPage: React.FC = () => {
                       <Mail className="w-3.5 h-3.5 text-slate-400" /> Public Contact Email
                     </label>
                     <input type="email" className={INPUT} value={form.email ?? ''} onChange={(e) => set('email', e.target.value)} placeholder="hello@madalsacouture.com" />
-                    <p className="text-[11px] text-slate-400 mt-1">Customer support or inquiry email shown on the contact page.</p>
+                    <p className="text-xs text-slate-400 mt-1">Customer support or inquiry email shown on the contact page.</p>
                   </div>
                 </div>
               </div>
@@ -173,7 +173,7 @@ export const CmsContactPage: React.FC = () => {
                   <div className="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-xs">02</div>
                   <div>
                     <h2 className="text-sm font-bold text-slate-900">Store Address & Hours</h2>
-                    <p className="text-[11px] text-slate-400">Physical location and operating hours</p>
+                    <p className="text-xs text-slate-400">Physical location and operating hours</p>
                   </div>
                 </div>
 
@@ -190,7 +190,7 @@ export const CmsContactPage: React.FC = () => {
                       <Clock className="w-3.5 h-3.5 text-slate-400" /> Business Hours
                     </label>
                     <textarea rows={3} className={`${INPUT} resize-none`} value={form.businessHours ?? ''} onChange={(e) => set('businessHours', e.target.value)} placeholder={'Mon – Sat: 10am – 7pm\nSunday: Closed'} />
-                    <p className="text-[11px] text-slate-400 mt-1">Use line breaks for different days.</p>
+                    <p className="text-xs text-slate-400 mt-1">Use line breaks for different days.</p>
                   </div>
                 </div>
               </div>
@@ -204,7 +204,7 @@ export const CmsContactPage: React.FC = () => {
                   <div className="w-8 h-8 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center font-bold text-xs">03</div>
                   <div>
                     <h2 className="text-sm font-bold text-slate-900">Form Routing & Map</h2>
-                    <p className="text-[11px] text-slate-400">Backend email routing and Google Maps embed</p>
+                    <p className="text-xs text-slate-400">Backend email routing and Google Maps embed</p>
                   </div>
                 </div>
 
@@ -214,7 +214,7 @@ export const CmsContactPage: React.FC = () => {
                       <Link className="w-3.5 h-3.5 text-slate-400" /> Form Routing Email (Internal)
                     </label>
                     <input type="email" className={INPUT} value={form.formRoutingEmail ?? ''} onChange={(e) => set('formRoutingEmail', e.target.value)} placeholder="support@madalsacouture.com" />
-                    <p className="text-[11px] text-slate-400 mt-1">Contact form submissions are sent to this address. Not visible to customers.</p>
+                    <p className="text-xs text-slate-400 mt-1">Contact form submissions are sent to this address. Not visible to customers.</p>
                   </div>
 
                   <div>
@@ -222,12 +222,12 @@ export const CmsContactPage: React.FC = () => {
                       <Globe className="w-3.5 h-3.5 text-slate-400" /> Google Maps Embed URL
                     </label>
                     <textarea rows={3} className={`${INPUT} resize-none font-mono text-xs`} value={form.mapEmbedUrl ?? ''} onChange={(e) => set('mapEmbedUrl', e.target.value)} placeholder="https://www.google.com/maps/embed?pb=..." />
-                    <p className="text-[11px] text-slate-400 mt-1">Copy the full embed URL from Google Maps → Share → Embed a map.</p>
+                    <p className="text-xs text-slate-400 mt-1">Copy the full embed URL from Google Maps → Share → Embed a map.</p>
                   </div>
 
                   {/* Map Preview */}
                   {mapUrl && !isMapUrlValid && (
-                    <p className="text-[11px] font-semibold text-rose-600">Only Google Maps embed URLs ({MAP_EMBED_PREFIX}…) are supported.</p>
+                    <p className="text-xs font-semibold text-rose-600">Only Google Maps embed URLs ({MAP_EMBED_PREFIX}…) are supported.</p>
                   )}
                   {mapUrl && isMapUrlValid && (
                     <div className="rounded-xl overflow-hidden border border-slate-200">
@@ -246,7 +246,7 @@ export const CmsContactPage: React.FC = () => {
                 <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <div>
                     <span className="text-xs font-bold text-slate-900 block">Page Status</span>
-                    <span className="text-[11px] text-slate-500">Show or hide the contact page on the storefront.</span>
+                    <span className="text-xs text-slate-500">Show or hide the contact page on the storefront.</span>
                   </div>
                   <button
                     type="button"

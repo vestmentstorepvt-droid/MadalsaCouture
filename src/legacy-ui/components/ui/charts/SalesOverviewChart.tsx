@@ -62,7 +62,7 @@ export const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
             <select
               value={selectedRange}
               onChange={handleRangeChange}
-              className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2 pr-8 text-xs font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#E85D88] focus:border-transparent cursor-pointer shadow-sm transition"
+              className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2 pr-8 text-xs font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-ink focus:border-transparent cursor-pointer shadow-sm transition"
             >
               {timeRangeOptions.map((option) => (
                 <option key={option} value={option}>
@@ -92,8 +92,8 @@ export const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
               {/* Smooth Linear Gradient Fill */}
               <defs>
                 <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#E85D88" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#E85D88" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#c2255c" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#c2255c" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
 
@@ -146,7 +146,7 @@ export const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
 
                     return (
                       <div className="bg-white border border-slate-100 rounded-xl shadow-lg p-3 text-center min-w-[120px]">
-                        <p className="text-[11px] font-semibold text-slate-500 mb-0.5">
+                        <p className="text-xs font-semibold text-slate-500 mb-0.5">
                           {displayDate}
                         </p>
                         <p className="text-sm font-bold text-slate-800">
@@ -164,13 +164,13 @@ export const SalesOverviewChart: React.FC<SalesOverviewChartProps> = ({
               <Area
                 type="monotone"
                 dataKey="sales"
-                stroke="#E85D88"
+                stroke="#c2255c"
                 strokeWidth={3}
                 fillOpacity={1}
                 fill="url(#colorSales)"
                 activeDot={{
                   r: 6,
-                  fill: '#E85D88',
+                  fill: '#c2255c',
                   stroke: '#ffffff',
                   strokeWidth: 3,
                 }}

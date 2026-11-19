@@ -42,7 +42,7 @@ const PromoBanner: React.FC = () => {
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
           <div className="mx-auto w-full max-w-2xl">
             {quoteText && (
-              <p className="text-base sm:text-2xl lg:text-3xl font-serif italic tracking-[0.08em] text-white leading-relaxed">
+              <p className="text-base sm:text-2xl lg:text-3xl italic tracking-[0.08em] text-white leading-relaxed font-semibold">
                 {quoteText}
               </p>
             )}

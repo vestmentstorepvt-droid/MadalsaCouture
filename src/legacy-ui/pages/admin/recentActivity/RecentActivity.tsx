@@ -61,7 +61,7 @@ const RecentActivity: React.FC = () => {
         changeText: 'all time',
         icon: FileText,
         iconBgColor: 'bg-rose-50',
-        iconColor: 'text-[#E85D88]',
+        iconColor: 'text-accent',
       },
       {
         title: 'Order Events',
@@ -195,7 +195,7 @@ const RecentActivity: React.FC = () => {
             ) : filteredLogs.length > 0 ? (
               filteredLogs.map((log) => (
                 <tr key={log._id} className="transition-colors hover:bg-slate-50">
-                  <td className="px-4 py-4 text-sm font-medium text-[#E85D88]">
+                  <td className="px-4 py-4 text-sm font-medium text-accent">
                     {log.action}
                   </td>
                   <td className="px-4 py-4 text-sm text-slate-700 capitalize">

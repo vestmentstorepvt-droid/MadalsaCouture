@@ -31,5 +31,5 @@ export default defineConfig([
     rules: { "@typescript-eslint/no-explicit-any": "off", "@typescript-eslint/no-this-alias": "off" },
   },
   // The copied website keeps its original code style until the redesign.
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "src/legacy-ui/**", "backups/**", ".data/**"]),
+  globalIgnores([".next/**", ".next-*/**", "out/**", "build/**", "next-env.d.ts", "src/legacy-ui/**", "backups/**", ".data/**"]),
 ]);

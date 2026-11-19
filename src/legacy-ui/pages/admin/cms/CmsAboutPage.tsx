@@ -169,7 +169,7 @@ export const CmsAboutPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 sm:p-8 bg-[#FAFAFC] space-y-6">
+    <div className="min-h-screen p-6 sm:p-8 bg-canvas space-y-6">
       {toast && (
         <div role="alert" className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-xl text-xs font-semibold backdrop-blur-md ${toast.type === 'success' ? 'bg-emerald-50/95 border-emerald-200 text-emerald-900' : 'bg-rose-50/95 border-rose-200 text-rose-900'}`}>
           <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-white ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
@@ -182,7 +182,7 @@ export const CmsAboutPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs">
         <div className="space-y-1">
-          <span className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 w-fit">
+          <span className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 w-fit">
             <BookOpen className="w-3 h-3" /> Brand Story & Founder CMS
           </span>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">About Us Studio</h1>
@@ -203,7 +203,7 @@ export const CmsAboutPage: React.FC = () => {
 
       {isLoading ? (
         <div className="py-28 text-center bg-white rounded-3xl border border-slate-200">
-          <RefreshCw className="w-9 h-9 animate-spin text-[#E85D88] mx-auto mb-3" />
+          <RefreshCw className="w-9 h-9 animate-spin text-accent mx-auto mb-3" />
           <p className="text-sm font-bold text-slate-800">Loading About Us content...</p>
         </div>
       ) : showError ? (
@@ -220,7 +220,7 @@ export const CmsAboutPage: React.FC = () => {
               <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs">01</div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900">Banner & Header Content</h2>
-                <p className="text-[11px] text-slate-400">Headlines and banner text shown on the top of the About page</p>
+                <p className="text-xs text-slate-400">Headlines and banner text shown on the top of the About page</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -262,7 +262,7 @@ export const CmsAboutPage: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900">Founder & Creative Director Settings</h2>
-                <p className="text-[11px] text-slate-400">Founder portrait image, name, role, establishment badge & quote</p>
+                <p className="text-xs text-slate-400">Founder portrait image, name, role, establishment badge & quote</p>
               </div>
             </div>
 
@@ -323,7 +323,7 @@ export const CmsAboutPage: React.FC = () => {
               <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xs">03</div>
               <div>
                 <h2 className="text-sm font-bold text-slate-900">Brand Story Paragraphs</h2>
-                <p className="text-[11px] text-slate-400">Separate paragraphs with a new blank line. Rendered in both "Our Story" section & About page.</p>
+                <p className="text-xs text-slate-400">Separate paragraphs with a new blank line. Rendered in both "Our Story" section & About page.</p>
               </div>
             </div>
             <textarea
@@ -342,14 +342,14 @@ export const CmsAboutPage: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs">04</div>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">Virtues Bar (4 Pillars)</h2>
-                  <p className="text-[11px] text-slate-400">Displayed in the horizontal bar below the hero</p>
+                  <p className="text-xs text-slate-400">Displayed in the horizontal bar below the hero</p>
                 </div>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {form.virtues.map((v, i) => (
                 <div key={i} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Pillar {i + 1}</span>
+                  <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block">Pillar {i + 1}</span>
                   <input
                     type="text"
                     value={v.label}
@@ -382,7 +382,7 @@ export const CmsAboutPage: React.FC = () => {
                 <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-xs">05</div>
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">Visual Gallery</h2>
-                  <p className="text-[11px] text-slate-400">Additional image blocks for workshop or store gallery</p>
+                  <p className="text-xs text-slate-400">Additional image blocks for workshop or store gallery</p>
                 </div>
               </div>
               <button type="button" onClick={handleAddImage} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition shadow-sm">

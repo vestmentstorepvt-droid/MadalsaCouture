@@ -12,6 +12,27 @@ import __imp9 from "@/server/models/adminNotificationModel";
 import __imp10 from "@/server/models/orderItemModel";
 import __imp11 from "@/server/repositories/exchangeRepository";
 import __imp12 from "@/server/models/userModel";
+import { cancelShippingOrder } from "@/server/services/shiprocketShipping";
+import { CANCEL_NOTE_MAX, cancelReasonLabel } from "@/shared/cancelReasons";
+import { NotificationTemplate, Order, User } from "@/server/models/registry";
+
+/**
+ * The "order cancelled" email template. Live databases were seeded before this type existed, so
+ * create the default once, the first time a cancellation needs it. Editable in Admin → Notifications.
+ */
+async function ensureCancelledTemplate() {
+  const existing = await NotificationTemplate.findOne({ type: 'order_cancelled' }).lean();
+  if (existing) return;
+  await NotificationTemplate.create({
+    type: 'order_cancelled',
+    subject: 'Order #{{orderNumber}} cancelled',
+    htmlBody:
+      '<p>Hi {{name}},</p><p>Your order <strong>#{{orderNumber}}</strong> has been cancelled as you requested.</p>' +
+      '<p>Reason: {{reason}}</p><p>{{refundNote}}</p><p>We hope to see you again soon. Madalsa Couture</p>',
+    requiredPlaceholders: ['orderNumber'],
+    isActive: true,
+  });
+}
 
 const mongoose = __imp0;
 
@@ -542,6 +563,13 @@ class OrderService {
     }
 
 
+    // ── 2b. Shiprocket shipping panel ───────────────────────────────────────
+    // An order already in the shipping panel is cancelled there first; if a courier is already
+    // assigned that refuses (409) and the shop order stays as it is.
+    if (newStatus === 'Cancelled' && order.shiprocketShipping?.orderId) {
+      await cancelShippingOrder(order);
+    }
+
     // ── 3. Build history entry ─────────────────────────────────────────────
     const historyEntry = {
       status: newStatus,
@@ -733,7 +761,17 @@ class OrderService {
    * @param {string|ObjectId} userId  - Customer ObjectId requesting cancellation.
    * @returns {Promise<Object>} Updated lean order document.
    */
-  async cancelOrder(orderId, userId) {
+  async cancelOrder(orderId, userId, { reason, note } = {}) {
+    // ── 0. Reason (required; "other" needs a short note) ───────────────────
+    const reasonLabel = cancelReasonLabel(reason);
+    if (!reasonLabel) {
+      throw createError('Please choose a reason for cancelling.', 400, 'CANCEL_REASON_REQUIRED');
+    }
+    const cleanNote = typeof note === 'string' ? note.trim().slice(0, CANCEL_NOTE_MAX) : '';
+    if (reason === 'other' && !cleanNote) {
+      throw createError('Please tell us briefly why you are cancelling.', 400, 'CANCEL_NOTE_REQUIRED');
+    }
+
     // ── 1. Fetch the order ─────────────────────────────────────────────────
     const order = await orderRepository.findById(orderId);
     if (!order) {
@@ -762,26 +800,53 @@ class OrderService {
     }
 
     // ── 4. Transition to Cancelled ─────────────────────────────────────────
-    const updatedOrder = await this.transitionStatus(
+    const reasonText = cleanNote ? `${reasonLabel}: ${cleanNote}` : reasonLabel;
+    let updatedOrder = await this.transitionStatus(
       orderId,
       'Cancelled',
       { id: userId },
-      'Customer cancellation'
+      `Cancelled by customer. Reason: ${reasonText}`
     );
 
-    // ── 5. Return updated order ────────────────────────────────────────────
-    logger.info(`Order ${orderId} cancelled by customer ${userId}`);
+    // ── 5. Record why (shown on the order, in admin, and in the email) ─────
+    const cancellation = { by: 'customer', reason, reasonLabel, note: cleanNote || null, at: new Date() };
+    updatedOrder = (await Order.findOneAndUpdate({ _id: orderId }, { $set: { cancellation } }, { new: true }).lean()) || updatedOrder;
+    logger.info(`Order ${orderId} cancelled by customer ${userId} (${reason})`);
 
     // Create Admin Notification
     try {
       await AdminNotification.create({
         title: 'Order Cancelled',
-        message: `Order #${updatedOrder.orderNumber} has been cancelled by the customer.`,
+        message: `Order #${updatedOrder.orderNumber} was cancelled by the customer. Reason: ${reasonText}`,
         type: 'order_cancelled',
         relatedId: updatedOrder._id,
       });
     } catch (err) {
       logger.error(`Failed to create admin notification for cancelled order ${orderId}: ${err.message}`);
+    }
+
+    // Confirmation email to the customer (template editable in Admin → Notifications).
+    try {
+      const customer = await User.findById(userId).lean();
+      if (customer?.email) {
+        await ensureCancelledTemplate();
+        notificationService.send(
+          'order_cancelled',
+          customer.email,
+          {
+            name: customer.name || 'there',
+            orderNumber: updatedOrder.orderNumber,
+            reason: reasonText,
+            refundNote:
+              updatedOrder.paymentMethod === 'online'
+                ? 'Your refund will reach your original payment method within 5–7 working days.'
+                : 'This was a Cash on Delivery order, so nothing was charged and there is nothing to refund.',
+          },
+          userId
+        );
+      }
+    } catch (err) {
+      logger.error(`Cancellation email for order ${orderId} failed: ${err.message}`);
     }
 
     return updatedOrder;

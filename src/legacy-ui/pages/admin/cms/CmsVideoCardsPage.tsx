@@ -68,7 +68,7 @@ function toPayload(form: VideoCardForm): CmsVideoCardInput {
   };
 }
 
-const INPUT = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm focus:border-[#E85D88] focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20';
+const INPUT = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/20';
 
 const VideoCardEditor: React.FC<{
   initial: VideoCardForm;
@@ -95,7 +95,7 @@ const VideoCardEditor: React.FC<{
             <h2 className="text-lg font-bold text-slate-900">{title}</h2>
             <p className="mt-1 text-xs text-slate-500">Manage this video card independently from other homepage sections.</p>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close editor" className="rounded-xl px-3 py-2 text-slate-500 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]">Close</button>
+          <button type="button" onClick={onClose} aria-label="Close editor" className="rounded-xl px-3 py-2 text-slate-500 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">Close</button>
         </div>
 
         <form onSubmit={submit} className="space-y-5 p-5 sm:p-7">
@@ -116,7 +116,7 @@ const VideoCardEditor: React.FC<{
               />
               <label htmlFor="video-card-url" className="mt-3 block text-xs font-semibold text-slate-700">Or paste a video URL</label>
               <input id="video-card-url" type="url" value={form.videoUrl} onChange={(event) => set('videoUrl', event.target.value)} className={`${INPUT} mt-1`} placeholder="https://…" />
-              <p className="mt-1 text-[11px] text-slate-500">Pasted URLs skip validation — make sure they are portrait 2:3 ratio and under 20 MB.</p>
+              <p className="mt-1 text-xs text-slate-500">Pasted URLs skip validation — make sure they are portrait 2:3 ratio and under 20 MB.</p>
             </div>
             <div>
               <ImageUploader
@@ -143,7 +143,7 @@ const VideoCardEditor: React.FC<{
             <div>
               <label htmlFor="video-card-order" className="mb-1 block text-xs font-semibold text-slate-700">Display position</label>
               <input id="video-card-order" type="number" min="0" value={form.displayOrder} onChange={(event) => set('displayOrder', event.target.value)} className={INPUT} />
-              <p className="mt-1 text-[11px] text-slate-500">Lower numbers appear first.</p>
+              <p className="mt-1 text-xs text-slate-500">Lower numbers appear first.</p>
             </div>
           </div>
 
@@ -156,7 +156,7 @@ const VideoCardEditor: React.FC<{
             <div>
               <label htmlFor="video-card-link" className="mb-1 block text-xs font-semibold text-slate-700">Product page URL for Add To Cart</label>
               <input id="video-card-link" type="text" value={form.linkUrl} onChange={(event) => set('linkUrl', event.target.value)} className={INPUT} placeholder="/product/product-slug" />
-              <p className="mt-1 text-[11px] text-slate-500">The button opens this product page so shoppers can choose a size and add it to their cart.</p>
+              <p className="mt-1 text-xs text-slate-500">The button opens this product page so shoppers can choose a size and add it to their cart.</p>
             </div>
             <div>
               <label htmlFor="video-card-button" className="mb-1 block text-xs font-semibold text-slate-700">Button text (optional)</label>
@@ -176,7 +176,7 @@ const VideoCardEditor: React.FC<{
           </div>
 
           <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <input type="checkbox" checked={form.status === 'active'} onChange={(event) => set('status', event.target.checked ? 'active' : 'inactive')} className="mt-0.5 h-4 w-4 accent-[#E85D88]" />
+            <input type="checkbox" checked={form.status === 'active'} onChange={(event) => set('status', event.target.checked ? 'active' : 'inactive')} className="mt-0.5 h-4 w-4 accent-accent" />
             <span>
               <span className="block text-sm font-semibold text-slate-800">Show this card on the homepage</span>
               <span className="mt-1 block text-xs text-slate-500">Turn it off to hide it without deleting the video.</span>
@@ -184,7 +184,7 @@ const VideoCardEditor: React.FC<{
           </label>
 
           <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-100 pt-4 sm:flex-row">
-            <button type="button" onClick={onClose} className="min-h-10 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]">Cancel</button>
+            <button type="button" onClick={onClose} className="min-h-10 rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">Cancel</button>
             <AppButton type="submit" variant="primary" isLoading={isSaving} disabled={!form.videoUrl.trim() || !form.posterUrl.trim()}>
               Save video card
             </AppButton>
@@ -245,7 +245,7 @@ export const CmsVideoCardsPage: React.FC = () => {
   const sortedCards = [...cards].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
 
   return (
-    <main className="min-h-screen space-y-6 bg-[#FAFAFC] p-4 text-slate-800 sm:p-6">
+    <main className="min-h-screen space-y-6 bg-canvas p-4 text-slate-800 sm:p-6">
       {notice && (
         <div role="status" aria-live="polite" className={`fixed right-4 top-4 z-[60] rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-xl ${notice.error ? 'bg-rose-600' : 'bg-emerald-600'}`}>
           {notice.message}
@@ -278,14 +278,14 @@ export const CmsVideoCardsPage: React.FC = () => {
 
       <header className="flex flex-col justify-between gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:p-6">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-[#C54870]">
+          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-accent-deep">
             <Film className="h-3.5 w-3.5" /> Homepage content
           </span>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Video cards</h1>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">Add and manage homepage videos separately from hero banners, collections and products.</p>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => refetch()} aria-label="Refresh video cards" className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]">
+          <button type="button" onClick={() => refetch()} aria-label="Refresh video cards" className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">
             <RefreshCw className="h-4 w-4" />
           </button>
           <AppButton type="button" variant="primary" onClick={() => setEditor({ mode: 'create' })}>
@@ -307,7 +307,7 @@ export const CmsVideoCardsPage: React.FC = () => {
           </div>
         ) : sortedCards.length === 0 ? (
           <div className="flex flex-col items-center py-14 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-[#C54870]"><Film className="h-7 w-7" /></div>
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-accent-deep"><Film className="h-7 w-7" /></div>
             <h2 className="mt-4 text-base font-bold text-slate-800">No videos added yet</h2>
             <p className="mt-1 max-w-md text-sm text-slate-500">Add a video and a poster image. Shoppers see the poster first and can tap to play.</p>
             <AppButton type="button" variant="primary" className="mt-5" onClick={() => setEditor({ mode: 'create' })}>
@@ -320,7 +320,7 @@ export const CmsVideoCardsPage: React.FC = () => {
               <article key={card._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                 <div className="relative aspect-[2/3] bg-slate-100">
                   <img src={card.posterUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
-                  <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-bold ${card.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
+                  <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold ${card.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
                     {card.status === 'active' ? 'Visible' : 'Hidden'}
                   </span>
                 </div>
@@ -330,12 +330,12 @@ export const CmsVideoCardsPage: React.FC = () => {
                       <h2 className="truncate text-sm font-bold text-slate-900">{card.title}</h2>
                       {card.description && <p className="mt-1 line-clamp-2 text-xs text-slate-500">{card.description}</p>}
                     </div>
-                    <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-[11px] text-slate-600">Order {card.displayOrder ?? 0}</span>
+                    <span className="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-xs text-slate-600">Order {card.displayOrder ?? 0}</span>
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-100 pt-3">
-                    <span className="truncate text-[11px] text-slate-500">{card.linkUrl || 'No destination link'}</span>
+                    <span className="truncate text-xs text-slate-500">{card.linkUrl || 'No destination link'}</span>
                     <div className="flex shrink-0 gap-2">
-                      <button type="button" onClick={() => setEditor({ mode: 'edit', card })} aria-label={`Edit ${card.title}`} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E85D88]">
+                      <button type="button" onClick={() => setEditor({ mode: 'edit', card })} aria-label={`Edit ${card.title}`} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink">
                         <Pencil className="h-3.5 w-3.5" /> Edit
                       </button>
                       <button type="button" onClick={() => setDeleteTarget(card)} aria-label={`Remove ${card.title}`} className="inline-flex min-h-9 items-center justify-center rounded-lg border border-rose-100 px-2.5 text-rose-600 hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">

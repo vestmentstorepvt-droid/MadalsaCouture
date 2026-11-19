@@ -158,7 +158,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               <LayoutDashboard className="w-4 h-4 text-slate-300 flex-shrink-0 hidden sm:block" />
               <h1 className="text-sm font-bold text-slate-800 truncate">{pageTitle}</h1>
             </div>
-            <p className="text-[10px] text-slate-400 hidden sm:block">
+            <p className="text-xs text-slate-400 hidden sm:block">
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
           </div>
@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             >
               <Inbox className="w-5 h-5" />
               {alertsData && alertsData.unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[17px] h-[17px] rounded-full bg-blue-500 text-white text-[9px] font-black px-1 leading-none">
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[17px] h-[17px] rounded-full bg-blue-500 text-white text-xs font-black px-1 leading-none">
                   {alertsData.unreadCount > 9 ? '9+' : alertsData.unreadCount}
                 </span>
               )}
@@ -263,9 +263,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{alert.message}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{alert.message}</p>
                           </div>
-                          <div className="flex items-center gap-1 text-[10px] text-slate-400 flex-shrink-0 mt-0.5">
+                          <div className="flex items-center gap-1 text-xs text-slate-400 flex-shrink-0 mt-0.5">
                             <Clock className="w-3 h-3" />
                             {new Date(alert.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                           </div>
@@ -291,14 +291,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               }}
               className={`relative w-9 h-9 flex items-center justify-center rounded-xl transition ${
                 isNotiOpen
-                  ? 'bg-[#E85D88]/10 text-[#E85D88]'
+                  ? 'bg-ink/10 text-accent'
                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
               }`}
               aria-label="View notification logs"
             >
               <Bell className="w-5 h-5" />
               {failedCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[17px] h-[17px] rounded-full bg-rose-500 text-white text-[9px] font-black px-1 leading-none">
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[17px] h-[17px] rounded-full bg-rose-500 text-white text-xs font-black px-1 leading-none">
                   {failedCount > 9 ? '9+' : failedCount}
                 </span>
               )}
@@ -310,7 +310,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
                   <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-[#E85D88]" />
+                    <Bell className="w-4 h-4 text-accent" />
                     <span className="text-sm font-bold text-slate-800">Notification Logs</span>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -351,19 +351,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-xs font-bold text-slate-800 truncate">{log.type}</span>
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_STYLES[log.status] ?? 'text-slate-600 bg-slate-100 border-slate-200'}`}>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${STATUS_STYLES[log.status] ?? 'text-slate-600 bg-slate-100 border-slate-200'}`}>
                                 {log.status === 'sent' && <CheckCheck className="w-2.5 h-2.5" />}
                                 {log.status === 'failed' && <AlertCircle className="w-2.5 h-2.5" />}
                                 {log.status === 'retrying' && <RefreshCw className="w-2.5 h-2.5" />}
                                 {log.status}
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 truncate">{log.recipient}</p>
+                            <p className="text-xs text-slate-500 mt-0.5 truncate">{log.recipient}</p>
                             {log.error && (
-                              <p className="text-[10px] text-rose-500 mt-0.5 truncate">{log.error}</p>
+                              <p className="text-xs text-rose-500 mt-0.5 truncate">{log.error}</p>
                             )}
                           </div>
-                          <div className="flex items-center gap-1 text-[10px] text-slate-400 flex-shrink-0 mt-0.5">
+                          <div className="flex items-center gap-1 text-xs text-slate-400 flex-shrink-0 mt-0.5">
                             <Clock className="w-3 h-3" />
                             {new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                           </div>
@@ -378,7 +378,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                   <NavLink
                     to="/admin/notifications"
                     onClick={() => setIsNotiOpen(false)}
-                    className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#E85D88] hover:text-[#c03a6b] transition"
+                    className="flex items-center justify-center gap-1.5 text-xs font-bold text-accent hover:text-accent-deep transition"
                   >
                     View all notification logs <ExternalLink className="w-3 h-3" />
                   </NavLink>
@@ -399,21 +399,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               }}
               className={`flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-2xl border transition ${
                 isProfileOpen
-                  ? 'border-[#E85D88]/30 bg-[#E85D88]/5 shadow-sm'
+                  ? 'border-ink/30 bg-ink/5 shadow-sm'
                   : 'border-slate-200 bg-white hover:shadow-sm hover:border-slate-300'
               }`}
               aria-haspopup="true"
               aria-expanded={isProfileOpen}
             >
               {/* Avatar */}
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#E85D88] to-[#c03a6b] flex items-center justify-center text-white text-xs font-black shadow-md shadow-[#E85D88]/25 flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-ink flex items-center justify-center text-white text-xs font-black shadow-md shadow-black/25 flex-shrink-0">
                 {userInitial}
               </div>
               {/* Name */}
               <div className="hidden sm:block text-left min-w-0">
                 <p className="text-xs font-bold text-slate-800 truncate max-w-[100px]">{userName}</p>
-                <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5 text-[#E85D88]" />
+                <p className="text-xs text-slate-400 flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5 text-accent" />
                   {user?.role === 'ADMIN' ? 'Super Admin' : user?.role ?? 'Admin'}
                 </p>
               </div>
@@ -424,15 +424,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             {isProfileOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60 overflow-hidden z-50">
                 {/* User info header */}
-                <div className="px-4 py-3.5 bg-gradient-to-br from-slate-900 to-[#1A1428] border-b border-white/10">
+                <div className="px-4 py-3.5 bg-ink border-b border-white/10">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#E85D88] to-[#c03a6b] flex items-center justify-center text-white font-black text-sm shadow-md flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-ink flex items-center justify-center text-white font-black text-sm shadow-md flex-shrink-0">
                       {userInitial}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-white truncate">{userName}</p>
-                      <p className="text-[10px] text-white/50 truncate">{user?.email ?? ''}</p>
-                      <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#E85D88]/20 text-[#E85D88] border border-[#E85D88]/30">
+                      <p className="text-xs text-white/50 truncate">{user?.email ?? ''}</p>
+                      <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-bold bg-ink/20 text-accent border border-ink/30">
                         <Sparkles className="w-2 h-2" /> {user?.role ?? 'ADMIN'}
                       </span>
                     </div>

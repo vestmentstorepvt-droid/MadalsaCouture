@@ -66,7 +66,7 @@ const ErrorState: React.FC<{ message?: string; onRetry?: () => void }> = ({
       <button
         type="button"
         onClick={onRetry}
-        className="text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 px-5 py-2.5 rounded-xl transition"
+        className="btn-sm bg-ink text-white hover:bg-ink-hover"
       >
         Retry
       </button>
@@ -79,7 +79,7 @@ const About = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] text-[#3D2C24] font-sans antialiased">
+      <div className="min-h-screen bg-canvas text-ink font-sans antialiased">
         <main className="pt-20 lg:pt-24">
           <AboutSkeleton />
         </main>
@@ -89,7 +89,7 @@ const About = () => {
 
   if (isError || !aboutData) {
     return (
-      <div className="min-h-screen bg-[#FAF7F2] text-[#3D2C24] font-sans antialiased">
+      <div className="min-h-screen bg-canvas text-ink font-sans antialiased">
         <main className="pt-20 lg:pt-24 px-4">
           <ErrorState
             message="Failed to load About Us content. Please try again."
@@ -135,38 +135,32 @@ const About = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#3D2C24] font-sans antialiased selection:bg-[#B38756]/20">
+    <div className="min-h-screen bg-canvas text-ink">
 
       <main>
         {/* Editorial Hero Banner */}
-        <section className="relative overflow-hidden bg-[#271C16] text-[#FAF7F2] py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
-          <div className="absolute inset-0 z-0 opacity-20 mix-blend-overlay">
-            <img
-              src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=1600"
-              alt="Atelier background"
-              className="h-full w-full object-cover"
-            />
-          </div>
+        <section className="relative overflow-hidden border-b border-hairline bg-canvas text-ink py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+          <div aria-hidden="true" className="mesh-gradient pointer-events-none absolute inset-x-0 top-0 mx-auto h-full max-w-5xl" />
 
           <div className="relative z-10 mx-auto max-w-4xl text-center space-y-7">
-            <nav aria-label="Breadcrumb" className="flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-widest text-[#D4AF37]">
-              <Link to="/" className="hover:text-[#FFF8ED] transition-colors duration-200">Home</Link>
-              <ChevronRight className="h-3 w-3 text-[#D4AF37]/50" />
-              <span className="text-stone-400">{heroLabel}</span>
+            <nav aria-label="Breadcrumb" className="flex items-center justify-center gap-2 text-sm text-mute">
+              <Link to="/" className="hover:text-ink">Home</Link>
+              <ChevronRight className="h-3.5 w-3.5 text-faint" aria-hidden="true" />
+              <span className="text-ink">{heroLabel}</span>
             </nav>
 
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal tracking-[0.1em] uppercase leading-tight text-[#FFF8ED]">
+            <h1 className="text-[32px] leading-10 tracking-[-1.28px] sm:text-5xl sm:leading-[48px] sm:tracking-[-2.4px] text-ink font-semibold">
               {heading}
             </h1>
 
-            <p className="mx-auto max-w-2xl text-sm sm:text-base leading-relaxed tracking-wide text-stone-300 font-light">
+            <p className="mx-auto max-w-2xl text-base text-body">
               {body}
             </p>
 
             <div className="pt-6 flex justify-center gap-4">
               <Link
                 to="/products"
-                className="inline-flex items-center gap-2 border border-[#D4AF37] bg-[#D4AF37] px-8 py-3.5 text-xs font-semibold tracking-widest uppercase text-stone-900 shadow-lg transition-all duration-300 hover:bg-transparent hover:text-[#D4AF37] hover:shadow-xl"
+                className="btn-primary group"
               >
                 Explore Collections <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
@@ -175,14 +169,14 @@ const About = () => {
         </section>
 
         {/* Virtues Bar */}
-        <section className="border-b border-[#E2D9CC]/50 bg-gradient-to-r from-[#F8F5F0] to-[#F2EDE4] py-12 px-4 sm:px-6 lg:px-8">
+        <section className="border-b border-hairline bg-surface py-12 px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-7xl grid grid-cols-2 gap-8 lg:grid-cols-4">
             {virtues.map((v) => (
               <div key={v.label} className="text-center space-y-2">
-                <p className="font-serif text-sm font-semibold uppercase tracking-widest text-[#3D2C24]">
+                <p className="text-sm font-semibold text-ink">
                   {v.label}
                 </p>
-                <p className="text-xs text-stone-600 font-light leading-relaxed">{v.desc}</p>
+                <p className="text-xs text-stone-600 font-normal leading-relaxed">{v.desc}</p>
               </div>
             ))}
           </div>
@@ -192,13 +186,13 @@ const About = () => {
         {cards.length > 0 && (
           <section className="py-24 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
             <div className="text-center mb-16 space-y-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#A87443]">
+              <span className="eyebrow">
                 OUR ESSENCE
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl tracking-[0.14em] uppercase text-[#3D2C24]">
+              <h2 className="text-xl tracking-[-0.4px] sm:text-3xl tracking-[0.14em] text-ink font-semibold">
                 The Pillars of Madalsa Atelier
               </h2>
-              <div className="h-1 w-12 bg-gradient-to-r from-[#D4AF37] to-[#A87443] mx-auto rounded-full" />
+              <div className="h-1 w-12 bg-ink mx-auto rounded-full" />
             </div>
 
             <div className="grid gap-8 md:grid-cols-3">
@@ -207,15 +201,15 @@ const About = () => {
                 return (
                   <article
                     key={card.title}
-                    className="group relative rounded-3xl border border-[#E2D9CC]/60 bg-white p-8 sm:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all duration-500 hover:-translate-y-3 hover:border-[#D4AF37]/50 hover:shadow-[0_25px_50px_rgba(0,0,0,0.1)]"
+                    className="group relative rounded-3xl border border-hairline bg-white p-8 sm:p-10 shadow-md transition-all duration-500 hover:-translate-y-3 hover:border-hairline hover:shadow-md"
                   >
-                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFF8ED] to-[#F5EFE4] border border-[#E2CBA6]/40 transition-all duration-500 group-hover:scale-110 group-hover:shadow-md">
-                      <Icon className="h-6 w-6 text-[#A87443]" />
+                    <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-surface border border-hairline transition-all duration-500 group-hover:scale-110 group-hover:shadow-md">
+                      <Icon className="h-6 w-6 text-accent" />
                     </div>
-                    <h3 className="font-serif text-lg font-semibold tracking-wide uppercase text-[#3D2C24]">
+                    <h3 className="text-base font-semibold text-ink">
                       {card.title}
                     </h3>
-                    <p className="mt-4 text-xs sm:text-sm leading-relaxed text-stone-600 font-light">
+                    <p className="mt-4 text-xs sm:text-sm leading-relaxed text-stone-600 font-normal">
                       {card.description}
                     </p>
                   </article>
@@ -226,12 +220,12 @@ const About = () => {
         )}
 
         {/* Feature Story & Founder's Vision */}
-        <section className="bg-gradient-to-b from-[#FEFBF7] to-white py-24 lg:py-28 px-4 sm:px-6 lg:px-8 border-y border-[#E2D9CC]/40">
+        <section className="bg-surface py-24 lg:py-28 px-4 sm:px-6 lg:px-8 border-y border-hairline">
           <div className="mx-auto max-w-6xl space-y-20">
 
             {/* Story Showcase Row */}
             <div className="grid gap-16 lg:gap-20 lg:grid-cols-2 items-center">
-              <div className="relative overflow-hidden rounded-3xl border border-[#E2D9CC]/60 bg-gradient-to-br from-[#FBF8F2] to-[#F5EFE4] p-4 shadow-[0_15px_35px_rgba(0,0,0,0.08)]">
+              <div className="relative overflow-hidden rounded-3xl border border-hairline bg-surface p-4 shadow-md">
                 <div className="aspect-[4/5] w-full overflow-hidden rounded-2xl">
                   <img
                     src={optimizeImage(designerImage, 600)}
@@ -240,31 +234,31 @@ const About = () => {
                   />
                 </div>
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-72 rounded-2xl bg-white/95 p-5 shadow-lg backdrop-blur border border-white/50 text-center">
-                  <p className="font-serif text-sm font-semibold uppercase tracking-widest text-[#3D2C24]">
+                  <p className="text-sm font-semibold text-ink">
                     {designerName}
                   </p>
-                  <p className="text-[11px] text-[#A87443] tracking-widest uppercase font-medium mt-1">
+                  <p className="text-xs text-accent tracking-wider uppercase font-medium mt-1">
                     {designerRole}
                   </p>
                 </div>
               </div>
 
               <div className="space-y-8">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#A87443]">
+                <span className="eyebrow">
                   CREATIVE JOURNEY
                 </span>
-                <h2 className="font-serif text-3xl sm:text-4xl tracking-[0.1em] uppercase text-[#3D2C24] leading-tight">
+                <h2 className="text-[32px] leading-10 tracking-[-1.28px] sm:text-4xl text-ink leading-tight font-semibold">
                   A Label Built on Thoughtful Expression
                 </h2>
 
                 {storyParagraphs.length > 0 ? (
                   storyParagraphs.map((para, idx) => (
-                    <p key={idx} className="text-sm leading-relaxed text-stone-600 font-light">
+                    <p key={idx} className="text-sm leading-relaxed text-stone-600 font-normal">
                       {para}
                     </p>
                   ))
                 ) : (
-                  <p className="text-sm leading-relaxed text-stone-600 font-light">
+                  <p className="text-sm leading-relaxed text-stone-600 font-normal">
                     Madalsa Couture was born from a deep love for design, detail, and the timeless power of self-expression.
                   </p>
                 )}
@@ -274,7 +268,7 @@ const About = () => {
                   <div className="pt-2 space-y-3">
                     {highlights.map((highlight) => (
                       <div key={highlight} className="flex items-start gap-3 text-xs sm:text-sm text-stone-700 font-medium">
-                        <CheckCircle2 className="h-4 w-4 text-[#A87443] shrink-0 mt-0.5" />
+                        <CheckCircle2 className="h-4 w-4 text-accent shrink-0 mt-0.5" />
                         <span>{highlight}</span>
                       </div>
                     ))}
@@ -285,13 +279,13 @@ const About = () => {
 
             {/* Founder Quote Card */}
             {founderQuote && (
-              <div className="relative rounded-3xl border border-[#E2CBA6]/60 bg-gradient-to-br from-[#FFF8ED] to-[#FAF7F2] p-8 sm:p-12 text-center space-y-5 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
-                <Quote className="mx-auto h-8 w-8 text-[#D4AF37] opacity-70" />
-                <blockquote className="font-serif text-lg sm:text-2xl font-normal italic tracking-wide text-[#3D2C24] max-w-3xl mx-auto leading-relaxed">
+              <div className="relative rounded-3xl border border-hairline bg-surface p-8 sm:p-12 text-center space-y-5 shadow-md">
+                <Quote className="mx-auto h-8 w-8 text-accent opacity-70" />
+                <blockquote className="text-base sm:text-2xl italic text-ink max-w-3xl mx-auto leading-relaxed font-semibold">
                   "{founderQuote}"
                 </blockquote>
-                <div className="h-px w-12 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto" />
-                <p className="text-xs uppercase tracking-widest text-[#A87443] font-semibold">
+                <div className="h-px w-12 bg-gradient-to-r from-transparent via-ink to-transparent mx-auto" />
+                <p className="text-xs uppercase tracking-wider text-accent font-semibold">
                   — {designerName}
                 </p>
               </div>
@@ -306,7 +300,7 @@ const About = () => {
               {imageBlocks.map((block, idx) => (
                 <figure
                   key={`${block.imageUrl}-${idx}`}
-                  className="overflow-hidden rounded-2xl border border-[#E2D9CC]/60 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)]"
+                  className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-md"
                 >
                   <div className="aspect-[4/5] overflow-hidden">
                     <img
@@ -317,7 +311,7 @@ const About = () => {
                     />
                   </div>
                   {block.caption && (
-                    <figcaption className="px-4 py-3 text-center text-xs font-light tracking-wide text-stone-600">
+                    <figcaption className="px-4 py-3 text-center text-xs font-normal tracking-wide text-stone-600">
                       {block.caption}
                     </figcaption>
                   )}
@@ -330,34 +324,34 @@ const About = () => {
         {/* Quality Badges Section */}
         <section className="py-24 lg:py-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center space-y-14">
           <div className="space-y-4 max-w-2xl mx-auto">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#A87443]">
+            <span className="eyebrow">
               CRAFT GUARANTEE
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl tracking-[0.14em] uppercase text-[#3D2C24]">
+            <h2 className="text-xl tracking-[-0.4px] sm:text-3xl tracking-[0.14em] text-ink font-semibold">
               The Madalsa Signature
             </h2>
-            <div className="h-1 w-12 bg-gradient-to-r from-[#D4AF37] to-[#A87443] mx-auto rounded-full" />
-            <p className="text-xs text-stone-600 font-light leading-relaxed">
+            <div className="h-1 w-12 bg-ink mx-auto rounded-full" />
+            <p className="text-xs text-stone-600 font-normal leading-relaxed">
               Every detail is meticulously perfected to ensure your wardrobe piece remains a treasured possession for years to come.
             </p>
           </div>
 
           <div className="grid gap-7 sm:grid-cols-3">
             {craftBadges.map((badge, idx) => (
-              <div key={idx} className="group rounded-2xl border border-[#E2D9CC]/50 bg-white p-7 space-y-3 text-center hover:border-[#D4AF37]/40 hover:shadow-lg transition-all duration-300">
+              <div key={idx} className="group rounded-2xl border border-hairline bg-white p-7 space-y-3 text-center hover:border-hairline hover:shadow-lg transition-all duration-300">
                 <div className="flex justify-center">
                   {badge.icon === 'crown' ? (
-                    <Crown className="h-6 w-6 text-[#A87443] transition-transform duration-300 group-hover:scale-110" />
+                    <Crown className="h-6 w-6 text-accent transition-transform duration-300 group-hover:scale-110" />
                   ) : badge.icon === 'heart' ? (
-                    <Heart className="h-6 w-6 text-[#A87443] transition-transform duration-300 group-hover:scale-110" />
+                    <Heart className="h-6 w-6 text-accent transition-transform duration-300 group-hover:scale-110" />
                   ) : (
-                    <Award className="h-6 w-6 text-[#A87443] transition-transform duration-300 group-hover:scale-110" />
+                    <Award className="h-6 w-6 text-accent transition-transform duration-300 group-hover:scale-110" />
                   )}
                 </div>
-                <h4 className="font-serif text-sm font-semibold uppercase tracking-wide text-[#3D2C24]">
+                <h4 className="text-sm font-semibold text-ink">
                   {badge.title}
                 </h4>
-                <p className="text-xs text-stone-600 font-light leading-relaxed">{badge.description}</p>
+                <p className="text-xs text-stone-600 font-normal leading-relaxed">{badge.description}</p>
               </div>
             ))}
           </div>
@@ -365,7 +359,7 @@ const About = () => {
           <div className="pt-8">
             <Link
               to="/products"
-              className="inline-flex items-center gap-2 border border-[#3D2C24] bg-[#3D2C24] px-8 py-3.5 text-xs font-semibold tracking-widest uppercase text-[#FFF8ED] shadow-md transition-all duration-300 hover:bg-transparent hover:text-[#3D2C24] hover:shadow-lg"
+              className="inline-flex items-center gap-2 bg-ink px-8 text-white duration-300 h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover"
             >
               View Signature Collections <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>

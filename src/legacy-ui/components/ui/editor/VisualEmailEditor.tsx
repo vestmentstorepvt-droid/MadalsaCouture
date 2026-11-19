@@ -213,7 +213,7 @@ export const VisualEmailEditor: React.FC<VisualEmailEditorProps> = ({
       {/* ── Variable Inserter Bar (Non-technical) ────────────────────────── */}
       {availableVariables.length > 0 && (
         <div className="px-3 py-2 bg-pink-50/50 border-b border-slate-100 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#E85D88] flex items-center gap-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-accent flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5" /> Insert Dynamic Data:
           </span>
           {availableVariables.map((v) => (
@@ -221,7 +221,7 @@ export const VisualEmailEditor: React.FC<VisualEmailEditorProps> = ({
               key={v.key}
               type="button"
               onClick={() => insertVariable(v.key)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-pink-200 text-slate-700 hover:border-[#E85D88] hover:text-[#E85D88] shadow-xs transition"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-pink-200 text-slate-700 hover:border-ink hover:text-accent shadow-xs transition"
               title={`Click to insert ${v.label}`}
             >
               + {v.label}

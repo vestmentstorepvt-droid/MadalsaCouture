@@ -120,6 +120,21 @@ class CartController {
   }
 
   /**
+   * POST /api/v1/cart/remove-ordered
+   * Body: { items: [{ variantId, quantity }] } — the sizes just ordered. Removes them from the
+   * cart (or lowers the quantity) and leaves everything else.
+   */
+  async removeOrderedItems(req, res, next) {
+    try {
+      const items = Array.isArray(req.body?.items) ? req.body.items.slice(0, 100) : [];
+      const cart = await cartService.removeOrderedItems(req.user.id, items);
+      return sendSuccess(res, { cart }, 200);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
    * POST /api/v1/cart/sync
    * Bulk sync local guest cart items to server cart
    */

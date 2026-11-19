@@ -49,14 +49,104 @@ export async function generateCheckoutToken(cartItems: CartItem[]): Promise<stri
   return data.token;
 }
 
+/** What was in the bag when checkout opened, so the success page removes only those items. */
+export interface CheckedOutItem {
+  productId: string;
+  variantId?: string;
+  size?: string;
+  color?: string;
+  quantity: number;
+}
+
+const CHECKOUT_ITEMS_KEY = 'checkout_items';
+const CHECKOUT_ITEMS_MAX_AGE = 24 * 60 * 60 * 1000;
+
+export function rememberCheckoutItems(items: CheckedOutItem[]) {
+  try {
+    localStorage.setItem(CHECKOUT_ITEMS_KEY, JSON.stringify({ at: Date.now(), items }));
+  } catch {
+    // Storage blocked: the success page then leaves the bag as it is.
+  }
+}
+
+/** The items remembered at checkout (once; the record is removed). Empty if none or too old. */
+export function takeCheckoutItems(): CheckedOutItem[] {
+  try {
+    const raw = localStorage.getItem(CHECKOUT_ITEMS_KEY);
+    localStorage.removeItem(CHECKOUT_ITEMS_KEY);
+    if (!raw) return [];
+    const { at, items } = JSON.parse(raw);
+    return Date.now() - at < CHECKOUT_ITEMS_MAX_AGE && Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+
+// Shiprocket Checkout for custom sites: their script opens the checkout as a window over our page.
+// (Sending the browser to checkout.shiprocket.in/checkout?token=… only lands on the Fastrr home page.)
+const CHECKOUT_SCRIPT = 'https://checkout-ui.shiprocket.com/assets/js/channels/shopify.js';
+const CHECKOUT_STYLES = 'https://checkout-ui.shiprocket.com/assets/styles/shopify.css';
+
+declare global {
+  interface Window {
+    HeadlessCheckout?: {
+      addToCart: (event: Event | null, token: string, options?: { fallbackUrl?: string }) => void;
+    };
+  }
+}
+
+let scriptLoading: Promise<void> | null = null;
+
+/** Load Shiprocket's checkout script and styles once, on first use. */
+function loadShiprocketCheckout(): Promise<void> {
+  if (window.HeadlessCheckout) return Promise.resolve();
+  if (scriptLoading) return scriptLoading;
+
+  scriptLoading = new Promise<void>((resolve, reject) => {
+    if (!document.querySelector(`link[href="${CHECKOUT_STYLES}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = CHECKOUT_STYLES;
+      document.head.appendChild(link);
+    }
+    const script = document.createElement('script');
+    script.src = CHECKOUT_SCRIPT;
+    script.async = true;
+    script.onload = () => (window.HeadlessCheckout ? resolve() : reject(new Error('Shiprocket checkout did not start. Please try again.')));
+    script.onerror = () => {
+      scriptLoading = null; // allow a retry
+      reject(new Error('Could not load Shiprocket checkout. Check your connection and try again.'));
+    };
+    document.head.appendChild(script);
+  });
+  return scriptLoading;
+}
+
 /**
- * Redirect the browser to Shiprocket Checkout.
- * The token authenticates the session; Shiprocket sends the buyer back to /checkout-success afterwards.
+ * Open Shiprocket Checkout over the current page.
+ * The token authenticates the session; Shiprocket sends the buyer to /checkout-success after paying.
+ * If the checkout can't open, Shiprocket falls back to `fallbackUrl` (this page).
  */
-export function openShiprocketCheckoutRedirect(token: string) {
+export async function openShiprocketCheckout(token: string) {
   if (!token || token.trim() === '') {
     throw new Error('Invalid checkout token received');
   }
+  await loadShiprocketCheckout();
+  setScrollbarWidth();
+  window.HeadlessCheckout!.addToCart(null, token, { fallbackUrl: window.location.href });
+}
 
-  window.location.href = `https://checkout.shiprocket.in/checkout?token=${encodeURIComponent(token)}`;
+/**
+ * Width of a classic scrollbar on this device (0 where scrollbars overlay, e.g. phones and macOS).
+ * The checkout panel styles (tailwind.css, #headless-container) use it to hide the scrollbars that
+ * Shiprocket's page inside the frame always shows.
+ */
+function setScrollbarWidth() {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;top:-9999px;width:100px;height:100px;overflow:scroll';
+  document.body.appendChild(probe);
+  const width = probe.offsetWidth - probe.clientWidth;
+  probe.remove();
+  // The bar inside the frame can render a few px wider (browser zoom), so allow a little extra.
+  document.documentElement.style.setProperty('--sr-scrollbar', `${width ? width + 3 : 0}px`);
 }

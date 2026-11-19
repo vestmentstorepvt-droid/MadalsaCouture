@@ -46,7 +46,7 @@ export const ExchangeDetail: React.FC = () => {
         <div className="text-center">
           <AlertCircle className="w-8 h-8 mx-auto text-rose-500 mb-2" />
           <p className="text-slate-600 font-semibold">Exchange request not found.</p>
-          <button onClick={() => navigate('/admin/exchanges')} className="mt-4 text-[#D4AF37] hover:underline text-sm font-semibold">
+          <button onClick={() => navigate('/admin/exchanges')} className="mt-4 text-accent hover:underline text-sm font-semibold">
             Back to Exchanges
           </button>
         </div>
@@ -179,7 +179,7 @@ export const ExchangeDetail: React.FC = () => {
                 placeholder="Optional admin note (required for rejection)..."
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-hairline"
                 rows={2}
               />
               <div className="flex gap-3">
@@ -212,7 +212,7 @@ export const ExchangeDetail: React.FC = () => {
                 placeholder="QC Notes (Optional)..."
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37]/30"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-hairline"
                 rows={2}
               />
               

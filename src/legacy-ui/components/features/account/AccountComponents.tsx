@@ -10,7 +10,7 @@ interface SectionCardProps {
 }
 
 export const SectionCard = ({ title, subtitle, action, children, className = '' }: SectionCardProps) => (
-  <section className={`rounded-[2rem] border border-[#E8D9C7] bg-white/80 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.05)] backdrop-blur ${className}`}>
+  <section className={`rounded-3xl border border-hairline bg-white/80 p-6 shadow-md backdrop-blur ${className}`}>
     {(title || action || subtitle) ? (
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
