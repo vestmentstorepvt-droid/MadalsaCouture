@@ -9,3 +9,33 @@
     100% { transform: translateX(calc(-100% - 1.5rem)); }
   }
 }
+
+/*
+ * Shiprocket Checkout window. Their stylesheet makes it cover the whole screen; from tablet up it
+ * becomes a centred panel over the dimmed page (phones keep full screen). Their page inside the
+ * frame always shows scrollbars, so the frame is made larger than the panel by one scrollbar width
+ * (--sr-scrollbar, measured in shiprocketCheckoutAlternative.ts; 0 where scrollbars overlay) and
+ * the bars fall outside the visible area. Scrolling inside still works.
+ */
+@media (min-width: 640px) {
+  #headless-container .headless-modal {
+    background: rgb(0 0 0 / 0.55);
+    overflow: hidden;
+  }
+  #headless-container .headless-modal-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #headless-container .headless-modal-body {
+    width: min(440px, calc(100vw - 32px));
+    height: min(780px, 88vh);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 2px rgb(0 0 0 / 0.04), 0 8px 16px -4px rgb(0 0 0 / 0.08), 0 32px 48px -12px rgb(0 0 0 / 0.12);
+  }
+  #headless-container .headless-modal-body > iframe {
+    width: calc(100% + var(--sr-scrollbar, 0px));
+    height: calc(100% + var(--sr-scrollbar, 0px));
+  }
+}

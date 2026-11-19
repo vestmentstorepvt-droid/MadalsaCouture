@@ -99,5 +99,21 @@ export async function openShiprocketCheckout(token: string) {
     throw new Error('Invalid checkout token received');
   }
   await loadShiprocketCheckout();
+  setScrollbarWidth();
   window.HeadlessCheckout!.addToCart(null, token, { fallbackUrl: window.location.href });
+}
+
+/**
+ * Width of a classic scrollbar on this device (0 where scrollbars overlay, e.g. phones and macOS).
+ * The checkout panel styles (tailwind.css, #headless-container) use it to hide the scrollbars that
+ * Shiprocket's page inside the frame always shows.
+ */
+function setScrollbarWidth() {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:absolute;top:-9999px;width:100px;height:100px;overflow:scroll';
+  document.body.appendChild(probe);
+  const width = probe.offsetWidth - probe.clientWidth;
+  probe.remove();
+  // The bar inside the frame can render a few px wider (browser zoom), so allow a little extra.
+  document.documentElement.style.setProperty('--sr-scrollbar', `${width ? width + 3 : 0}px`);
 }
