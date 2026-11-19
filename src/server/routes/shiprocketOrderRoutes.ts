@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import __imp0 from "@/server/lib/express";
 import __imp1 from "@/server/config/logger";
 import { ShiprocketOrder } from "@/server/models/registry";
+import { importShiprocketOrder } from "@/server/services/shiprocketOrderImport";
 
 const express = __imp0;
 const logger = __imp1;
@@ -61,6 +62,15 @@ const receive = (kind) => async (req, res) => {
         processed: false,
       });
       logger.info(`[Shiprocket ${kind} webhook] Stored delivery ${eventId} (order ${payload.order_id ?? payload.id ?? "?"})`);
+      if (kind === "order") {
+        // Turn it into a shop order now. It's already stored, so a failure here loses nothing:
+        // scripts/import-shiprocket-orders.ts picks up anything left unprocessed.
+        try {
+          await importShiprocketOrder({ _id: eventId, payload });
+        } catch (err) {
+          logger.error(`[Shiprocket order webhook] Import failed for ${eventId}: ${err.message}`);
+        }
+      }
     }
     return res.status(200).json({ ok: true });
   } catch (err) {

@@ -12,6 +12,7 @@ import __imp9 from "@/server/models/adminNotificationModel";
 import __imp10 from "@/server/models/orderItemModel";
 import __imp11 from "@/server/repositories/exchangeRepository";
 import __imp12 from "@/server/models/userModel";
+import { cancelShippingOrder } from "@/server/services/shiprocketShipping";
 
 const mongoose = __imp0;
 
@@ -541,6 +542,13 @@ class OrderService {
       throw createError(ERROR.INVALID_TRANSITION, 409, 'INVALID_TRANSITION');
     }
 
+
+    // ── 2b. Shiprocket shipping panel ───────────────────────────────────────
+    // An order already in the shipping panel is cancelled there first; if a courier is already
+    // assigned that refuses (409) and the shop order stays as it is.
+    if (newStatus === 'Cancelled' && order.shiprocketShipping?.orderId) {
+      await cancelShippingOrder(order);
+    }
 
     // ── 3. Build history entry ─────────────────────────────────────────────
     const historyEntry = {
