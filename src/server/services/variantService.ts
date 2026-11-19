@@ -5,6 +5,7 @@ import __imp2 from "@/server/utils/slugify";
 import __imp3 from "@/server/constants/messages";
 import __imp4 from "@/server/config/logger";
 import __imp5 from "@/server/models/variantModel";
+import { queueShiprocketSync } from "@/server/services/shiprocketCatalog";
 
 const variantRepository = __imp0;
 const productService = __imp1;
@@ -120,6 +121,7 @@ class VariantService {
       logger.info(
         `Variant created: ${variant._id} (SKU: ${variant.sku}) for product ${productId} by admin ${adminId}`
       );
+      queueShiprocketSync(productId); // new size → Shiprocket
       return variant;
     } catch (err) {
       if (err.code === 11000) {
@@ -226,6 +228,7 @@ class VariantService {
         throw Object.assign(new Error(ERROR.NOT_FOUND), { statusCode: 404 });
       }
       logger.info(`Variant updated: ${id} by admin ${adminId}`);
+      queueShiprocketSync(updated.productId);
       return updated;
     } catch (err) {
       if (err.code === 11000) {
@@ -264,6 +267,7 @@ class VariantService {
     }
 
     logger.info(`Variant soft-deleted: ${id} by admin ${adminId}`);
+    queueShiprocketSync(deleted.productId); // the product is re-sent without this size
     return deleted;
   }
 

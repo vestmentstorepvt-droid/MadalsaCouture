@@ -1,6 +1,7 @@
 // @ts-nocheck — ported from the Express backend (controllers/catalogController.js); logic unchanged.
 import __imp0 from "@/server/lib/mongoose";
 import __imp1 from "@/server/config/logger";
+import { formatCatalogProducts } from "@/server/services/shiprocketCatalog";
 
 const mongoose = __imp0;
 const logger = __imp1;
@@ -54,90 +55,8 @@ class CatalogController {
         .limit(limit)
         .lean();
 
-      // Note: collectionIds, categoryId, subcategoryId are ObjectIds in the response
-      // To get full names, you would need to populate them separately
-
-      // Transform to Shiprocket / Fastrr catalog format
-      const formattedProducts = products.map(product => {
-        // Derive options from unique variant attribute values
-        const optionMap = {};
-        for (const v of (product.variants || [])) {
-          if (v.color) { (optionMap.Color = optionMap.Color || new Set()).add(v.color); }
-          if (v.size) { (optionMap.Size = optionMap.Size || new Set()).add(v.size); }
-          if (v.fabric) { (optionMap.Fabric = optionMap.Fabric || new Set()).add(v.fabric); }
-        }
-        const options = Object.entries(optionMap).map(([name, valSet]) => ({
-          name,
-          values: [...valSet],
-        }));
-
-        // Tags as comma-separated string from product flags
-        const tagParts = [];
-        if (product.flags?.isFeatured) tagParts.push('Featured');
-        if (product.flags?.isNewArrival) tagParts.push('New Arrival');
-        if (product.flags?.isBestSeller) tagParts.push('Best Seller');
-        if (product.flags?.isTrending) tagParts.push('Trending');
-        if (product.flags?.isMadeToOrder) tagParts.push('Made To Order');
-        if (product.flags?.isReadyToShip !== false) tagParts.push('Ready To Ship');
-        const tags = tagParts.join(', ');
-
-        // Primary image as single {src} object
-        const rawPrimaryImg = (product.images || [])[0];
-        const primaryImageSrc = rawPrimaryImg
-          ? (typeof rawPrimaryImg === 'string' ? rawPrimaryImg : rawPrimaryImg.url)
-          : null;
-        const image = primaryImageSrc ? { src: primaryImageSrc } : null;
-
-        // Status: published → active, anything else → inactive
-        const status = product.status === 'published' ? 'active' : 'inactive';
-
-        // Numeric id: use externalShiprocketId when available, else derive from ObjectId
-        const numericId = product.externalShiprocketId
-          ? Number(product.externalShiprocketId)
-          : parseInt(product._id.toString().slice(-8), 16);
-
-        return {
-          id: numericId,
-          title: product.title,
-          body_html: product.description,
-          vendor: 'Madalsa Couture',
-          product_type: 'Fashion',
-          created_at: product.createdAt ? new Date(product.createdAt).toISOString() : new Date().toISOString(),
-          handle: (product.title || 'product').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-          updated_at: product.updatedAt ? new Date(product.updatedAt).toISOString() : new Date().toISOString(),
-          tags,
-          status,
-          image,
-          options,
-          variants: (product.variants || []).map((variant, idx) => {
-            const rawVarImg = (variant.images || [])[0];
-            const variantImageSrc = rawVarImg
-              ? (typeof rawVarImg === 'string' ? rawVarImg : rawVarImg.url)
-              : null;
-            const variantNumericId = variant._id
-              ? parseInt(variant._id.toString().slice(-8), 16)
-              : idx;
-            return {
-              id: variantNumericId,
-              title: [variant.size, variant.color].filter(Boolean).join(' / ') || 'Default Title',
-              price: String(variant.price ?? product.basePrice ?? '0.00'),
-              compare_at_price: String(product.mrp ?? variant.price ?? '0.00'),
-              sku: variant.sku,
-              quantity: variant.availableStock ?? 0,
-              taxable: true,
-              option_values: {
-                ...(variant.color ? { Color: variant.color } : {}),
-                ...(variant.size ? { Size: variant.size } : {}),
-                ...(variant.fabric ? { Fabric: variant.fabric } : {}),
-              },
-              grams: null,
-              image: variantImageSrc ? { src: variantImageSrc } : image,
-              weight: null,
-              weight_unit: 'kg',
-            };
-          }),
-        };
-      });
+      // Shiprocket catalog format, with each product's sizes (shared with the automatic sync).
+      const formattedProducts = await formatCatalogProducts(products);
 
       res.status(200).json({
         data: {

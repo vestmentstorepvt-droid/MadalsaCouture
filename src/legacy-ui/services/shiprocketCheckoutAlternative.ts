@@ -49,14 +49,55 @@ export async function generateCheckoutToken(cartItems: CartItem[]): Promise<stri
   return data.token;
 }
 
+// Shiprocket Checkout for custom sites: their script opens the checkout as a window over our page.
+// (Sending the browser to checkout.shiprocket.in/checkout?token=… only lands on the Fastrr home page.)
+const CHECKOUT_SCRIPT = 'https://checkout-ui.shiprocket.com/assets/js/channels/shopify.js';
+const CHECKOUT_STYLES = 'https://checkout-ui.shiprocket.com/assets/styles/shopify.css';
+
+declare global {
+  interface Window {
+    HeadlessCheckout?: {
+      addToCart: (event: Event | null, token: string, options?: { fallbackUrl?: string }) => void;
+    };
+  }
+}
+
+let scriptLoading: Promise<void> | null = null;
+
+/** Load Shiprocket's checkout script and styles once, on first use. */
+function loadShiprocketCheckout(): Promise<void> {
+  if (window.HeadlessCheckout) return Promise.resolve();
+  if (scriptLoading) return scriptLoading;
+
+  scriptLoading = new Promise<void>((resolve, reject) => {
+    if (!document.querySelector(`link[href="${CHECKOUT_STYLES}"]`)) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = CHECKOUT_STYLES;
+      document.head.appendChild(link);
+    }
+    const script = document.createElement('script');
+    script.src = CHECKOUT_SCRIPT;
+    script.async = true;
+    script.onload = () => (window.HeadlessCheckout ? resolve() : reject(new Error('Shiprocket checkout did not start. Please try again.')));
+    script.onerror = () => {
+      scriptLoading = null; // allow a retry
+      reject(new Error('Could not load Shiprocket checkout. Check your connection and try again.'));
+    };
+    document.head.appendChild(script);
+  });
+  return scriptLoading;
+}
+
 /**
- * Redirect the browser to Shiprocket Checkout.
- * The token authenticates the session; Shiprocket sends the buyer back to /checkout-success afterwards.
+ * Open Shiprocket Checkout over the current page.
+ * The token authenticates the session; Shiprocket sends the buyer to /checkout-success after paying.
+ * If the checkout can't open, Shiprocket falls back to `fallbackUrl` (this page).
  */
-export function openShiprocketCheckoutRedirect(token: string) {
+export async function openShiprocketCheckout(token: string) {
   if (!token || token.trim() === '') {
     throw new Error('Invalid checkout token received');
   }
-
-  window.location.href = `https://checkout.shiprocket.in/checkout?token=${encodeURIComponent(token)}`;
+  await loadShiprocketCheckout();
+  window.HeadlessCheckout!.addToCart(null, token, { fallbackUrl: window.location.href });
 }

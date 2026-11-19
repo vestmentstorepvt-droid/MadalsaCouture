@@ -5,7 +5,7 @@ import { ShieldCheck, Truck, CreditCard, ArrowLeft, AlertCircle } from 'lucide-r
 
 import { selectCartItems, selectCartSubtotal } from '../../store/slices/cartSlice';
 import { optimizeImage } from '../../utils/imageUtils';
-import { generateCheckoutToken, openShiprocketCheckoutRedirect } from '../../services/shiprocketCheckoutAlternative';
+import { generateCheckoutToken, openShiprocketCheckout } from '../../services/shiprocketCheckoutAlternative';
 
 declare global {
   interface Window {
@@ -71,7 +71,9 @@ const Checkout: React.FC = () => {
       setError(null);
 
       const token = await generateCheckoutToken(cartForBackend);
-      openShiprocketCheckoutRedirect(token);
+      await openShiprocketCheckout(token);
+      // Checkout now sits over this page; if the shopper closes it, the button works again.
+      setIsProcessing(false);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Checkout failed. Please try again.';
