@@ -1,7 +1,7 @@
 // @ts-nocheck — ported from the Express backend (controllers/catalogController.js); logic unchanged.
 import __imp0 from "@/server/lib/mongoose";
 import __imp1 from "@/server/config/logger";
-import { formatCatalogProducts } from "@/server/services/shiprocketCatalog";
+import { formatCatalogCollection, formatCatalogProducts } from "@/server/services/shiprocketCatalog";
 
 const mongoose = __imp0;
 const logger = __imp1;
@@ -96,17 +96,8 @@ class CatalogController {
         .limit(limit)
         .lean();
 
-      // Transform to Shiprocket format
-      const formattedCollections = collections.map(collection => ({
-        id: collection._id.toString(),
-        title: collection.name || collection.title,
-        body_html: collection.description,
-        handle: (collection.name || collection.title || 'collection').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        updated_at: collection.updatedAt ? new Date(collection.updatedAt).toISOString() : new Date().toISOString(),
-        image: collection.image
-          ? { src: typeof collection.image === 'string' ? collection.image : collection.image.src || collection.image.url }
-          : null
-      }));
+      // Shiprocket format (shared with the automatic collection sync)
+      const formattedCollections = collections.map(formatCatalogCollection);
 
       res.status(200).json({
         data: {

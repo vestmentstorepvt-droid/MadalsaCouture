@@ -17,7 +17,7 @@ const logger = __imp1;
  *    A deleted or unpublished product is sent as inactive with no stock, so it can't be bought.
  */
 
-const SHIPROCKET_PRODUCT_WEBHOOK = "https://checkout-api.shiprocket.com/wh/v1/custom/product";
+const SHIPROCKET_WEBHOOK_BASE = "https://checkout-api.shiprocket.com/wh/v1/custom";
 
 /** The numeric id Shiprocket uses for a variant (checkout sends the same one; see shiprocketCheckoutController). */
 export const shiprocketVariantId = (variantId) => parseInt(String(variantId).slice(-8), 16);
@@ -117,23 +117,39 @@ export async function formatCatalogProducts(products) {
 }
 
 /** Send one product's current state (including deleted/unpublished) to Shiprocket. */
-export async function syncProductToShiprocket(productId) {
+/** Collection (lean doc) → Shiprocket catalog collection. Same shape as the /api/fastrr/collections feed. */
+export function formatCatalogCollection(collection) {
+  const name = collection.name || collection.title;
+  const img = collection.image;
+  return {
+    id: collection._id.toString(),
+    title: name,
+    body_html: collection.description,
+    handle: (name || "collection").toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+    updated_at: collection.updatedAt ? new Date(collection.updatedAt).toISOString() : new Date().toISOString(),
+    image: img ? { src: typeof img === "string" ? img : img.src || img.url } : null,
+    // Not in the feed (it only lists active ones); tells Shiprocket a removed collection is gone.
+    status: collection.status === "active" && !collection.isDeleted ? "active" : "inactive",
+  };
+}
+
+/** Shiprocket keys, or null when this server must not sync (not configured, or not the live server). */
+function syncCredentials() {
   const apiKey = (process.env.SHIPROCKET_API_KEY || "").trim();
   const secret = (process.env.SHIPROCKET_SECRET_KEY || "").trim();
-  if (!apiKey || !secret) return; // Shiprocket not configured
+  if (!apiKey || !secret) return null;
   // Only the live server syncs: a laptop with the real keys in .env.local must not overwrite the
   // live Shiprocket catalog with local test data. SHIPROCKET_SYNC=on forces it, =off disables it.
   const flag = (process.env.SHIPROCKET_SYNC || "").trim().toLowerCase();
-  if (flag === "off" || (flag !== "on" && process.env.NODE_ENV !== "production")) return;
+  if (flag === "off" || (flag !== "on" && process.env.NODE_ENV !== "production")) return null;
+  return { apiKey, secret };
+}
 
-  const Product = mongoose.models.Product || mongoose.model("Product");
-  const product = await Product.findById(productId).lean();
-  if (!product) return;
-
-  const [payload] = await formatCatalogProducts([product]);
+/** POST one catalog item to Shiprocket, signed the way it checks (HMAC-SHA256 of the body, base64). */
+async function sendToShiprocket(kind, payload, { apiKey, secret }) {
   const body = JSON.stringify(payload);
   const signature = crypto.createHmac("sha256", secret).update(body, "utf8").digest("base64");
-  const res = await fetch(SHIPROCKET_PRODUCT_WEBHOOK, {
+  const res = await fetch(`${SHIPROCKET_WEBHOOK_BASE}/${kind}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Api-Key": apiKey, "X-Api-HMAC-SHA256": signature },
     body,
@@ -141,24 +157,52 @@ export async function syncProductToShiprocket(productId) {
   });
   const text = await res.text();
   if (!res.ok || !/"ok"\s*:\s*true/.test(text)) {
-    throw new Error(`Shiprocket rejected product ${productId}: HTTP ${res.status} ${text.slice(0, 200)}`);
+    throw new Error(`Shiprocket rejected ${kind} ${payload.id}: HTTP ${res.status} ${text.slice(0, 200)}`);
   }
+}
+
+/** Send one product's current state (including deleted/unpublished) to Shiprocket. */
+export async function syncProductToShiprocket(productId) {
+  const creds = syncCredentials();
+  if (!creds) return;
+  const Product = mongoose.models.Product || mongoose.model("Product");
+  const product = await Product.findById(productId).lean();
+  if (!product) return;
+  const [payload] = await formatCatalogProducts([product]);
+  await sendToShiprocket("product", payload, creds);
   logger.info(`[Shiprocket] Synced product ${productId} (${payload.status}, ${payload.variants.length} sizes)`);
 }
 
-// Several saves in a row (product, then each size) collapse into one send per product.
+/** Send one collection's current state (including deleted/inactive) to Shiprocket. */
+export async function syncCollectionToShiprocket(collectionId) {
+  const creds = syncCredentials();
+  if (!creds) return;
+  const Collection = mongoose.models.Collection || mongoose.model("Collection");
+  const collection = await Collection.findById(collectionId).lean();
+  if (!collection) return;
+  const payload = formatCatalogCollection(collection);
+  await sendToShiprocket("collection", payload, creds);
+  logger.info(`[Shiprocket] Synced collection ${collectionId} (${payload.status})`);
+}
+
+// Several saves in a row (a product, then each size) collapse into one send per item.
 const pending = new Map();
 
-/** Send a product to Shiprocket shortly after an admin change. Never throws; failures are logged. */
-export function queueShiprocketSync(productId) {
-  if (!productId) return;
-  const key = String(productId);
+function queue(kind, id, sync) {
+  if (!id) return;
+  const key = `${kind}:${id}`;
   clearTimeout(pending.get(key));
   pending.set(
     key,
     setTimeout(() => {
       pending.delete(key);
-      syncProductToShiprocket(key).catch((err) => logger.error(`[Shiprocket] Product sync failed: ${err.message}`));
+      sync(String(id)).catch((err) => logger.error(`[Shiprocket] ${kind} sync failed: ${err.message}`));
     }, 1500),
   );
 }
+
+/** Send a product to Shiprocket shortly after an admin change. Never throws; failures are logged. */
+export const queueShiprocketSync = (productId) => queue("product", productId, syncProductToShiprocket);
+
+/** Send a collection to Shiprocket shortly after an admin change. Never throws; failures are logged. */
+export const queueShiprocketCollectionSync = (collectionId) => queue("collection", collectionId, syncCollectionToShiprocket);

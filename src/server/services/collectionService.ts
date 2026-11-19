@@ -5,6 +5,7 @@ import __imp2 from "@/server/utils/slugify";
 import __imp3 from "@/server/utils/pagination";
 import __imp4 from "@/server/constants/messages";
 import __imp5 from "@/server/config/logger";
+import { queueShiprocketCollectionSync } from "@/server/services/shiprocketCatalog";
 
 const mongoose = __imp0;
 const Collection = __imp1;
@@ -70,6 +71,7 @@ class CollectionService {
     });
 
     logger.info(`Collection created: ${collection._id} (${collection.slug}) by admin ${adminId}`);
+    queueShiprocketCollectionSync(collection._id); // keep Shiprocket Checkout's catalog in step
     return collection.toObject();
   }
 
@@ -166,6 +168,7 @@ class CollectionService {
     }
 
     logger.info(`Collection updated: ${id} by admin ${adminId}`);
+    queueShiprocketCollectionSync(id);
     return updated;
   }
 
@@ -197,6 +200,7 @@ class CollectionService {
     }
 
     logger.info(`Collection soft-deleted: ${id} by admin ${adminId}`);
+    queueShiprocketCollectionSync(id); // sent as inactive
     return deleted;
   }
 

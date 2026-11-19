@@ -58,6 +58,8 @@ export const Contact = new Model("Contact", "contacts", audit);
 export const ContactInquiry = new Model("ContactInquiry", "contact_inquiries", {});
 export const FeaturedSection = new Model("FeaturedSection", "featured_sections", { productIds: "Product", ...audit });
 export const Hero = new Model("Hero", "heroes", audit);
+/** Orders exactly as Shiprocket Checkout's order webhook sent them (see shiprocketOrderRoutes). */
+export const ShiprocketOrder = new Model("ShiprocketOrder", "shiprocketorders", {});
 export const StaticPage = new Model("StaticPage", "static_pages", audit);
 export const HomepageVideoCard = new Model("HomepageVideoCard", "homepage_video_cards", audit);
 

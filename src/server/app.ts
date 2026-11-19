@@ -22,6 +22,7 @@ import addressRouter from "./routes/addressRoutes";
 import wishlistRouter from "./routes/wishlistRoutes";
 import cartRouter from "./routes/cartRoutes";
 import catalogRouter from "./routes/catalogRoutes";
+import shiprocketOrderRouter from "./routes/shiprocketOrderRoutes";
 import inventoryRouter from "./routes/inventoryRoutes";
 import heroRoutes from "./modules/cms/hero/hero.routes";
 import announcementBarRoutes from "./modules/cms/announcementBar/announcementBar.routes";
@@ -82,6 +83,8 @@ app.use("/api/v1/addresses", addressRouter);
 app.use("/api/v1/wishlist", wishlistRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/fastrr", catalogRouter);
+// Shiprocket webhooks (tracking + orders). The path avoids "shiprocket"/"sr"/"kr", which Shiprocket rejects.
+app.use("/api/v1/webhooks/store", shiprocketOrderRouter);
 
 app.use("/api/v1/admin/products/:productId/variants", variantRoutes.productVariantRouter);
 app.use("/api/v1/admin/variants", variantRoutes.variantRouter);
