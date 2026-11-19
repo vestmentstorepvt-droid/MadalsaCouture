@@ -572,27 +572,55 @@ export const CmsAnnouncementPage: React.FC = () => {
                       <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1 flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" /> Start Schedule (Optional)
                       </label>
-                      <input
-                        type="datetime-local"
-                        value={toDatetimeLocal(form.startsAt)}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, startsAt: e.target.value || null }))
-                        }
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
-                      />
+                      {/* Browsers give datetime fields no clear button, so the optional date gets its own. */}
+                      <div className="flex gap-2">
+                        <input
+                          type="datetime-local"
+                          value={toDatetimeLocal(form.startsAt)}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, startsAt: e.target.value || null }))
+                          }
+                          className="min-w-0 flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
+                        />
+                        {form.startsAt && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, startsAt: null }))}
+                            aria-label="Clear start date"
+                            className="shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">{form.startsAt ? '' : 'No start date: shows as soon as it is turned on.'}</p>
                     </div>
                     <div>
                       <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 block mb-1 flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5 text-slate-400" /> End Schedule (Optional)
                       </label>
-                      <input
-                        type="datetime-local"
-                        value={toDatetimeLocal(form.endsAt)}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, endsAt: e.target.value || null }))
-                        }
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
-                      />
+                      {/* Browsers give datetime fields no clear button, so the optional date gets its own. */}
+                      <div className="flex gap-2">
+                        <input
+                          type="datetime-local"
+                          value={toDatetimeLocal(form.endsAt)}
+                          onChange={(e) =>
+                            setForm((f) => ({ ...f, endsAt: e.target.value || null }))
+                          }
+                          className="min-w-0 flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-[#E85D88]/20"
+                        />
+                        {form.endsAt && (
+                          <button
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, endsAt: null }))}
+                            aria-label="Clear end date"
+                            className="shrink-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">{form.endsAt ? '' : 'No end date: keeps showing until you turn it off.'}</p>
                     </div>
                   </div>
 
