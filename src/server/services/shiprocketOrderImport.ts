@@ -5,6 +5,7 @@ import { AdminNotification, Order, OrderItem, Product, ShiprocketOrder, User, Va
 import { queueShiprocketSync, shiprocketVariantId } from "@/server/services/shiprocketCatalog";
 import { createDueShipments } from "@/server/services/shiprocketShipping";
 import variantService from "@/server/services/variantService";
+import cartService from "@/server/services/cartService";
 
 const mongoose = __imp0;
 const logger = __imp1;
@@ -107,7 +108,8 @@ export async function importShiprocketOrder(delivery) {
   const user = phone ? await User.findOne({ phone, isDeleted: false }).lean() : null;
 
   const rawPayment = String(p.payment_type || p.payment_method || p.gateway || "").toLowerCase();
-  const paymentMethod = rawPayment && !rawPayment.includes("cod") ? "online" : "cod";
+  // Shiprocket writes COD as "CASH_ON_DELIVERY"; anything else it names is a prepaid method.
+  const paymentMethod = rawPayment && !/cod|cash/.test(rawPayment) ? "online" : "cod";
 
   const orderNumber = await nextOrderNumber();
   const placedAt = p.created_at ? new Date(p.created_at) : new Date();
@@ -161,6 +163,16 @@ export async function importShiprocketOrder(delivery) {
     });
   } catch (err) {
     logger.error(`[Shiprocket order] Admin notification failed for ${orderNumber}: ${err.message}`);
+  }
+
+  // The customer's saved cart: take out what they just ordered (covers closing the checkout
+  // window before the success page, or ordering from another device).
+  if (user) {
+    try {
+      await cartService.removeOrderedItems(user._id, snapshots.map((s) => ({ variantId: s.variantId, quantity: s.quantity })));
+    } catch (err) {
+      logger.warn(`[Shiprocket order] ${orderNumber}: could not tidy the customer's cart (${err.message})`);
+    }
   }
 
   await ShiprocketOrder.updateOne({ _id: delivery._id }, { $set: { processed: true, shopOrderId: order._id } });

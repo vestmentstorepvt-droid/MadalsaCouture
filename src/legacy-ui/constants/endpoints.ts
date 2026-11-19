@@ -87,6 +87,7 @@ export const ENDPOINTS = {
     ITEMS: '/cart/items',
     ITEM_DETAIL: (itemId: string) => `/cart/items/${itemId}`,
     SYNC: '/cart/sync',
+    REMOVE_ORDERED: '/cart/remove-ordered',
   },
   COUPONS_VALIDATE: '/coupons/validate',
   PAYMENTS: {

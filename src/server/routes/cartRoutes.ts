@@ -18,6 +18,7 @@ router.patch('/items/:itemId', cartController.updateCartItem);
 router.delete('/items/:itemId', cartController.removeCartItem);
 router.delete('/', cartController.clearCart);
 router.post('/sync', cartController.syncCart);
+router.post('/remove-ordered', cartController.removeOrderedItems); // after a Shiprocket order
 
 const __exports: any = router;
 

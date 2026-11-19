@@ -1,8 +1,17 @@
 import React, { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { CheckCircle, Home } from 'lucide-react';
-import { clearCart } from '../../store/slices/cartSlice';
+import type { RootState } from '../../store';
+import { removeFromCart, selectCartItems, updateQuantity } from '../../store/slices/cartSlice';
+import { takeCheckoutItems } from '../../services/shiprocketCheckoutAlternative';
+import { useRemoveOrderedItemsApiMutation } from '../../services/cartApi';
+
+const sameLine = (a: { productId: string; variantId?: string; size?: string; color?: string }, b: typeof a) =>
+  a.productId === b.productId &&
+  (a.variantId ?? '') === (b.variantId ?? '') &&
+  (a.size ?? '') === (b.size ?? '') &&
+  (a.color ?? '') === (b.color ?? '');
 
 /**
  * Checkout Success Page
@@ -10,11 +19,32 @@ import { clearCart } from '../../store/slices/cartSlice';
  */
 const CheckoutSuccess: React.FC = () => {
   const dispatch = useDispatch();
+  const store = useStore<RootState>();
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const [removeOrderedItemsApi] = useRemoveOrderedItemsApiMutation();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('orderId') || searchParams.get('oid');
 
   useEffect(() => {
-    dispatch(clearCart());
+    // Take out only what was ordered (remembered when checkout opened); anything added since stays.
+    const ordered = takeCheckoutItems();
+    if (ordered.length) {
+      const bag = selectCartItems(store.getState());
+      for (const item of ordered) {
+        const line = bag.find((b) => sameLine(b, item));
+        if (!line) continue;
+        if (line.quantity > item.quantity) {
+          dispatch(updateQuantity({ ...item, quantity: line.quantity - item.quantity }));
+        } else {
+          dispatch(removeFromCart(item));
+        }
+      }
+      // The saved cart on the server too, or the cart page would bring them back.
+      const withSizes = ordered.filter((i) => i.variantId).map((i) => ({ variantId: i.variantId as string, quantity: i.quantity }));
+      if (isAuthenticated && withSizes.length) {
+        removeOrderedItemsApi({ items: withSizes }).catch(() => { /* the order webhook tidies it too */ });
+      }
+    }
 
     // Track conversion with Meta Pixel once per order, so a page refresh does not double-count it
     try {

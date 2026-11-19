@@ -49,6 +49,39 @@ export async function generateCheckoutToken(cartItems: CartItem[]): Promise<stri
   return data.token;
 }
 
+/** What was in the bag when checkout opened, so the success page removes only those items. */
+export interface CheckedOutItem {
+  productId: string;
+  variantId?: string;
+  size?: string;
+  color?: string;
+  quantity: number;
+}
+
+const CHECKOUT_ITEMS_KEY = 'checkout_items';
+const CHECKOUT_ITEMS_MAX_AGE = 24 * 60 * 60 * 1000;
+
+export function rememberCheckoutItems(items: CheckedOutItem[]) {
+  try {
+    localStorage.setItem(CHECKOUT_ITEMS_KEY, JSON.stringify({ at: Date.now(), items }));
+  } catch {
+    // Storage blocked: the success page then leaves the bag as it is.
+  }
+}
+
+/** The items remembered at checkout (once; the record is removed). Empty if none or too old. */
+export function takeCheckoutItems(): CheckedOutItem[] {
+  try {
+    const raw = localStorage.getItem(CHECKOUT_ITEMS_KEY);
+    localStorage.removeItem(CHECKOUT_ITEMS_KEY);
+    if (!raw) return [];
+    const { at, items } = JSON.parse(raw);
+    return Date.now() - at < CHECKOUT_ITEMS_MAX_AGE && Array.isArray(items) ? items : [];
+  } catch {
+    return [];
+  }
+}
+
 // Shiprocket Checkout for custom sites: their script opens the checkout as a window over our page.
 // (Sending the browser to checkout.shiprocket.in/checkout?token=… only lands on the Fastrr home page.)
 const CHECKOUT_SCRIPT = 'https://checkout-ui.shiprocket.com/assets/js/channels/shopify.js';
