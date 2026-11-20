@@ -1,423 +1,460 @@
-import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Pencil, ShieldCheck, X } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../../store';
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { Camera, Eye, EyeOff, Loader2, Trash2 } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch, RootState } from '../../../store';
 import {
   useGetProfileQuery,
   useUpdateProfileMutation,
   useChangePasswordMutation,
   useChangeEmailMutation,
 } from '../../../services/profileApi';
-import { ActionButton, SectionCard } from '../../../components/features/account/AccountComponents';
-import { validatePasswordPolicy } from '../../../utils/passwordPolicy';
+import { removeAvatar, uploadAvatar } from '../../../services/directUpload';
+import { updateUser } from '../../../store/slices/authSlice';
+import { PASSWORD_POLICY_HINT, validatePasswordPolicy } from '../../../utils/passwordPolicy';
+import {
+  AccountHeading,
+  Avatar,
+  FormMessage,
+  Panel,
+  btnPrimary,
+  btnSecondary,
+  btnSmall,
+  fieldClass,
+  labelClass,
+  useAccountToast,
+} from '../../../components/features/account/AccountUI';
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
-const ProfileSkeleton = () => (
-  <div className="animate-pulse space-y-4">
-    <div className="h-4 w-32 rounded-full bg-slate-200" />
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="h-12 rounded-2xl bg-slate-100" />
-      <div className="h-12 rounded-2xl bg-slate-100" />
-      <div className="h-12 rounded-2xl bg-slate-100" />
+type ApiError = { data?: { message?: string; error?: { message?: string }; errors?: { message: string }[] } };
+const apiMessage = (err: unknown) => {
+  const e = err as ApiError;
+  return e?.data?.errors?.[0]?.message || e?.data?.error?.message || e?.data?.message;
+};
+
+const ALLOWED_PHOTO = /^image\/(jpeg|png|webp|avif|heic|heif)$/i;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+/* ── Photo ─────────────────────────────────────────────────────────────────── */
+
+const PhotoPanel = ({ name, avatar, onChanged }: { name: string; avatar: string | null; onChanged: (url: string | null) => void }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const busy = progress !== null || removing;
+
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+
+  const pick = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setError(null);
+    if (!ALLOWED_PHOTO.test(file.type)) return setError('Choose a JPG, PNG or WebP photo.');
+    if (file.size > MAX_PHOTO_BYTES) return setError('That photo is over 5 MB. Choose a smaller one.');
+
+    const local = URL.createObjectURL(file);
+    setPreview(local);
+    setProgress(0);
+    try {
+      const url = await uploadAvatar(file, setProgress);
+      onChanged(url);
+    } catch (err) {
+      setError((err as Error).message || 'Could not upload the photo. Please try again.');
+    } finally {
+      setProgress(null);
+      setPreview(null);
+    }
+  };
+
+  const remove = async () => {
+    setError(null);
+    setRemoving(true);
+    try {
+      await removeAvatar();
+      onChanged(null);
+    } catch (err) {
+      setError((err as Error).message || 'Could not remove the photo. Please try again.');
+    } finally {
+      setRemoving(false);
+    }
+  };
+
+  return (
+    <Panel title="Profile photo" description="Shown in the header when you're signed in.">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+          className="group relative h-24 w-24 shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+          aria-label={avatar ? 'Change profile photo' : 'Add a profile photo'}
+        >
+          {preview ? (
+            <img src={preview} alt="" className="h-24 w-24 rounded-full object-cover" />
+          ) : (
+            <Avatar name={name} src={avatar} size={96} />
+          )}
+          <span
+            className={`absolute inset-0 flex items-center justify-center rounded-full bg-ink/45 text-white transition-opacity ${
+              busy ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}
+          >
+            {progress !== null ? (
+              <span className="text-sm font-medium tabular-nums">{progress}%</span>
+            ) : removing ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Camera className="h-5 w-5" />
+            )}
+          </span>
+        </button>
+
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className={btnSmall}>
+              <Camera className="h-4 w-4" />
+              {avatar ? 'Change photo' : 'Upload photo'}
+            </button>
+            {avatar ? (
+              <button type="button" onClick={() => void remove()} disabled={busy} className={`${btnSmall} text-rose-700 hover:bg-rose-50`}>
+                <Trash2 className="h-4 w-4" />
+                Remove
+              </button>
+            ) : null}
+          </div>
+          <p className="text-xs text-mute">JPG, PNG or WebP, up to 5 MB. A square photo of your face works best.</p>
+          {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+        </div>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+          className="sr-only"
+          tabIndex={-1}
+          onChange={(e) => void pick(e)}
+        />
+      </div>
+    </Panel>
+  );
+};
+
+/* ── Password field ────────────────────────────────────────────────────────── */
+
+const PasswordField = ({
+  id,
+  label,
+  value,
+  onChange,
+  autoComplete,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete: string;
+}) => {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div>
+      <label htmlFor={id} className={labelClass}>
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          className={`${fieldClass} pr-11`}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          className="absolute right-1.5 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-mute transition-colors hover:text-ink"
+          aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+        >
+          {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-// ─── Error state ──────────────────────────────────────────────────────────────
-const ProfileErrorState: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
-  <div className="rounded-3xl border border-rose-200 bg-rose-50 px-8 py-14 text-center shadow-sm">
-    <p className="text-lg font-semibold text-rose-700">Failed to load your profile.</p>
-    {onRetry ? (
-      <ActionButton variant="outline" onClick={onRetry} className="mt-4">
-        Retry
-      </ActionButton>
-    ) : null}
+/* ── Page ──────────────────────────────────────────────────────────────────── */
+
+const ProfileSkeleton = () => (
+  <div className="animate-pulse space-y-5" aria-hidden="true">
+    {[120, 220, 180].map((h) => (
+      <div key={h} className="rounded-2xl border border-hairline bg-surface" style={{ height: h }} />
+    ))}
   </div>
 );
 
 const MyProfilePage = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, user: authUser } = useSelector((state: RootState) => state.auth);
+  const { show: toast, node: toastNode } = useAccountToast();
 
-
-  // Fetch from API only if authenticated
-  const {
-    data: profileData,
-    isLoading: isProfileLoading,
-    isError: isProfileError,
-    refetch,
-  } = useGetProfileQuery(undefined, { skip: !isAuthenticated });
-
-
+  const { data: profile, isLoading, isError, refetch } = useGetProfileQuery(undefined, { skip: !isAuthenticated });
   const [updateProfile, { isLoading: isSaving }] = useUpdateProfileMutation();
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
   const [changeEmail, { isLoading: isChangingEmail }] = useChangeEmailMutation();
 
+  // Personal details
   const [isEditing, setIsEditing] = useState(false);
+  const [details, setDetails] = useState({ name: '', phone: '' });
+  const [detailsError, setDetailsError] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-  });
-
+  // Email
   const [emailForm, setEmailForm] = useState({ newEmail: '', currentPassword: '' });
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSent, setEmailSent] = useState<string | null>(null);
 
-  // Keep a snapshot to revert on cancel
-  const [snapshot, setSnapshot] = useState(form);
-
+  // Password
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [show, setShow] = useState({ currentPassword: false, newPassword: false, confirmPassword: false });
-
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  const [emailError, setEmailError] = useState('');
-  const [emailSuccess, setEmailSuccess] = useState(false);
 
-  // Initialize form from profile data (API wins over auth state for phone)
+  const name = profile?.name ?? authUser?.name ?? '';
+  const email = profile?.email ?? authUser?.email ?? '';
+  const phone = profile?.phone ?? '';
+  const avatar = profile?.avatar ?? authUser?.avatar ?? null;
+
   useEffect(() => {
-    const name = profileData?.name ?? authUser?.name ?? '';
-    const email = profileData?.email ?? authUser?.email ?? '';
-    const phone = profileData?.phone ?? '';
-    const newForm = { fullName: name, email, phone };
-    setForm(newForm);
-    setSnapshot(newForm);
-  }, [profileData, authUser]);
+    if (!isEditing) setDetails({ name, phone });
+  }, [name, phone, isEditing]);
 
-  const handleField = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((prev) => ({ ...prev, [key]: e.target.value }));
-
-  const handlePassword = (key: keyof typeof passwords) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setPasswords((prev) => ({ ...prev, [key]: e.target.value }));
-
-  const toggleShow = (key: keyof typeof show) =>
-    setShow((prev) => ({ ...prev, [key]: !prev[key] }));
-
-  const handleEdit = () => {
-    setSnapshot(form);
-    setSaveError(null);
-    setSaveSuccess(false);
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setForm(snapshot);
-    setSaveError(null);
-    setIsEditing(false);
-  };
-
-  const handleSave = async () => {
-    setSaveError(null);
-    setSaveSuccess(false);
+  const saveDetails = async (e: FormEvent) => {
+    e.preventDefault();
+    setDetailsError(null);
+    const trimmed = { name: details.name.trim(), phone: details.phone.trim() };
+    if (trimmed.name.length < 3) return setDetailsError('Name must be at least 3 characters.');
+    if (trimmed.phone && !/^\d{10}$/.test(trimmed.phone)) return setDetailsError('Enter a 10-digit mobile number without +91 or spaces.');
     try {
-      await updateProfile({ name: form.fullName, phone: form.phone }).unwrap();
+      await updateProfile({ name: trimmed.name, ...(trimmed.phone ? { phone: trimmed.phone } : {}) }).unwrap();
+      dispatch(updateUser({ name: trimmed.name }));
       setIsEditing(false);
-      setSaveSuccess(true);
-    } catch {
-      setSaveError('Failed to save changes. Please try again.');
+      toast('Your details are saved.');
+    } catch (err) {
+      setDetailsError(apiMessage(err) || 'Could not save your details. Please try again.');
     }
   };
 
-  const handleUpdatePassword = async () => {
-    setPasswordError(null);
-    setPasswordSuccess(false);
-
-    if (!passwords.currentPassword) {
-      setPasswordError('Please enter your current password.');
-      return;
-    }
-    if (!passwords.newPassword) {
-      setPasswordError('Please enter a new password.');
-      return;
-    }
-    const policyError = validatePasswordPolicy(passwords.newPassword);
-    if (policyError) {
-      setPasswordError(policyError);
-      return;
-    }
-    if (passwords.newPassword !== passwords.confirmPassword) {
-      setPasswordError('New passwords do not match.');
-      return;
-    }
-
+  const submitEmail = async (e: FormEvent) => {
+    e.preventDefault();
+    setEmailError(null);
+    setEmailSent(null);
+    const newEmail = emailForm.newEmail.trim();
+    if (!newEmail || !emailForm.currentPassword) return setEmailError('Enter the new email and your current password.');
     try {
-      await changePassword({
-        currentPassword: passwords.currentPassword,
-        newPassword: passwords.newPassword,
-        confirmPassword: passwords.confirmPassword,
-      }).unwrap();
-      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setPasswordSuccess(true);
-    } catch (err: unknown) {
-      const apiErr = err as { data?: { message?: string; error?: { message?: string }; errors?: { message: string }[] } };
-      const backendMsg =
-        apiErr?.data?.errors?.[0]?.message ||
-        apiErr?.data?.error?.message ||
-        apiErr?.data?.message;
-      setPasswordError(backendMsg || 'Failed to update password. Please check your current password and try again.');
-    }
-  };
-
-  const handleUpdateEmail = async () => {
-    setEmailError('');
-    setEmailSuccess(false);
-
-    if (!emailForm.newEmail.trim() || !emailForm.currentPassword.trim()) {
-      setEmailError('Please provide both new email and current password.');
-      return;
-    }
-
-    try {
-      await changeEmail({
-        newEmail: emailForm.newEmail,
-        currentPassword: emailForm.currentPassword,
-      }).unwrap();
-
-      setEmailSuccess(true);
+      await changeEmail({ newEmail, currentPassword: emailForm.currentPassword }).unwrap();
+      setEmailSent(newEmail);
       setEmailForm({ newEmail: '', currentPassword: '' });
-      refetch(); // to get updated email
-      
-      // Clear success after 3s
-      setTimeout(() => setEmailSuccess(false), 3000);
-    } catch (err: any) {
-      const backendMsg = err?.data?.errors?.[0]?.message || err?.data?.error?.message || err?.data?.message;
-      setEmailError(backendMsg || 'Failed to update email. Please check your current password and try again.');
+      void refetch();
+    } catch (err) {
+      setEmailError(apiMessage(err) || 'Could not change your email. Check your current password and try again.');
     }
   };
 
-  const inputBase =
-    'w-full rounded-2xl border px-4 py-3 text-sm text-slate-800 outline-none transition';
+  const submitPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    if (!passwords.currentPassword) return setPasswordError('Enter your current password.');
+    if (!passwords.newPassword) return setPasswordError('Enter a new password.');
+    const policyError = validatePasswordPolicy(passwords.newPassword);
+    if (policyError) return setPasswordError(policyError);
+    if (passwords.newPassword !== passwords.confirmPassword) return setPasswordError('The new passwords don’t match.');
+    try {
+      await changePassword(passwords).unwrap();
+      setPasswords({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      toast('Your password is changed.');
+    } catch (err) {
+      setPasswordError(apiMessage(err) || 'Could not change your password. Check your current password and try again.');
+    }
+  };
 
-  const inputClass = isEditing
-    ? `${inputBase} border-hairline bg-surface focus:border-hairline focus:ring-2 focus:ring-hairline`
-    : `${inputBase} border-transparent bg-canvas text-slate-600 cursor-default select-none`;
-
-  const passwordInputClass =
-    `${inputBase} border-hairline bg-surface pr-12 focus:border-hairline focus:ring-2 focus:ring-hairline`;
-
-  // Show loading skeleton while fetching profile
-  if (isProfileLoading) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.12),_transparent_28%),linear-gradient(145deg,_#FFF9F1_0%,_#FFFDF9_100%)] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl">
-          <SectionCard title="My Profile" subtitle="Manage your personal details and account security.">
-            <ProfileSkeleton />
-          </SectionCard>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state if profile fetch failed and no auth data
-  if (isProfileError && !authUser) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.12),_transparent_28%),linear-gradient(145deg,_#FFF9F1_0%,_#FFFDF9_100%)] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl">
-          <SectionCard title="My Profile" subtitle="Manage your personal details and account security.">
-            <ProfileErrorState onRetry={refetch} />
-          </SectionCard>
-        </div>
-      </div>
-    );
-  }
+  const onPhotoChanged = (url: string | null) => {
+    dispatch(updateUser({ avatar: url }));
+    void refetch();
+    toast(url ? 'Your photo is updated.' : 'Your photo is removed.');
+  };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.12),_transparent_28%),linear-gradient(145deg,_#FFF9F1_0%,_#FFFDF9_100%)] px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-3xl">
-        <SectionCard title="My Profile" subtitle="Manage your personal details and account security.">
+    <>
+      <AccountHeading title="My profile" description="Your photo, contact details and sign-in settings." />
 
-          {/* ── Personal Information header ── */}
-          <div className="mb-4 flex items-center justify-between">
-            <p className="eyebrow">
-              Personal Information
-            </p>
+      {isLoading ? (
+        <ProfileSkeleton />
+      ) : isError && !authUser ? (
+        <Panel>
+          <div className="py-8 text-center">
+            <p className="text-sm text-body">We couldn’t load your profile.</p>
+            <button type="button" onClick={() => void refetch()} className={`${btnSecondary} mt-4`}>
+              Try again
+            </button>
+          </div>
+        </Panel>
+      ) : (
+        <div className="space-y-5">
+          <PhotoPanel name={name} avatar={avatar} onChanged={onPhotoChanged} />
+
+          <Panel
+            title="Personal details"
+            action={
+              !isEditing ? (
+                <button type="button" onClick={() => setIsEditing(true)} className={btnSmall}>
+                  Edit
+                </button>
+              ) : null
+            }
+          >
             {isEditing ? (
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:border-slate-300 hover:text-slate-700"
-              >
-                <X className="h-3.5 w-3.5" />
-                Cancel
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleEdit}
-                className="flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-accent transition hover:border-hairline hover:bg-surface"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                Edit
-              </button>
-            )}
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              { label: 'Full Name', key: 'fullName' as const, type: 'text' },
-              { label: 'Email', key: 'email' as const, type: 'email' },
-              { label: 'Phone', key: 'phone' as const, type: 'tel' },
-            ].map(({ label, key, type }) => (
-              <label key={key} className="block text-sm text-slate-700">
-                <span className="mb-2 block font-medium">{label}</span>
-                <input
-                  type={type}
-                  value={form[key]}
-                  onChange={handleField(key)}
-                  readOnly={!isEditing || key === 'email'}
-                  className={key === 'email' ? `${inputBase} border-transparent bg-canvas text-slate-600 cursor-default select-none` : inputClass}
-                />
-              </label>
-            ))}
-          </div>
-
-          {saveError ? (
-            <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
-              {saveError}
-            </p>
-          ) : null}
-          {saveSuccess ? (
-            <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              Profile updated successfully.
-            </p>
-          ) : null}
-
-          <div className="mt-5 flex justify-end">
-            <ActionButton
-              variant="primary"
-              disabled={!isEditing || isSaving}
-              onClick={() => void handleSave()}
-              className={!isEditing ? 'opacity-40 cursor-not-allowed' : ''}
-            >
-              {isSaving ? 'Saving…' : 'Save Changes'}
-            </ActionButton>
-          </div>
-
-          {/* ── Separator ── */}
-          <div className="my-6 border-t border-hairline" />
-
-          {/* ── Change Email ── */}
-          <p className="mb-4 eyebrow">
-            Change Email
-          </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm text-slate-700">
-              <span className="mb-2 flex items-center gap-2 font-medium">
-                New Email
-              </span>
-              <input
-                type="email"
-                value={emailForm.newEmail}
-                onChange={(e) => setEmailForm(prev => ({ ...prev, newEmail: e.target.value }))}
-                placeholder="new@example.com"
-                className={inputBase + ' border-hairline bg-surface focus:border-hairline focus:ring-2 focus:ring-hairline'}
-              />
-            </label>
-
-            <label className="block text-sm text-slate-700">
-              <span className="mb-2 flex items-center gap-2 font-medium">
-                <ShieldCheck className="h-4 w-4 text-accent" />
-                Current Password
-              </span>
-              <div className="relative">
-                <input
-                  type={show.currentPassword ? 'text' : 'password'}
-                  value={emailForm.currentPassword}
-                  onChange={(e) => setEmailForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                  placeholder="••••••••"
-                  className={passwordInputClass}
-                />
-              </div>
-            </label>
-          </div>
-
-          {emailError ? (
-            <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
-              {emailError}
-            </p>
-          ) : null}
-          {emailSuccess ? (
-            <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              Verification link sent. Check your new inbox and click the link to confirm the change — your current email stays active until then.
-            </p>
-          ) : null}
-
-          <div className="mt-5 flex justify-end">
-            <ActionButton
-              variant="primary"
-              disabled={isChangingEmail}
-              onClick={() => void handleUpdateEmail()}
-            >
-              {isChangingEmail ? 'Updating…' : 'Update Email'}
-            </ActionButton>
-          </div>
-
-          {/* ── Separator ── */}
-          <div className="my-6 border-t border-hairline" />
-
-          {/* ── Change Password ── */}
-          <p className="mb-4 eyebrow">
-            Change Password
-          </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {([
-              { label: 'Current Password', key: 'currentPassword' as const },
-              { label: 'New Password', key: 'newPassword' as const },
-              { label: 'Confirm Password', key: 'confirmPassword' as const },
-            ] as const).map(({ label, key }) => (
-              <label key={key} className="block text-sm text-slate-700">
-                <span className="mb-2 flex items-center gap-2 font-medium">
-                  <ShieldCheck className="h-4 w-4 text-accent" />
-                  {label}
-                </span>
-                <div className="relative">
-                  <input
-                    type={show[key] ? 'text' : 'password'}
-                    value={passwords[key]}
-                    onChange={handlePassword(key)}
-                    placeholder="••••••••"
-                    className={passwordInputClass}
-                  />
+              <form onSubmit={(e) => void saveDetails(e)} className="space-y-4" noValidate>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="profile-name" className={labelClass}>
+                      Full name
+                    </label>
+                    <input
+                      id="profile-name"
+                      value={details.name}
+                      onChange={(e) => setDetails((d) => ({ ...d, name: e.target.value }))}
+                      autoComplete="name"
+                      className={fieldClass}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="profile-phone" className={labelClass}>
+                      Mobile number
+                    </label>
+                    <input
+                      id="profile-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      value={details.phone}
+                      onChange={(e) => setDetails((d) => ({ ...d, phone: e.target.value.replace(/\D/g, '') }))}
+                      autoComplete="tel-national"
+                      placeholder="10-digit number"
+                      className={fieldClass}
+                    />
+                  </div>
+                </div>
+                {detailsError ? <FormMessage tone="error">{detailsError}</FormMessage> : null}
+                <div className="flex flex-wrap justify-end gap-2">
                   <button
                     type="button"
-                    onClick={() => toggleShow(key)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
-                    aria-label={show[key] ? 'Hide password' : 'Show password'}
+                    onClick={() => {
+                      setIsEditing(false);
+                      setDetailsError(null);
+                    }}
+                    className={btnSecondary}
                   >
-                    {show[key] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={isSaving} className={btnPrimary}>
+                    {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {isSaving ? 'Saving' : 'Save details'}
                   </button>
                 </div>
-              </label>
-            ))}
-          </div>
+              </form>
+            ) : (
+              <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-3">
+                {[
+                  { term: 'Full name', value: name },
+                  { term: 'Email', value: email },
+                  { term: 'Mobile number', value: phone ? `+91 ${phone}` : null },
+                ].map(({ term, value }) => (
+                  <div key={term} className="min-w-0">
+                    <dt className="text-xs text-mute">{term}</dt>
+                    <dd className={`mt-0.5 truncate text-sm ${value ? 'text-ink' : 'text-faint'}`}>{value || 'Not added'}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+          </Panel>
 
-          {passwordError ? (
-            <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">
-              {passwordError}
-            </p>
-          ) : null}
-          {passwordSuccess ? (
-            <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              Password updated successfully.
-            </p>
-          ) : null}
+          <Panel title="Email address" description={`You sign in with ${email}. We’ll send a link to confirm the new address.`}>
+            <form onSubmit={(e) => void submitEmail(e)} className="space-y-4" noValidate>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="new-email" className={labelClass}>
+                    New email
+                  </label>
+                  <input
+                    id="new-email"
+                    type="email"
+                    value={emailForm.newEmail}
+                    onChange={(e) => setEmailForm((f) => ({ ...f, newEmail: e.target.value }))}
+                    autoComplete="email"
+                    placeholder="name@example.com"
+                    className={fieldClass}
+                  />
+                </div>
+                <PasswordField
+                  id="email-current-password"
+                  label="Current password"
+                  value={emailForm.currentPassword}
+                  onChange={(v) => setEmailForm((f) => ({ ...f, currentPassword: v }))}
+                  autoComplete="current-password"
+                />
+              </div>
+              {emailError ? <FormMessage tone="error">{emailError}</FormMessage> : null}
+              {emailSent ? (
+                <FormMessage tone="success">
+                  We sent a confirmation link to {emailSent}. Your current email keeps working until you open it.
+                </FormMessage>
+              ) : null}
+              <div className="flex justify-end">
+                <button type="submit" disabled={isChangingEmail} className={btnPrimary}>
+                  {isChangingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {isChangingEmail ? 'Sending link' : 'Change email'}
+                </button>
+              </div>
+            </form>
+          </Panel>
 
-          <div className="mt-5 flex justify-end">
-            <ActionButton
-              variant="primary"
-              disabled={isChangingPassword}
-              onClick={() => void handleUpdatePassword()}
-            >
-              {isChangingPassword ? 'Updating…' : 'Update Password'}
-            </ActionButton>
-          </div>
-
-        </SectionCard>
-      </div>
-    </div>
+          <Panel title="Password" description={PASSWORD_POLICY_HINT}>
+            <form onSubmit={(e) => void submitPassword(e)} className="space-y-4" noValidate>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <PasswordField
+                  id="current-password"
+                  label="Current password"
+                  value={passwords.currentPassword}
+                  onChange={(v) => setPasswords((p) => ({ ...p, currentPassword: v }))}
+                  autoComplete="current-password"
+                />
+                <PasswordField
+                  id="new-password"
+                  label="New password"
+                  value={passwords.newPassword}
+                  onChange={(v) => setPasswords((p) => ({ ...p, newPassword: v }))}
+                  autoComplete="new-password"
+                />
+                <PasswordField
+                  id="confirm-password"
+                  label="Confirm new password"
+                  value={passwords.confirmPassword}
+                  onChange={(v) => setPasswords((p) => ({ ...p, confirmPassword: v }))}
+                  autoComplete="new-password"
+                />
+              </div>
+              {passwordError ? <FormMessage tone="error">{passwordError}</FormMessage> : null}
+              <div className="flex justify-end">
+                <button type="submit" disabled={isChangingPassword} className={btnPrimary}>
+                  {isChangingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {isChangingPassword ? 'Changing' : 'Change password'}
+                </button>
+              </div>
+            </form>
+          </Panel>
+        </div>
+      )}
+      {toastNode}
+    </>
   );
 };
 

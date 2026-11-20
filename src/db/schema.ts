@@ -46,6 +46,7 @@ export const COLLECTION_NAMES = [
   "payments",
   "shipments",
   "shiprocketorders",
+  "checkoutsessions",
 ] as const;
 
 export type CollectionName = (typeof COLLECTION_NAMES)[number];
@@ -84,6 +85,7 @@ export const shiprocketIdCounters = docTable("shiprocket_id_counters");
 export const payments = docTable("payments");
 export const shipments = docTable("shipments");
 export const shiprocketOrders = docTable("shiprocketorders");
+export const checkoutSessions = docTable("checkoutsessions");
 
 /** Webhook/event ids already handled — a repeat delivery is ignored. */
 export const processedEvents = sqliteTable("processed_events", {

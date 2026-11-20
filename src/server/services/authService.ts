@@ -88,7 +88,7 @@ class AuthService {
       logger.info(`New user registered via Google SSO: ${user.email}`);
 
       return {
-        user: { id: user._id, name: user.name, email: user.email, role: user.role },
+        user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar || null },
         message: 'Account created successfully. Please sign in.'
       };
     }
@@ -124,7 +124,7 @@ class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar || null },
       message: SUCCESS.LOGIN
     };
   }
@@ -203,7 +203,7 @@ class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role },
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar || null },
       message: SUCCESS.LOGIN
     };
   }
@@ -379,6 +379,7 @@ class AuthService {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      avatar: user.avatar || null,
       role: user.role,
       address: user.address || null
     };

@@ -10,6 +10,8 @@ interface CartItem {
 interface TokenResponse {
   success: boolean;
   token?: string;
+  /** Server record of this checkout; becomes "ordered" when Shiprocket reports the order. */
+  sessionId?: string;
   expiresIn?: number;
   message?: string;
 }
@@ -27,10 +29,18 @@ export async function generateCheckoutToken(cartItems: CartItem[]): Promise<stri
     throw new Error('Cart is empty');
   }
 
+  // Signed-in shoppers send their token so the order can be linked to their account.
+  let authHeader: Record<string, string> = {};
+  try {
+    const accessToken = localStorage.getItem('accessToken') || localStorage.getItem('token');
+    if (accessToken) authHeader = { Authorization: `Bearer ${accessToken}` };
+  } catch { /* storage blocked: checkout as a guest */ }
+
   const response = await fetch(`${API_BASE_URL}/api/v1/checkout/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...authHeader,
     },
     body: JSON.stringify({ cartItems })
   });
@@ -46,6 +56,7 @@ export async function generateCheckoutToken(cartItems: CartItem[]): Promise<stri
     throw new Error(data.message || 'No token received from server');
   }
 
+  lastSessionId = data.sessionId ?? null;
   return data.token;
 }
 
@@ -59,11 +70,12 @@ export interface CheckedOutItem {
 }
 
 const CHECKOUT_ITEMS_KEY = 'checkout_items';
+let lastSessionId: string | null = null;
 const CHECKOUT_ITEMS_MAX_AGE = 24 * 60 * 60 * 1000;
 
 export function rememberCheckoutItems(items: CheckedOutItem[]) {
   try {
-    localStorage.setItem(CHECKOUT_ITEMS_KEY, JSON.stringify({ at: Date.now(), items }));
+    localStorage.setItem(CHECKOUT_ITEMS_KEY, JSON.stringify({ at: Date.now(), items, sessionId: lastSessionId }));
   } catch {
     // Storage blocked: the success page then leaves the bag as it is.
   }
@@ -79,6 +91,31 @@ export function takeCheckoutItems(): CheckedOutItem[] {
     return Date.now() - at < CHECKOUT_ITEMS_MAX_AGE && Array.isArray(items) ? items : [];
   } catch {
     return [];
+  }
+}
+
+/** The open checkout record without consuming it, or null if none or too old. */
+export function peekPendingCheckout(): { at: number; items: CheckedOutItem[]; sessionId: string | null } | null {
+  try {
+    const raw = localStorage.getItem(CHECKOUT_ITEMS_KEY);
+    if (!raw) return null;
+    const rec = JSON.parse(raw);
+    if (!rec || !Array.isArray(rec.items) || Date.now() - rec.at >= CHECKOUT_ITEMS_MAX_AGE) return null;
+    return { at: rec.at, items: rec.items, sessionId: rec.sessionId ?? null };
+  } catch {
+    return null;
+  }
+}
+
+/** True once Shiprocket's order for this checkout has reached our server. */
+export async function isCheckoutOrdered(sessionId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/checkout/session/${encodeURIComponent(sessionId)}`, { cache: 'no-store' });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data?.status === 'ordered';
+  } catch {
+    return false;
   }
 }
 

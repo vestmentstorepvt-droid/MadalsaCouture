@@ -1,6 +1,7 @@
 // @ts-nocheck — ported from the Express backend (controllers/productController.js); logic unchanged.
 import __imp0 from "@/server/services/productService";
 import __imp1 from "@/server/utils/response";
+import { getShopFacets, needsProductIdFilter, parseShopQuery, resolveShopProductIds } from "@/server/services/shopFilterService";
 
 const productService = __imp0;
 const { sendSuccess } = __imp1;
@@ -10,12 +11,16 @@ function parsePagination(query) {
   const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 20));
 
   let sort = { createdAt: -1 };
+  let sortByDiscount = false;
   if (query.sort) {
-    const [field, direction] = String(query.sort).split(':');
-    if (field) sort = { [field]: direction === 'asc' ? 1 : -1 };
+    const [rawField, direction] = String(query.sort).split(':');
+    // The storefront has always sent "price", but products store it as basePrice.
+    const field = rawField === 'price' ? 'basePrice' : rawField;
+    if (field === 'discount') sortByDiscount = true;
+    else if (field) sort = { [field]: direction === 'asc' ? 1 : -1 };
   }
 
-  return { page, limit, sort };
+  return { page, limit, sort, sortByDiscount };
 }
 
 /**
@@ -156,8 +161,23 @@ class ProductController {
       const pagination = parsePagination(req.query);
       // Public: always published + not deleted
       const filters = parseFilters(req.query, { status: 'published', isDeleted: false });
+
+      // Storefront filters: collection, categories, sizes, colors, inStock, onSale.
+      const shop = parseShopQuery(req.query);
+      if (needsProductIdFilter(shop)) filters.productIds = await resolveShopProductIds(shop);
+      if (shop.onSale) filters.onSale = true;
+
       const result  = await productService.listProducts(filters, pagination);
       return sendSuccess(res, result.data, 200, result.meta);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /** GET /api/v1/products/facets — filter options and counts for the shop page. */
+  async getProductFacets(req, res, next) {
+    try {
+      return sendSuccess(res, await getShopFacets(req.query));
     } catch (error) {
       next(error);
     }

@@ -41,7 +41,7 @@ const schedule = () => ({ startsAt: null, endsAt: null });
 
 export const MODELS: Record<CollectionName, ModelConfig> = {
   users: {
-    fields: f("name email pendingEmail phone password authProvider role status addresses address wishlist isEmailVerified emailVerified refreshToken refreshTokenExpiresAt passwordResetToken passwordResetExpiresAt verificationToken verificationTokenExpiresAt loginAttempts lockUntil lastLoginAt isDeleted deletedAt isActive"),
+    fields: f("name email pendingEmail phone avatar avatarPublicId password authProvider role status addresses address wishlist isEmailVerified emailVerified refreshToken refreshTokenExpiresAt passwordResetToken passwordResetExpiresAt verificationToken verificationTokenExpiresAt loginAttempts lockUntil lastLoginAt isDeleted deletedAt isActive"),
     timestamps: true,
     hidden: [
       "password",
@@ -54,6 +54,7 @@ export const MODELS: Record<CollectionName, ModelConfig> = {
     ],
     defaults: () => ({
       pendingEmail: null,
+      avatar: null,
       authProvider: "local",
       role: "USER",
       status: "active",
@@ -565,4 +566,6 @@ export const MODELS: Record<CollectionName, ModelConfig> = {
   shipments: { timestamps: true, sqlPaths: ["orderId"] },
   // Shiprocket webhook deliveries as received (see shiprocketOrderRoutes / shiprocketOrderImport).
   shiprocketorders: { timestamps: true, sqlPaths: ["kind", "processed", "orderId", "awb"] },
+  // One per opened Shiprocket checkout; matched to the imported order so the bag can be emptied.
+  checkoutsessions: { timestamps: true, sqlPaths: ["status"] },
 };

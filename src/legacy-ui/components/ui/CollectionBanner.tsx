@@ -78,7 +78,7 @@ const inspectCutout = (img: HTMLImageElement): { ok: boolean; brightness: number
  * Cloudinary processes it, so retry a few times. If a photo can't be cut out cleanly (busy
  * background), move on to the next candidate; if none work, show nothing — never a boxed photo.
  */
-const Cutout: FC<{
+export const Cutout: FC<{
   candidates: (string | undefined)[];
   className?: string;
   brightness?: number;
@@ -193,7 +193,7 @@ const cuspedPath = (() => {
 })();
 
 /** Jharokha: pointed outer arch, cusped inner arch with a jaali screen, pillars and a kalash finial. */
-const Arch: FC<{ id: string; className?: string }> = ({ id, className = '' }) => (
+export const Arch: FC<{ id: string; className?: string }> = ({ id, className = '' }) => (
   <svg className={className} viewBox="0 -10 320 450" fill="none" aria-hidden="true">
     <defs>
       <pattern id={`jaali-${id}`} width="14" height="14" patternUnits="userSpaceOnUse">
@@ -233,7 +233,7 @@ const Arch: FC<{ id: string; className?: string }> = ({ id, className = '' }) =>
 );
 
 /** Toran across the top edge: draped garland with mango leaves and hanging bead strings. */
-const Toran: FC<{ id: string }> = ({ id }) => (
+export const Toran: FC<{ id: string }> = ({ id }) => (
   <svg data-anim="toran" className="absolute inset-x-0 top-0 h-[38px] w-full" aria-hidden="true">
     <defs>
       <pattern id={id} width="64" height="38" patternUnits="userSpaceOnUse">
@@ -258,7 +258,7 @@ const Toran: FC<{ id: string }> = ({ id }) => (
 );
 
 /** Paisley chain along the bottom edge between two rules. */
-const PaisleyBorder: FC<{ id: string }> = ({ id }) => (
+export const PaisleyBorder: FC<{ id: string }> = ({ id }) => (
   <svg className="absolute inset-x-0 bottom-0 h-6 w-full" aria-hidden="true">
     <defs>
       <pattern id={id} width="44" height="24" patternUnits="userSpaceOnUse">

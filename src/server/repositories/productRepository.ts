@@ -71,9 +71,10 @@ class ProductRepository {
       gender, ageGroup, designer, brand, season, occasions,
       isFeatured, isNewArrival, isBestSeller, isTrending,
       isLimitedEdition, isPreOrder, isReadyToShip, isMadeToOrder,
+      productIds, onSale,
     } = filters;
 
-    const { page = 1, limit = 20, sort = { createdAt: -1 } } = pagination;
+    const { page = 1, limit = 20, sort = { createdAt: -1 }, sortByDiscount = false } = pagination;
 
     const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
     const safePage  = Math.max(parseInt(page, 10) || 1, 1);
@@ -126,6 +127,18 @@ class ProductRepository {
     if (isPreOrder     === true || isPreOrder     === 'true')  query['flags.isPreOrder']     = true;
     if (isReadyToShip  === true || isReadyToShip  === 'true')  query['flags.isReadyToShip']  = true;
     if (isMadeToOrder  === true || isMadeToOrder  === 'true')  query['flags.isMadeToOrder']  = true;
+
+    // ── Storefront filters (resolved by shopFilterService) ───────────────
+    if (Array.isArray(productIds)) query._id = { $in: productIds };
+    if (onSale === true || onSale === 'true') query.$expr = { $gt: ['$mrp', '$basePrice'] };
+
+    if (sortByDiscount) {
+      // Discount is computed, not stored, so sort in memory (the catalogue is small).
+      const discountOf = (p) => (Number(p.mrp) > Number(p.basePrice) ? (Number(p.mrp) - Number(p.basePrice)) / Number(p.mrp) : 0);
+      const all = await Product.find(query).sort({ createdAt: -1 }).lean();
+      all.sort((a, b) => discountOf(b) - discountOf(a));
+      return { data: all.slice(skip, skip + safeLimit), total: all.length };
+    }
 
     const [data, total] = await Promise.all([
       Product.find(query).sort(sort).skip(skip).limit(safeLimit).lean(),

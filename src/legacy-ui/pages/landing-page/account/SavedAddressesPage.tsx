@@ -1,10 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, type FormEvent } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../store';
-import {
-  MapPin, Plus, Pencil, Trash2, Star, Check, AlertCircle,
-  RefreshCw, Home, Briefcase, X, Phone, User
-} from 'lucide-react';
+import { Briefcase, Home, Loader2, MapPin, Plus } from 'lucide-react';
 import {
   useGetAddressesQuery,
   useCreateAddressMutation,
@@ -14,34 +11,19 @@ import {
   type Address,
   type CreateAddressPayload,
 } from '../../../services/addressApi';
+import {
+  AccountHeading,
+  Dialog,
+  Panel,
+  btnPrimary,
+  btnSecondary,
+  fieldClass,
+  fieldErrorClass,
+  labelClass,
+  useAccountToast,
+} from '../../../components/features/account/AccountUI';
 
-
-const INPUT = 'w-full px-4 py-2.5 rounded-xl border border-hairline bg-surface text-sm text-slate-800 outline-none focus:border-hairline focus:ring-2 focus:ring-hairline transition placeholder:text-slate-400';
-const INPUT_ERR = 'w-full px-4 py-2.5 rounded-xl border border-rose-400 bg-rose-50 text-sm text-slate-800 outline-none focus:ring-2 focus:ring-rose-300/30 transition';
-
-// ── Toast ──────────────────────────────────────────────────────────────────────
-interface Toast { message: string; type: 'success' | 'error' }
-const ToastBanner: React.FC<{ toast: Toast | null }> = ({ toast }) => {
-  if (!toast) return null;
-  return (
-    <div role="alert" className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-xl text-xs font-semibold backdrop-blur-md ${toast.type === 'success' ? 'bg-emerald-50/95 border-emerald-200 text-emerald-900' : 'bg-rose-50/95 border-rose-200 text-rose-900'}`}>
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-white ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
-        {toast.type === 'success' ? <Check className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
-      </div>
-      {toast.message}
-    </div>
-  );
-};
-function useToast() {
-  const [toast, setToast] = useState<Toast | null>(null);
-  const show = useCallback((message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 4000);
-  }, []);
-  return { toast, show };
-}
-
-// ── Address form state ─────────────────────────────────────────────────────────
+// ── Form state ────────────────────────────────────────────────────────────────
 interface AddressForm {
   fullName: string;
   phone: string;
@@ -54,6 +36,7 @@ interface AddressForm {
   label: string;
   isDefault: boolean;
 }
+type FormErrors = Partial<Record<keyof AddressForm, string>>;
 
 const EMPTY_FORM: AddressForm = {
   fullName: '', phone: '', line1: '', line2: '',
@@ -61,9 +44,13 @@ const EMPTY_FORM: AddressForm = {
   label: 'Home', isDefault: false,
 };
 
+const LABELS = [
+  { value: 'Home', icon: Home },
+  { value: 'Office', icon: Briefcase },
+  { value: 'Other', icon: MapPin },
+] as const;
+
 function formToPayload(f: AddressForm): CreateAddressPayload {
-  // POST /api/v1/addresses body:
-  // { fullName, phone, line1, line2?, city, state, pincode, country, label?, isDefault? }
   return {
     fullName: f.fullName.trim(),
     phone: f.phone.trim(),
@@ -93,131 +80,136 @@ function addressToForm(a: Address): AddressForm {
   };
 }
 
-// ── Field validation ───────────────────────────────────────────────────────────
-function validateForm(f: AddressForm): Partial<Record<keyof AddressForm, string>> {
-  const e: Partial<Record<keyof AddressForm, string>> = {};
-  if (!f.fullName.trim()) e.fullName = 'Full name is required.';
-  if (!f.phone.trim()) e.phone = 'Phone number is required.';
+function validateForm(f: AddressForm): FormErrors {
+  const e: FormErrors = {};
+  if (!f.fullName.trim()) e.fullName = 'Enter the name of the person receiving the parcel.';
+  if (!f.phone.trim()) e.phone = 'Enter a phone number for the courier.';
   else if (!/^[+\d\s-]{7,15}$/.test(f.phone.trim())) e.phone = 'Enter a valid phone number.';
-  if (!f.line1.trim()) e.line1 = 'Address line 1 is required.';
-  if (!f.city.trim()) e.city = 'City is required.';
-  if (!f.state.trim()) e.state = 'State is required.';
-  if (!f.pincode.trim()) e.pincode = 'Pincode is required.';
-  else if (!/^\d{6}$/.test(f.pincode.trim())) e.pincode = 'Enter a valid 6-digit pincode.';
+  if (!f.line1.trim()) e.line1 = 'Enter the house number and street.';
+  if (!f.city.trim()) e.city = 'Enter the city.';
+  if (!f.state.trim()) e.state = 'Enter the state.';
+  if (!f.pincode.trim()) e.pincode = 'Enter the pincode.';
+  else if (!/^\d{6}$/.test(f.pincode.trim())) e.pincode = 'Pincodes have 6 digits.';
   return e;
 }
 
-// ── Modal ──────────────────────────────────────────────────────────────────────
-const AddressModal: React.FC<{
+const apiMessage = (err: unknown) => (err as { data?: { message?: string; error?: { message?: string } } })?.data?.error?.message
+  || (err as { data?: { message?: string } })?.data?.message;
+
+// ── Address editor ────────────────────────────────────────────────────────────
+const AddressDialog: React.FC<{
   mode: 'add' | 'edit';
   form: AddressForm;
-  errors: Partial<Record<keyof AddressForm, string>>;
+  errors: FormErrors;
   isSubmitting: boolean;
   onClose: () => void;
   onChange: (key: keyof AddressForm, value: string | boolean) => void;
   onSubmit: () => void;
 }> = ({ mode, form, errors, isSubmitting, onClose, onChange, onSubmit }) => {
-  const fields: Array<{ key: keyof AddressForm; label: string; placeholder: string; required?: boolean; half?: boolean; type?: string }> = [
-    { key: 'fullName', label: 'Full Name', placeholder: 'Aarohi Sharma', required: true },
-    { key: 'phone', label: 'Phone Number', placeholder: '+91 98765 43210', required: true },
-    { key: 'line1', label: 'Address Line 1', placeholder: 'B-12, Palm Avenue Road', required: true },
-    { key: 'line2', label: 'Address Line 2', placeholder: 'Apt / Landmark (optional)' },
-    { key: 'city', label: 'City', placeholder: 'Gurugram', required: true, half: true },
-    { key: 'state', label: 'State', placeholder: 'Haryana', required: true, half: true },
-    { key: 'pincode', label: 'Pincode', placeholder: '122001', required: true, half: true },
-    { key: 'country', label: 'Country', placeholder: 'India', half: true },
-  ];
+  const field = (
+    key: keyof AddressForm,
+    label: string,
+    opts: { placeholder?: string; autoComplete?: string; inputMode?: 'numeric' | 'tel'; optional?: boolean; span?: boolean } = {},
+  ) => (
+    <div className={opts.span ? 'sm:col-span-2' : ''}>
+      <label htmlFor={`addr-${key}`} className={labelClass}>
+        {label}
+        {opts.optional ? <span className="font-normal text-mute"> (optional)</span> : null}
+      </label>
+      <input
+        id={`addr-${key}`}
+        value={form[key] as string}
+        onChange={(e) => onChange(key, e.target.value)}
+        placeholder={opts.placeholder}
+        autoComplete={opts.autoComplete}
+        inputMode={opts.inputMode}
+        aria-invalid={!!errors[key]}
+        aria-describedby={errors[key] ? `addr-${key}-error` : undefined}
+        className={`${fieldClass} ${errors[key] ? fieldErrorClass : ''}`}
+      />
+      {errors[key] ? (
+        <p id={`addr-${key}-error`} className="mt-1 text-xs text-rose-700">
+          {errors[key]}
+        </p>
+      ) : null}
+    </div>
+  );
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    onSubmit();
+  };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-hairline bg-white shadow-2xl">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-hairline flex items-center justify-between px-6 py-4 rounded-t-3xl">
-          <div>
-            <p className="eyebrow">Address Editor</p>
-            <h3 className="text-lg font-serif font-semibold text-slate-900 mt-0.5">
-              {mode === 'add' ? 'Add New Address' : 'Edit Address'}
-            </h3>
-          </div>
-          <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-full border border-hairline text-slate-500 hover:bg-slate-50 transition">
-            <X className="w-4 h-4" />
+    <Dialog
+      title={mode === 'add' ? 'Add an address' : 'Edit address'}
+      onClose={onClose}
+      size="lg"
+      footer={
+        <>
+          <button type="button" onClick={onClose} className={btnSecondary}>
+            Cancel
           </button>
+          <button type="submit" form="address-form" disabled={isSubmitting} className={btnPrimary}>
+            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {isSubmitting ? 'Saving' : 'Save address'}
+          </button>
+        </>
+      }
+    >
+      <form id="address-form" onSubmit={submit} noValidate className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {field('fullName', 'Full name', { autoComplete: 'name' })}
+          {field('phone', 'Phone number', { autoComplete: 'tel', inputMode: 'tel', placeholder: '10-digit mobile number' })}
+          {field('line1', 'House number and street', { autoComplete: 'address-line1', span: true })}
+          {field('line2', 'Area or landmark', { autoComplete: 'address-line2', optional: true, span: true })}
+          {field('pincode', 'Pincode', { autoComplete: 'postal-code', inputMode: 'numeric' })}
+          {field('city', 'City', { autoComplete: 'address-level2' })}
+          {field('state', 'State', { autoComplete: 'address-level1' })}
+          {field('country', 'Country', { autoComplete: 'country-name' })}
         </div>
 
-        <div className="p-6 space-y-4">
-          {/* Grid fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fields.map(({ key, label, placeholder, required, half }) => (
-              <div key={key} className={half ? '' : 'md:col-span-2'}>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
-                  {label} {required && <span className="text-rose-500">*</span>}
-                </label>
-                <input
-                  type="text"
-                  value={form[key] as string}
-                  onChange={(e) => onChange(key, e.target.value)}
-                  placeholder={placeholder}
-                  className={errors[key] ? INPUT_ERR : INPUT}
-                />
-                {errors[key] && <p className="text-xs text-rose-500 mt-1">{errors[key]}</p>}
-              </div>
-            ))}
+        <fieldset>
+          <legend className={labelClass}>Save as</legend>
+          <div className="flex flex-wrap gap-2">
+            {LABELS.map(({ value, icon: Icon }) => {
+              const active = form.label === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => onChange('label', value)}
+                  aria-pressed={active}
+                  className={`inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors ${
+                    active ? 'border-ink bg-ink text-white' : 'border-hairline-strong text-ink hover:bg-hairline-soft'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {value}
+                </button>
+              );
+            })}
           </div>
+        </fieldset>
 
-          {/* Label + isDefault */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-hairline">
-            <div>
-              <label className="text-xs font-bold text-slate-700 block mb-1">Address Type</label>
-              <div className="flex gap-2">
-                {['Home', 'Office', 'Other'].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => onChange('label', t)}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-xs font-semibold transition ${form.label === t ? 'bg-ink text-white border-ink' : 'border-hairline text-slate-700 hover:bg-slate-50'}`}
-                  >
-                    {t === 'Home' ? <Home className="w-3.5 h-3.5" /> : t === 'Office' ? <Briefcase className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <div
-                onClick={() => onChange('isDefault', !form.isDefault)}
-                className={`w-11 h-6 rounded-full transition-colors relative ${form.isDefault ? 'bg-ink' : 'bg-slate-200'}`}
-              >
-                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.isDefault ? 'translate-x-6' : 'translate-x-1'}`} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-800">Set as default</p>
-                <p className="text-xs text-slate-400">Used by default at checkout</p>
-              </div>
-            </label>
-          </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-6 border text-sm text-slate-700 hover:bg-slate-50 transition h-11 rounded-full border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft">
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={onSubmit}
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 bg-ink text-white text-sm transition disabled:opacity-60 h-11 rounded-full font-medium transition-colors hover:bg-ink-hover"
-            >
-              {isSubmitting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              {isSubmitting ? 'Saving…' : mode === 'add' ? 'Save Address' : 'Update Address'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={form.isDefault}
+            onChange={(e) => onChange('isDefault', e.target.checked)}
+            className="mt-0.5 h-5 w-5 rounded border-hairline-strong accent-ink"
+          />
+          <span>
+            <span className="block text-sm font-medium text-ink">Make this my default address</span>
+            <span className="block text-xs text-mute">We’ll pick it first at checkout.</span>
+          </span>
+        </label>
+      </form>
+    </Dialog>
   );
 };
 
-// ── Address Card ───────────────────────────────────────────────────────────────
+// ── Address card ──────────────────────────────────────────────────────────────
 const AddressCard: React.FC<{
   address: Address;
   onEdit: () => void;
@@ -225,185 +217,117 @@ const AddressCard: React.FC<{
   onSetDefault: () => void;
   isSettingDefault: boolean;
 }> = ({ address, onEdit, onDelete, onSetDefault, isSettingDefault }) => {
-  const labelIcon = address.label === 'Home' ? <Home className="w-3.5 h-3.5" /> :
-    address.label === 'Office' ? <Briefcase className="w-3.5 h-3.5" /> :
-      <MapPin className="w-3.5 h-3.5" />;
-
+  const Icon = LABELS.find((l) => l.value === address.label)?.icon ?? MapPin;
+  const actionClass = 'text-sm font-medium text-ink underline-offset-4 hover:underline disabled:opacity-50';
   return (
-    <div className={`relative rounded-2xl border bg-white p-5 shadow-sm hover:shadow-md transition-shadow ${address.isDefault ? 'border-hairline ring-1 ring-hairline' : 'border-hairline'}`}>
-      {/* Default badge */}
-      {address.isDefault && (
-        <div className="absolute top-4 right-4 flex items-center gap-1 px-2.5 py-1 rounded-full bg-ink/10 border border-hairline text-xs font-black text-accent">
-          <Star className="w-3 h-3 fill-ink text-accent" /> DEFAULT
-        </div>
-      )}
-
-      {/* Label */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs ${address.isDefault ? 'bg-ink' : 'bg-slate-500'}`}>
-          {labelIcon}
-        </div>
-        <span className="text-xs font-black uppercase tracking-wider text-slate-700">{address.label ?? 'Address'}</span>
+    <li
+      className={`flex flex-col rounded-2xl border bg-surface p-5 ${
+        address.isDefault ? 'border-ink' : 'border-hairline'
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-2 text-sm font-medium text-ink">
+          <Icon className="h-4 w-4 text-mute" />
+          {address.label ?? 'Address'}
+        </span>
+        {address.isDefault ? (
+          <span className="rounded-full bg-ink px-2.5 py-0.5 text-xs font-medium text-white">Default</span>
+        ) : null}
       </div>
 
-      {/* Details */}
-      <div className="space-y-1.5 mb-4">
-        <div className="flex items-center gap-2">
-          <User className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-          <p className="text-sm font-bold text-slate-900">{address.fullName}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-          <p className="text-xs text-slate-600">{address.phone}</p>
-        </div>
-        <div className="flex items-start gap-2">
-          <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-slate-600 leading-relaxed">
-            {[address.line1, address.line2, address.city, address.state, address.pincode, address.country]
-              .filter(Boolean).join(', ')}
-          </p>
-        </div>
-      </div>
+      <address className="mt-3 flex-1 text-sm not-italic leading-6 text-body">
+        <span className="block font-medium text-ink">{address.fullName}</span>
+        {[address.line1, address.line2].filter(Boolean).join(', ')}
+        <br />
+        {address.city}, {address.state} {address.pincode}
+        {address.country && address.country !== 'India' ? `, ${address.country}` : ''}
+        <span className="mt-1 block tabular-nums text-mute">{address.phone}</span>
+      </address>
 
-      {/* Actions */}
-      <div className="flex items-center gap-2 pt-3 border-t border-hairline">
-        <button
-          type="button"
-          onClick={onEdit}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-hairline text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-        >
-          <Pencil className="w-3 h-3" /> Edit
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-hairline pt-4">
+        <button type="button" onClick={onEdit} className={actionClass}>
+          Edit
         </button>
-        {!address.isDefault && (
+        {!address.isDefault ? (
           <>
-            <button
-              type="button"
-              onClick={onSetDefault}
-              disabled={isSettingDefault}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-hairline text-xs font-semibold text-accent hover:bg-ink/5 transition disabled:opacity-50"
-            >
-              {isSettingDefault ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Star className="w-3 h-3" />}
-              Set Default
+            <button type="button" onClick={onSetDefault} disabled={isSettingDefault} className={`${actionClass} inline-flex items-center gap-1.5`}>
+              {isSettingDefault ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              Set as default
             </button>
-            <button
-              type="button"
-              onClick={onDelete}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-500 hover:bg-rose-50 hover:border hover:border-rose-200 transition"
-            >
-              <Trash2 className="w-3 h-3" /> Remove
+            <button type="button" onClick={onDelete} className="ml-auto text-sm font-medium text-rose-700 underline-offset-4 hover:underline">
+              Remove
             </button>
           </>
-        )}
+        ) : null}
       </div>
-    </div>
+    </li>
   );
 };
 
-// ── Confirm delete modal ───────────────────────────────────────────────────────
-const ConfirmModal: React.FC<{
-  open: boolean; isDeleting: boolean;
-  onConfirm: () => void; onCancel: () => void;
-}> = ({ open, isDeleting, onConfirm, onCancel }) => {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 max-w-sm mx-4 w-full">
-        <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
-          <Trash2 className="w-6 h-6 text-rose-500" />
-        </div>
-        <h3 className="text-base font-bold text-slate-900 text-center">Delete Address?</h3>
-        <p className="text-xs text-slate-500 text-center mt-1">This cannot be undone. Addresses linked to active orders cannot be deleted.</p>
-        <div className="flex gap-3 mt-5">
-          <button type="button" onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isDeleting}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 transition disabled:opacity-60"
-          >
-            {isDeleting ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
-            {isDeleting ? 'Deleting…' : 'Delete'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ── Skeleton ───────────────────────────────────────────────────────────────────
 const Skeleton = () => (
-  <div className="animate-pulse rounded-2xl border border-hairline bg-white p-5">
-    <div className="flex gap-2 mb-3"><div className="w-7 h-7 rounded-lg bg-slate-200" /><div className="h-4 w-20 rounded-full bg-slate-200" /></div>
-    <div className="space-y-2 mb-4">
-      <div className="h-4 w-40 rounded-full bg-slate-200" />
-      <div className="h-3 w-24 rounded-full bg-slate-100" />
-      <div className="h-3 w-56 rounded-full bg-slate-100" />
-    </div>
-    <div className="flex gap-2 border-t border-slate-100 pt-3">
-      <div className="h-7 w-14 rounded-lg bg-slate-100" />
-      <div className="h-7 w-20 rounded-lg bg-slate-100" />
-    </div>
-  </div>
+  <ul className="grid gap-4 sm:grid-cols-2" aria-hidden="true">
+    {[0, 1].map((i) => (
+      <li key={i} className="h-52 animate-pulse rounded-2xl border border-hairline bg-surface" />
+    ))}
+  </ul>
 );
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 const SavedAddressesPage: React.FC = () => {
-  const { toast, show: showToast } = useToast();
+  const { show: toast, node: toastNode } = useAccountToast();
 
-  // Modal state
   const [modal, setModal] = useState<{ mode: 'add' | 'edit'; editId?: string } | null>(null);
   const [form, setForm] = useState<AddressForm>(EMPTY_FORM);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof AddressForm, string>>>({});
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [deleteTarget, setDeleteTarget] = useState<Address | null>(null);
   const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-
-  // GET /api/v1/addresses → { data: { addresses: Address[] } }
   const { data: rawAddresses, isLoading, isError, refetch } = useGetAddressesQuery(undefined, { skip: !isAuthenticated });
+  const addresses = Array.isArray(rawAddresses)
+    ? [...rawAddresses].sort((a, b) => Number(b.isDefault) - Number(a.isDefault))
+    : [];
 
-  const addresses = Array.isArray(rawAddresses) ? rawAddresses : [];
-
-  // POST /api/v1/addresses  Body: { fullName, phone, line1, line2?, city, state, pincode, country, label?, isDefault? }
   const [createAddress, { isLoading: isCreating }] = useCreateAddressMutation();
-
-  // PATCH /api/v1/addresses/:id  Body: (same fields, all optional)
   const [updateAddress, { isLoading: isUpdating }] = useUpdateAddressMutation();
-
-  // DELETE /api/v1/addresses/:id  (soft-delete, guard: can't delete if tied to active order)
   const [deleteAddress] = useDeleteAddressMutation();
-
-  // PATCH /api/v1/addresses/:id/default  Body: none
   const [setDefaultAddress] = useSetDefaultAddressMutation();
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-  const openAdd = () => { setForm(EMPTY_FORM); setFormErrors({}); setModal({ mode: 'add' }); };
-  const openEdit = (a: Address) => { setForm(addressToForm(a)); setFormErrors({}); setModal({ mode: 'edit', editId: a._id }); };
+  const openAdd = () => {
+    setForm({ ...EMPTY_FORM, isDefault: addresses.length === 0 });
+    setFormErrors({});
+    setModal({ mode: 'add' });
+  };
+  const openEdit = (a: Address) => {
+    setForm(addressToForm(a));
+    setFormErrors({});
+    setModal({ mode: 'edit', editId: a._id });
+  };
 
   const handleChange = (key: keyof AddressForm, value: string | boolean) => {
-    setForm(f => ({ ...f, [key]: value }));
-    setFormErrors(e => ({ ...e, [key]: undefined }));
+    setForm((f) => ({ ...f, [key]: value }));
+    setFormErrors((e) => ({ ...e, [key]: undefined }));
   };
 
   const handleSubmit = async () => {
     const errors = validateForm(form);
-    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
-
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      document.getElementById(`addr-${Object.keys(errors)[0]}`)?.focus();
+      return;
+    }
     try {
       if (modal?.mode === 'add') {
         await createAddress(formToPayload(form)).unwrap();
-        showToast('Address saved successfully!');
+        toast('Address saved.');
       } else if (modal?.mode === 'edit' && modal.editId) {
         await updateAddress({ id: modal.editId, data: formToPayload(form) }).unwrap();
-        showToast('Address updated!');
+        toast('Address updated.');
       }
       setModal(null);
-    } catch (err: unknown) {
-      const e = err as { data?: { message?: string } };
-      showToast(e?.data?.message ?? 'Failed to save address.', 'error');
+    } catch (err) {
+      toast(apiMessage(err) ?? 'Could not save the address. Please try again.', 'error');
     }
   };
 
@@ -411,11 +335,10 @@ const SavedAddressesPage: React.FC = () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      await deleteAddress(deleteTarget).unwrap();
-      showToast('Address removed.');
-    } catch (err: unknown) {
-      const e = err as { data?: { message?: string } };
-      showToast(e?.data?.message ?? 'Cannot delete — address may be used in an active order.', 'error');
+      await deleteAddress(deleteTarget._id).unwrap();
+      toast('Address removed.');
+    } catch (err) {
+      toast(apiMessage(err) ?? 'This address is on an order that hasn’t been delivered yet, so it can’t be removed.', 'error');
     } finally {
       setIsDeleting(false);
       setDeleteTarget(null);
@@ -426,88 +349,81 @@ const SavedAddressesPage: React.FC = () => {
     setSettingDefaultId(id);
     try {
       await setDefaultAddress(id).unwrap();
-      showToast('Default address updated!');
+      toast('Default address updated.');
     } catch {
-      showToast('Failed to set default address.', 'error');
+      toast('Could not change the default address. Please try again.', 'error');
     } finally {
       setSettingDefaultId(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(212,175,55,0.1),_transparent_28%),linear-gradient(145deg,_#FFF9F1_0%,_#FFFDF9_100%)] px-4 py-8 sm:px-6 lg:px-8">
-      <ToastBanner toast={toast} />
+    <>
+      <AccountHeading
+        title="Saved addresses"
+        description="Where we deliver your orders."
+        action={
+          addresses.length > 0 ? (
+            <button type="button" onClick={openAdd} className={btnPrimary}>
+              <Plus className="h-4 w-4" />
+              Add address
+            </button>
+          ) : null
+        }
+      />
 
-      <div className="mx-auto max-w-5xl space-y-8">
-
-        {/* ── Header ────────────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pt-8">
-          <div>
-            <p className="eyebrow">Delivery Preferences</p>
-            <h1 className="text-4xl text-slate-900 mt-1 font-semibold">Saved Addresses</h1>
-            <div className="h-0.5 w-12 bg-ink mt-3" />
-          </div>
-          <button
-            type="button"
-            onClick={openAdd}
-            className="self-start sm:self-auto flex items-center gap-2 px-5 rounded-2xl bg-ink text-white text-sm transition h-11 rounded-full font-medium transition-colors hover:bg-ink-hover"
-          >
-            <Plus className="w-4 h-4" /> Add New Address
-          </button>
-        </div>
-
-        {/* ── Stats bar ────────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl border border-hairline px-5 py-4 shadow-sm">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <MapPin className="w-4 h-4 text-accent" />
-            <span><strong>{addresses.length}</strong> saved {addresses.length === 1 ? 'destination' : 'destinations'}</span>
-          </div>
-          <button type="button" onClick={() => refetch()} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-accent transition">
-            <RefreshCw className="w-3.5 h-3.5" /> Refresh
-          </button>
-        </div>
-
-        {/* ── Body ──────────────────────────────────────────────────── */}
-        {isLoading ? (
-          <div className="grid gap-5 sm:grid-cols-2">
-            {[...Array(2)].map((_, i) => <Skeleton key={i} />)}
-          </div>
-        ) : isError ? (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-8 py-14 text-center">
-            <AlertCircle className="w-8 h-8 text-rose-400 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-rose-700">Failed to load addresses.</p>
-            <button type="button" onClick={() => refetch()} className="mt-3 text-xs text-rose-600 hover:underline">Retry</button>
-          </div>
-        ) : addresses.length === 0 ? (
-          <div className="text-center py-20 space-y-4">
-            <div className="w-16 h-16 rounded-full bg-ink/10 flex items-center justify-center mx-auto">
-              <MapPin className="w-8 h-8 text-accent" />
-            </div>
-            <h2 className="font-serif text-2xl text-slate-800">No saved addresses yet</h2>
-            <p className="text-sm text-slate-500 max-w-xs mx-auto">Save your go-to delivery locations for faster checkout.</p>
-            <button type="button" onClick={openAdd} className="inline-flex items-center gap-2 mt-2 bg-ink px-8 text-white h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover">
-              <Plus className="w-4 h-4" /> Create First Address
+      {isLoading ? (
+        <Skeleton />
+      ) : isError ? (
+        <Panel>
+          <div className="py-8 text-center">
+            <p className="text-sm text-body">We couldn’t load your addresses.</p>
+            <button type="button" onClick={() => void refetch()} className={`${btnSecondary} mt-4`}>
+              Try again
             </button>
           </div>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2">
-            {addresses.map((a) => (
-              <AddressCard
-                key={a._id}
-                address={a}
-                onEdit={() => openEdit(a)}
-                onDelete={() => setDeleteTarget(a._id)}
-                onSetDefault={() => handleSetDefault(a._id)}
-                isSettingDefault={settingDefaultId === a._id}
-              />
-            ))}
+        </Panel>
+      ) : addresses.length === 0 ? (
+        <Panel>
+          <div className="flex flex-col items-center py-10 text-center">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-hairline-soft text-ink">
+              <MapPin className="h-6 w-6" />
+            </span>
+            <p className="mt-4 font-display text-2xl text-ink">No saved addresses</p>
+            <p className="mt-1 max-w-xs text-sm text-mute">Add one now and checkout takes a single tap next time.</p>
+            <button type="button" onClick={openAdd} className={`${btnPrimary} mt-6`}>
+              <Plus className="h-4 w-4" />
+              Add address
+            </button>
           </div>
-        )}
-      </div>
+        </Panel>
+      ) : (
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {addresses.map((a) => (
+            <AddressCard
+              key={a._id}
+              address={a}
+              onEdit={() => openEdit(a)}
+              onDelete={() => setDeleteTarget(a)}
+              onSetDefault={() => void handleSetDefault(a._id)}
+              isSettingDefault={settingDefaultId === a._id}
+            />
+          ))}
+          <li>
+            <button
+              type="button"
+              onClick={openAdd}
+              className="flex h-full min-h-40 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-hairline-strong text-sm font-medium text-body transition-colors hover:border-ink hover:text-ink"
+            >
+              <Plus className="h-5 w-5" />
+              Add another address
+            </button>
+          </li>
+        </ul>
+      )}
 
-      {/* ── Modals ────────────────────────────────────────────────────── */}
-      {modal && (
-        <AddressModal
+      {modal ? (
+        <AddressDialog
           mode={modal.mode}
           form={form}
           errors={formErrors}
@@ -516,15 +432,38 @@ const SavedAddressesPage: React.FC = () => {
           onChange={handleChange}
           onSubmit={() => void handleSubmit()}
         />
-      )}
+      ) : null}
 
-      <ConfirmModal
-        open={deleteTarget !== null}
-        isDeleting={isDeleting}
-        onConfirm={() => void handleDelete()}
-        onCancel={() => setDeleteTarget(null)}
-      />
-    </div>
+      {deleteTarget ? (
+        <Dialog
+          title="Remove this address?"
+          size="sm"
+          onClose={() => setDeleteTarget(null)}
+          footer={
+            <>
+              <button type="button" onClick={() => setDeleteTarget(null)} className={btnSecondary}>
+                Keep it
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDelete()}
+                disabled={isDeleting}
+                className={`${btnPrimary} bg-rose-700 hover:bg-rose-800`}
+              >
+                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {isDeleting ? 'Removing' : 'Remove'}
+              </button>
+            </>
+          }
+        >
+          <p className="text-sm text-body">
+            {deleteTarget.label ?? 'This address'} for {deleteTarget.fullName}, {deleteTarget.city}. Orders already placed keep their
+            delivery address.
+          </p>
+        </Dialog>
+      ) : null}
+      {toastNode}
+    </>
   );
 };
 

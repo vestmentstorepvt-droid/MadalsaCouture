@@ -6,6 +6,7 @@ import __imp2 from "@/server/models/variantModel";
 const crypto = __imp0;
 const axios = __imp1;
 const Variant = __imp2;
+import { CheckoutSession } from "@/server/models/registry";
 
 /**
  * Helper to get required environment variable
@@ -22,7 +23,11 @@ function requiredEnvironment(name) {
  * Generate redirect URL for Shiprocket
  */
 function redirectUrlFor(sellerDomain) {
-  return `${sellerDomain}/checkout-success`;
+  // SELLER_DOMAIN may be set as a bare host ("madalsacouture.vercel.app"). Without a scheme the
+  // redirect is not a valid URL, buyers never reach /checkout-success, and the bag is never emptied.
+  const raw = String(sellerDomain).trim().replace(/\/+$/, '');
+  const base = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  return `${base}/checkout-success`;
 }
 
 /**
@@ -114,7 +119,19 @@ async function generateCheckoutToken(req, res) {
       });
     }
 
-    return res.json({ success: true, token });
+    // Remember what this checkout contained; the order webhook marks it "ordered" (shiprocketOrderImport).
+    let sessionId = null;
+    try {
+      const session = await CheckoutSession.create({
+        status: 'open',
+        userId: req.user?.id ? String(req.user.id) : null,
+        items: cartItems.map((c) => ({ variantId: String(c.variantId), quantity: Math.max(1, parseInt(c.quantity) || 1) })),
+        orderNumber: null,
+      });
+      sessionId = String(session._id);
+    } catch { /* the success page still empties the bag */ }
+
+    return res.json({ success: true, token, sessionId });
   } catch (error) {
     const upstreamStatus = error.response?.status;
     const upstreamData = error.response?.data;
@@ -128,6 +145,17 @@ async function generateCheckoutToken(req, res) {
   }
 }
 
-const __exports: any = { generateCheckoutToken };
+/** GET /api/v1/checkout/session/:id -> { status: "open" | "ordered", orderNumber } */
+async function getCheckoutSession(req, res) {
+  try {
+    const session = await CheckoutSession.findById(req.params.id).lean();
+    if (!session) return res.status(404).json({ success: false, message: 'Not found' });
+    return res.json({ success: true, status: session.status, orderNumber: session.orderNumber || null });
+  } catch {
+    return res.status(404).json({ success: false, message: 'Not found' });
+  }
+}
+
+const __exports: any = { generateCheckoutToken, getCheckoutSession };
 
 export default __exports;

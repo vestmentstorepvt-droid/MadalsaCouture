@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { User, ShoppingBag, Menu, X, ChevronDown, Search, Heart, ArrowRight } from 'lucide-react';
+import { User, ShoppingBag, Menu, X, ChevronDown, Search, Heart, ArrowRight, LogOut, LayoutDashboard, Package, Shirt } from 'lucide-react';
 const madalsaLogo = '/assets/file.png';
 import { useLogout } from '../../../hooks/useLogout';
+import { useCheckoutCleanupWatcher } from '../../../hooks/useCheckoutCleanup';
 import { selectCartItemCount } from '../../../store/slices/cartSlice';
 import type { RootState } from '../../../store';
 import AnnouncementBar from '../../sections/landing/AnnouncementBar';
 import { useGetCollectionsShowcaseQuery } from '../../../services/cmsApi';
 import { useGetWishlistQuery } from '../../../services/wishlistApi';
 import { optimizeImage } from '../../../utils/imageUtils';
-import { ButiPattern } from '../../ui/CollectionBanner';
+import { ButiPattern, GOLD_TEXT } from '../../ui/CollectionBanner';
+import { ACCOUNT_LINKS, Avatar } from '../../features/account/AccountUI';
 
 /**
  * Two tones, like the original site: light at the top of the home page, dark with logo gold
@@ -67,6 +69,7 @@ export const LandingNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const performLogout = useLogout();
+  useCheckoutCleanupWatcher();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const cartCount = useSelector(selectCartItemCount);
   const isAdmin = user?.role?.toUpperCase() === 'ADMIN';
@@ -160,16 +163,11 @@ export const LandingNavbar = () => {
 
   const accountLinks = isAdmin
     ? [
-        { label: 'Admin dashboard', path: '/admin/dashboard' },
-        { label: 'Orders', path: '/admin/orders' },
-        { label: 'Products', path: '/admin/products' },
+        { label: 'Admin dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+        { label: 'Orders', path: '/admin/orders', icon: Package },
+        { label: 'Products', path: '/admin/products', icon: Shirt },
       ]
-    : [
-        { label: 'My profile', path: '/profile' },
-        { label: 'My orders', path: '/my-orders' },
-        { label: 'Wishlist', path: '/wishlist' },
-        { label: 'Saved addresses', path: '/addresses' },
-      ];
+    : ACCOUNT_LINKS;
 
   const handleAccount = () => {
     if (!isAuthenticated) navigate('/login');
@@ -357,36 +355,91 @@ export const LandingNavbar = () => {
               className={iconButton}
             >
               {isAuthenticated ? (
-                <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium ${dark ? 'bg-gold text-ink' : 'bg-ink text-white'}`}>
-                  {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
-                </span>
+                <Avatar name={user?.name} src={user?.avatar} size={28} tone={dark ? 'gold' : 'ink'} />
               ) : (
                 <User className="h-5 w-5" />
               )}
             </button>
 
             {isAuthenticated && isOpen('profile') && (
-              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl border border-hairline bg-surface p-1.5 shadow-lg">
-                <div className="border-b border-hairline px-3 pb-3 pt-2">
-                  <p className="truncate text-sm font-medium text-ink">{user?.name ?? 'Welcome'}</p>
-                  <p className="truncate text-xs text-mute">{user?.email}</p>
+              <div
+                role="menu"
+                aria-label="Account"
+                className="account-menu absolute right-0 top-full mt-3 w-[min(20rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl bg-surface text-ink shadow-[0_24px_60px_-12px_rgba(23,23,23,0.35)] ring-1 ring-black/5"
+              >
+                {/* Identity band in the banners' maroon and gold */}
+                <Link
+                  to={isAdmin ? '/admin/profile' : '/profile'}
+                  onClick={close}
+                  role="menuitem"
+                  className="group relative block overflow-hidden px-5 pb-5 pt-5 text-[#f6ead2]"
+                  style={{ background: 'radial-gradient(120% 140% at 100% 0%, #9a2238 0%, #5e0d1d 55%, #4a0a17 100%)' }}
+                >
+                  <ButiPattern id="buti-account-menu" />
+                  <span className="relative flex items-center gap-3.5">
+                    <span className="rounded-full p-[2px]" style={{ background: GOLD_TEXT }}>
+                      <span className="block rounded-full bg-[#5e0d1d] p-[2px]">
+                        <Avatar name={user?.name} src={user?.avatar} size={48} tone="gold" />
+                      </span>
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-display text-xl leading-tight">{user?.name ?? 'Welcome'}</span>
+                      <span className="block truncate text-xs text-[#f6ead2]/70">{user?.email}</span>
+                    </span>
+                  </span>
+                  <span className="relative mt-4 flex items-center justify-between border-t border-[#e2c27a]/25 pt-3 text-xs font-medium uppercase tracking-[0.14em] text-[#e2c27a]">
+                    {isAdmin ? 'Admin profile' : 'View profile'}
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+                  </span>
+                </Link>
+
+                <div className="p-2">
+                  {accountLinks.map(({ label, path, icon: Icon, ...rest }) => {
+                    const active = location.pathname === path;
+                    const hint = 'hint' in rest ? (rest as { hint?: string }).hint : undefined;
+                    if (path === '/profile') return null;
+                    return (
+                      <Link
+                        key={path}
+                        to={path}
+                        onClick={close}
+                        role="menuitem"
+                        aria-current={active ? 'page' : undefined}
+                        className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 transition-colors ${
+                          active ? 'bg-[#fbf3e4]' : 'hover:bg-[#fbf3e4]'
+                        }`}
+                      >
+                        <span
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+                            active ? 'bg-[#5e0d1d] text-[#e2c27a]' : 'bg-hairline-soft text-ink group-hover:bg-[#5e0d1d] group-hover:text-[#e2c27a]'
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-medium text-ink">{label}</span>
+                          {hint ? <span className="block truncate text-xs text-mute">{hint}</span> : null}
+                        </span>
+                        {path === '/wishlist' && wishlistCount > 0 ? (
+                          <span className="rounded-full bg-[#5e0d1d] px-2 py-0.5 text-xs font-medium tabular-nums text-[#f6ead2]">
+                            {wishlistCount}
+                          </span>
+                        ) : null}
+                      </Link>
+                    );
+                  })}
                 </div>
-                <div className="pt-1.5">
-                  {accountLinks.map((item) => (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={close}
-                      className="flex h-9 items-center rounded-md px-3 text-sm text-body hover:bg-hairline-soft hover:text-ink"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+
+                <div className="border-t border-hairline p-2">
                   <button
                     type="button"
                     onClick={logout}
-                    className="flex h-9 w-full items-center rounded-md px-3 text-left text-sm text-body hover:bg-hairline-soft hover:text-ink"
+                    role="menuitem"
+                    className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left text-sm font-medium text-body transition-colors hover:bg-rose-50 hover:text-rose-700"
                   >
+                    <span className="flex h-9 w-9 items-center justify-center">
+                      <LogOut className="h-4 w-4" />
+                    </span>
                     Log out
                   </button>
                 </div>

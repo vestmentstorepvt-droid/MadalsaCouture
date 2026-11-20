@@ -15,3 +15,5 @@ next-env.d.ts
 /backups/
 /.next-alt/
 /.next-build/
+# Any extra dev-server dist dir (NEXT_DIST_DIR=.next-<name>)
+/.next-*/

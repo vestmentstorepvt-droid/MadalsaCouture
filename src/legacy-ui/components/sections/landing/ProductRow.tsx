@@ -1,4 +1,5 @@
 import { useRef, type FC } from 'react';
+import { Link } from 'react-router-dom';
 import { useScrollReveal } from '../../../lib/motion';
 import { useGetPublicCollectionBySlugQuery } from '../../../services/collectionsApi';
 import { ProductCard } from '../../ui/ProductCard';
@@ -63,7 +64,7 @@ export const ProductRow: FC<ProductRowProps> = ({ slug, theme, flip, count = 6 }
 
 
   return (
-    <section ref={sectionRef} aria-labelledby={headingId} className="bg-canvas pb-14 sm:pb-20">
+    <section ref={sectionRef} aria-labelledby={headingId} className="bg-canvas pb-2 sm:pb-4">
       {isLoading ? (
         // Same box as the banner, so nothing below moves when it arrives.
         <div className="mt-16 h-[340px] sm:mt-20 sm:h-[400px] lg:mt-24 lg:h-[440px]" aria-hidden="true" />
@@ -93,6 +94,18 @@ export const ProductRow: FC<ProductRowProps> = ({ slug, theme, flip, count = 6 }
               </div>
             ))}
       </div>
+
+      {!isLoading ? (
+        <div className="mt-8 flex justify-center px-4 sm:mt-10">
+          <Link
+            to={`/collections/${slug}`}
+            className="inline-flex h-12 items-center gap-2 rounded-full border border-ink px-8 text-sm font-medium uppercase tracking-[0.14em] text-ink transition-colors hover:bg-ink hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            View all
+            <span className="sr-only"> {`${theme.script} ${theme.caps}`.toLowerCase()}</span>
+          </Link>
+        </div>
+      ) : null}
     </section>
   );
 };

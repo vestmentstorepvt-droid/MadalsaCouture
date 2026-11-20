@@ -60,6 +60,7 @@ export const FeaturedSection = new Model("FeaturedSection", "featured_sections",
 export const Hero = new Model("Hero", "heroes", audit);
 /** Orders exactly as Shiprocket Checkout's order webhook sent them (see shiprocketOrderRoutes). */
 export const ShiprocketOrder = new Model("ShiprocketOrder", "shiprocketorders", {});
+export const CheckoutSession = new Model("CheckoutSession", "checkoutsessions", {});
 export const StaticPage = new Model("StaticPage", "static_pages", audit);
 export const HomepageVideoCard = new Model("HomepageVideoCard", "homepage_video_cards", audit);
 

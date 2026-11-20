@@ -1,7 +1,7 @@
 // @ts-nocheck — same loose typing as the ported services it works with.
 import __imp0 from "@/server/lib/mongoose";
 import __imp1 from "@/server/config/logger";
-import { AdminNotification, Order, OrderItem, Product, ShiprocketOrder, User, Variant } from "@/server/models/registry";
+import { AdminNotification, CheckoutSession, Order, OrderItem, Product, ShiprocketOrder, User, Variant } from "@/server/models/registry";
 import { queueShiprocketSync, shiprocketVariantId } from "@/server/services/shiprocketCatalog";
 import { createDueShipments } from "@/server/services/shiprocketShipping";
 import variantService from "@/server/services/variantService";
@@ -105,7 +105,13 @@ export async function importShiprocketOrder(delivery) {
   // Customer: the shop account with the same phone number, if any.
   const shippingAddress = toShippingAddress(p.shipping_address || p.billing_address);
   const phone = shippingAddress.phone || digits(p.billing_address?.phone);
-  const user = phone ? await User.findOne({ phone, isDeleted: false }).lean() : null;
+  let user = phone ? await User.findOne({ phone, isDeleted: false }).lean() : null;
+
+  // The checkout this order came from (same items, opened in the last day): lets the shopper's
+  // browser empty the bag even if they closed the window, and links the order to the account
+  // that opened checkout when the phone number doesn't match one.
+  const session = await matchCheckoutSession(snapshots);
+  if (!user && session?.userId) user = await User.findOne({ _id: session.userId, isDeleted: false }).lean();
 
   const rawPayment = String(p.payment_type || p.payment_method || p.gateway || "").toLowerCase();
   // Shiprocket writes COD as "CASH_ON_DELIVERY"; anything else it names is a prepaid method.
@@ -175,12 +181,48 @@ export async function importShiprocketOrder(delivery) {
     }
   }
 
+  if (session) {
+    try {
+      await CheckoutSession.updateOne({ _id: session._id }, { $set: { status: "ordered", orderNumber, orderId: order._id } });
+    } catch (err) {
+      logger.warn(`[Shiprocket order] ${orderNumber}: could not mark checkout ${session._id} as ordered (${err.message})`);
+    }
+  }
+
   await ShiprocketOrder.updateOne({ _id: delivery._id }, { $set: { processed: true, shopOrderId: order._id } });
   logger.info(`[Shiprocket order] ${cartId} → ${orderNumber} (${snapshots.length} items, ₹${total}, ${user ? "customer " + user._id : "guest"})`);
 
   // Into the shipping panel once due (immediately while SHIPROCKET_SHIP_DELAY_MINUTES is 0).
   createDueShipments().catch((err) => logger.error(`[Shiprocket shipping] ${err.message}`));
   return order;
+}
+
+const CHECKOUT_MATCH_WINDOW = 24 * 60 * 60 * 1000;
+
+/** "variantId:qty" lines, sorted, so two carts compare as equal sets. */
+const cartKey = (lines) =>
+  lines
+    .filter((l) => l.variantId)
+    .map((l) => `${String(l.variantId)}:${Math.max(1, Number(l.quantity) || 1)}`)
+    .sort()
+    .join("|");
+
+/** The most recent open checkout (last 24 h) with exactly these items, or null. */
+async function matchCheckoutSession(snapshots) {
+  const key = cartKey(snapshots);
+  if (!key) return null;
+  try {
+    const since = Date.now() - CHECKOUT_MATCH_WINDOW;
+    const open = await CheckoutSession.find({ status: "open" }).lean();
+    return (
+      open
+        .filter((s) => new Date(s.createdAt).getTime() >= since && cartKey(s.items || []) === key)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] || null
+    );
+  } catch (err) {
+    logger.warn(`[Shiprocket order] checkout match failed: ${err.message}`);
+    return null;
+  }
 }
 
 /** Import every stored order delivery not yet turned into a shop order. Returns counts. */

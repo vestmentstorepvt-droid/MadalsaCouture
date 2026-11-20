@@ -75,6 +75,26 @@ export interface ProductQueryParams {
   sort?: string;
   isNewArrival?: boolean;
   isBestSeller?: boolean;
+  // Shop filters (see src/server/services/shopFilterService.ts)
+  collection?: string;
+  categories?: string[];
+  sizes?: string[];
+  colors?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  onSale?: boolean;
+}
+
+export interface ShopFacets {
+  total: number;
+  collections: { slug: string; name: string; count: number }[];
+  categories: { slug: string; name: string; count: number }[];
+  sizes: { value: string; count: number; inStockCount: number }[];
+  colors: { value: string; label: string; swatch: string; count: number }[];
+  price: { min: number; max: number };
+  inStockCount: number;
+  onSaleCount: number;
 }
 
 
@@ -121,6 +141,15 @@ export const productsApi = createApi({
 
         if (params.isNewArrival !== undefined) queryParams.isNewArrival = params.isNewArrival;
         if (params.isBestSeller !== undefined) queryParams.isBestSeller = params.isBestSeller;
+
+        if (params.collection) queryParams.collection = params.collection;
+        if (params.categories?.length) queryParams.categories = params.categories.join(',');
+        if (params.sizes?.length) queryParams.sizes = params.sizes.join(',');
+        if (params.colors?.length) queryParams.colors = params.colors.join(',');
+        if (params.minPrice !== undefined) queryParams.minPrice = params.minPrice;
+        if (params.maxPrice !== undefined) queryParams.maxPrice = params.maxPrice;
+        if (params.inStock) queryParams.inStock = 'true';
+        if (params.onSale) queryParams.onSale = 'true';
 
         return {
           url: ENDPOINTS.PRODUCTS,
@@ -339,6 +368,22 @@ export const productsApi = createApi({
       },
     }),
 
+    /** Filter options + counts for the shop page, within a collection and search. */
+    getProductFacets: builder.query<ShopFacets, { collection?: string; search?: string }>({
+      query: ({ collection, search } = {}) => ({
+        url: `${ENDPOINTS.PRODUCTS}/facets`,
+        params: {
+          ...(collection ? { collection } : {}),
+          ...(search?.trim() ? { search: search.trim() } : {}),
+        },
+      }),
+      transformResponse: (response: unknown) => {
+        const r = response as { data?: ShopFacets };
+        return (r?.data ?? response) as ShopFacets;
+      },
+      providesTags: ['Products'],
+    }),
+
   }),
 });
 
@@ -347,4 +392,5 @@ export const {
   useGetProductBySlugQuery,
   useGetProductByIdQuery,
   useGetCategoriesTreeQuery,
+  useGetProductFacetsQuery,
 } = productsApi;

@@ -18,6 +18,7 @@ const { authenticate, authorize } = __imp3;
 const publicRouter = express.Router();
 
 publicRouter.get('/', productController.listProducts);
+publicRouter.get('/facets', productController.getProductFacets); // before /:slug
 publicRouter.get('/:slug', productController.getProduct);
 
 // ─── Admin router — requires authenticate() + authorize("ADMIN") ─────────────

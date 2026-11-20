@@ -52,6 +52,12 @@ const authSlice = createSlice({
         localStorage.setItem('refreshToken', action.payload.refreshToken);
       }
     },
+    /** Merge fresh profile fields (name, avatar…) into the signed-in user. */
+    updateUser: (state, action: PayloadAction<Partial<User>>) => {
+      if (!state.user) return;
+      state.user = { ...state.user, ...action.payload };
+      localStorage.setItem('auth_user', JSON.stringify(state.user));
+    },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
@@ -67,5 +73,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { login, logout, updateToken } = authSlice.actions;
+export const { login, logout, updateToken, updateUser } = authSlice.actions;
 export default authSlice.reducer;

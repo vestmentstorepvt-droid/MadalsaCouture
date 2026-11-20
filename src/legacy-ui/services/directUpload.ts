@@ -114,3 +114,26 @@ export async function uploadReviewFile(file: File): Promise<UploadedRef> {
   const { ref } = await uploadToStorage('/api/v1/uploads/review-url', file, {});
   return ref;
 }
+
+async function sendJson<T>(method: 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${apiBase()}${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(json?.error?.message || `Request failed (${res.status}).`);
+  return json?.data as T;
+}
+
+/** Profile photo: upload to the user's own storage folder, then save it on the account. */
+export async function uploadAvatar(file: File, onProgress?: (pct: number) => void): Promise<string> {
+  const { ref } = await uploadToStorage('/api/v1/auth/avatar/upload-url', file, { onProgress });
+  const saved = await sendJson<{ avatar: string }>('PUT', '/api/v1/auth/avatar', ref);
+  onProgress?.(100);
+  return saved.avatar;
+}
+
+export async function removeAvatar(): Promise<void> {
+  await sendJson('DELETE', '/api/v1/auth/avatar');
+}
