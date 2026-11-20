@@ -57,6 +57,19 @@ export const optimizeVideo = (url: string | undefined | null, width: number = 19
  * @param width The maximum width for the poster in pixels
  * @returns The optimized poster image URL
  */
+/**
+ * A cover image for a <video> (resized, WebP/AVIF), without the e_trim that optimizeImage adds:
+ * trimming could crop the cover differently from the video frames, so the picture would jump
+ * when the video starts. Uploaded covers were raw PNGs of ~1.2 MB each; this makes them ~40 KB.
+ */
+export const optimizePoster = (url: string | undefined | null, width: number = 600): string => {
+  if (!url) return '';
+  if (url.includes('res.cloudinary.com') && url.includes('/upload/') && !/\/upload\/(c_|w_|f_auto|e_)/.test(url)) {
+    return url.replace('/upload/', `/upload/c_limit,w_${width}/f_auto,q_auto/`);
+  }
+  return url;
+};
+
 export const getCloudinaryVideoPoster = (url: string | undefined | null, width: number = 1920): string => {
   if (!url) return '';
   if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {

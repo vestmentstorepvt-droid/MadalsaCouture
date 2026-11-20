@@ -3,7 +3,7 @@ import { Router } from "@/server/http/router";
 import { sendError, sendSuccess } from "@/server/http/response";
 import type { Next, Req, Res } from "@/server/http/types";
 import { logger } from "@/server/lib/logger";
-import { createUploadTicket, verifyUpload } from "@/server/lib/storage";
+import { CUSTOMER_IMAGE_FORMATS, CUSTOMER_IMAGE_TYPES, CUSTOMER_VIDEO_FORMATS, CUSTOMER_VIDEO_TYPES, createUploadTicket, verifyUpload } from "@/server/lib/storage";
 import auth from "@/server/middleware/authMiddleware";
 import auditMiddleware from "@/server/middleware/auditMiddleware";
 import { authLimiter } from "@/server/middleware/security";
@@ -15,11 +15,12 @@ import mediaRepository from "@/server/repositories/mediaRepository";
 //                                           responds exactly like the old POST /api/v1/admin/media
 //   POST /api/v1/uploads/review-url      -> ticket for review photos/videos (anyone, rate limited)
 
-const { authenticate, authorize, optionalAuthenticate } = auth as any;
+const { authenticate, authorize } = auth as any;
 
 const MAX_ADMIN_BYTES = 100 * 1024 * 1024; // same cap as the old multer limit
 const MAX_REVIEW_BYTES = 25 * 1024 * 1024; // same cap as the old review upload
 export const REVIEW_FOLDER = "madalsa/reviews";
+export { MAX_REVIEW_BYTES };
 
 const ticketSchema = z.object({
   fileName: z.string().min(1).max(200),
@@ -81,6 +82,7 @@ adminRouter.post("/upload-url", authenticate, authorize("ADMIN"), async (req: Re
       contentType: body.contentType,
       folder,
       tags: normaliseTags(body.tags),
+      size: body.size,
     });
     return sendSuccess(res, { ...ticket, folder });
   } catch (err) {
@@ -118,15 +120,16 @@ adminRouter.post("/register", authenticate, authorize("ADMIN"), auditMiddleware,
 
 const publicRouter = new Router();
 
-publicRouter.post("/review-url", authLimiter, optionalAuthenticate, async (req: Req, res: Res, next: Next) => {
+// Signed-in customers only (only they can post reviews), so strangers can't use the shop's storage.
+publicRouter.post("/review-url", authLimiter, authenticate, async (req: Req, res: Res, next: Next) => {
   try {
     const body = parse(ticketSchema, req, res);
     if (!body) return;
-    if (!body.contentType.startsWith("image/") && !body.contentType.startsWith("video/")) {
-      return sendError(res, "VALIDATION_ERROR", "Only image and video files are allowed.", 400);
+    if (!CUSTOMER_IMAGE_TYPES.test(body.contentType) && !CUSTOMER_VIDEO_TYPES.test(body.contentType)) {
+      return sendError(res, "VALIDATION_ERROR", "Only JPG, PNG, WebP, GIF, HEIC photos and MP4, MOV, WebM videos are allowed.", 400);
     }
     if (body.size > MAX_REVIEW_BYTES) return sendError(res, "FILE_TOO_LARGE", "File is too large. Maximum allowed size is 25 MB.", 413);
-    const ticket = await createUploadTicket({ fileName: body.fileName, contentType: body.contentType, folder: REVIEW_FOLDER, tags: ["review"] });
+    const ticket = await createUploadTicket({ fileName: body.fileName, contentType: body.contentType, folder: REVIEW_FOLDER, tags: ["review"], size: body.size, allowedFormats: [...CUSTOMER_IMAGE_FORMATS, ...CUSTOMER_VIDEO_FORMATS] });
     return sendSuccess(res, { ...ticket, folder: REVIEW_FOLDER });
   } catch (err) {
     next(err);

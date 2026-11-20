@@ -75,7 +75,12 @@ const Checkout: React.FC = () => {
       const token = await generateCheckoutToken(cartForBackend);
       // Remembered so the success page takes exactly these out of the bag.
       rememberCheckoutItems(
-        cartItems.map(({ productId, variantId, size, color, quantity }) => ({ productId, variantId, size, color, quantity }))
+        cartItems.map(({ productId, variantId, size, color, quantity }) => ({ productId, variantId, size, color, quantity })),
+        {
+          value: cartSubtotal,
+          contentIds: [...new Set(cartItems.map((item) => String(item.productId)))],
+          numItems: cartItems.reduce((n, item) => n + item.quantity, 0),
+        },
       );
       await openShiprocketCheckout(token);
       // Checkout now sits over this page; if the shopper closes it, the button works again.

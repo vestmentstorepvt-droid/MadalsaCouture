@@ -7,6 +7,7 @@ import {
   isCheckoutOrdered,
   peekPendingCheckout,
   takeCheckoutItems,
+  trackCheckoutPurchase,
   type CheckedOutItem,
 } from '../services/shiprocketCheckoutAlternative';
 
@@ -73,6 +74,7 @@ export function useCheckoutCleanupWatcher() {
       busy.current = true;
       try {
         if (await isCheckoutOrdered(pending.sessionId)) {
+          trackCheckoutPurchase(); // shopper closed the window instead of reaching /checkout-success
           removeItems(takeCheckoutItems());
         }
       } finally {

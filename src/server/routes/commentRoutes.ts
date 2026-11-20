@@ -1,5 +1,6 @@
 // @ts-nocheck — ported from the Express backend (routes/commentRoutes.js); logic unchanged.
 import __imp0 from "@/server/lib/express";
+import { CUSTOMER_IMAGE_TYPES, CUSTOMER_VIDEO_TYPES } from "@/server/lib/storage";
 import __imp1 from "@/server/lib/multer";
 import __imp2 from "@/server/controllers/commentController";
 import __imp3 from "@/server/middleware/authMiddleware";
@@ -16,7 +17,7 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024, files: 5 },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) return cb(null, true);
+    if (CUSTOMER_IMAGE_TYPES.test(file.mimetype) || CUSTOMER_VIDEO_TYPES.test(file.mimetype)) return cb(null, true); // no SVG/HTML
     cb(Object.assign(new Error('Only image and video files are allowed.'), { statusCode: 400 }));
   },
 });

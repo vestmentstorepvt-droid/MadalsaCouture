@@ -4,6 +4,7 @@ import __imp1 from "@/server/modules/cms/contact/contactInquiry.model";
 import __imp2 from "@/server/utils/cmsFilter";
 import __imp3 from "@/server/emails/mailer";
 import __imp4 from "@/server/config/logger";
+import { escapeHtml, plainLine } from "@/server/utils/escapeHtml";
 
 const Contact = __imp0;
 const ContactInquiry = __imp1;
@@ -54,6 +55,14 @@ class ContactService {
       return;
     }
 
+    // Everything here was typed by a visitor: escape it so it can't add links or forms to the email.
+    const e = {
+      name: escapeHtml(data.name),
+      email: escapeHtml(data.email),
+      phone: escapeHtml(data.phone || 'Not Provided'),
+      subject: escapeHtml(data.subject || 'General Inquiry'),
+      message: escapeHtml(data.message),
+    };
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
         <h2 style="color: #6B4D3E; font-family: serif; border-bottom: 2px solid #E85D88; padding-bottom: 10px;">New Atelier Contact Inquiry</h2>
@@ -61,24 +70,24 @@ class ContactService {
         <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
           <tr style="background-color: #faf7f2;">
             <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #eee; width: 120px;">Name</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${data.name}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${e.name}</td>
           </tr>
           <tr>
             <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #eee;">Email</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;"><a href="mailto:${data.email}">${data.email}</a></td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;"><a href="mailto:${e.email}">${e.email}</a></td>
           </tr>
           <tr style="background-color: #faf7f2;">
             <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #eee;">Phone</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${data.phone || 'Not Provided'}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${e.phone}</td>
           </tr>
           <tr>
             <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #eee;">Subject</td>
-            <td style="padding: 10px; border-bottom: 1px solid #eee;">${data.subject || 'General Inquiry'}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${e.subject}</td>
           </tr>
         </table>
         <div style="background-color: #FAF6F3; padding: 15px; border-left: 4px solid #B57D2B; border-radius: 4px; margin-top: 20px;">
           <h3 style="margin-top: 0; color: #6B4D3E; font-size: 14px;">Message:</h3>
-          <p style="white-space: pre-wrap; font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 0;">${data.message}</p>
+          <p style="white-space: pre-wrap; font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 0;">${e.message}</p>
         </div>
         <div style="margin-top: 30px; font-size: 11px; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
           This email was generated automatically by the Madalsa Couture Atelier Concierge system.
@@ -88,7 +97,7 @@ class ContactService {
 
     await sendMail({
       to: toEmail,
-      subject: `[Atelier Inquiry] ${data.subject || 'General Inquiry'} - ${data.name}`,
+      subject: plainLine(`[Atelier Inquiry] ${data.subject || 'General Inquiry'} - ${data.name}`),
       text: `New Atelier Contact Inquiry\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || 'Not Provided'}\nSubject: ${data.subject || 'General Inquiry'}\n\nMessage:\n${data.message}`,
       html: htmlContent
     });

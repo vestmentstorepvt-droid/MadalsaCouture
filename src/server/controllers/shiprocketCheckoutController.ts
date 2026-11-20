@@ -8,6 +8,12 @@ const axios = __imp1;
 const Variant = __imp2;
 import { CheckoutSession } from "@/server/models/registry";
 
+const MAX_LINES = 50;   // different products/sizes in one checkout
+const MAX_QTY = 20;     // pieces of one item
+const clampQty = (q) => Math.min(MAX_QTY, Math.max(1, parseInt(q) || 1));
+/** A header value kept for later, or null; never more than `max` characters. */
+const shortText = (v, max = 260) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, max) : null);
+
 /**
  * Helper to get required environment variable
  */
@@ -54,6 +60,10 @@ async function generateCheckoutToken(req, res) {
       });
     }
 
+    if (cartItems.length > MAX_LINES) {
+      return res.status(400).json({ success: false, message: `A checkout can have at most ${MAX_LINES} items.` });
+    }
+
     // Build cart items by fetching actual variant data from database
     const items = [];
     for (const cartItem of cartItems) {
@@ -80,7 +90,7 @@ async function generateCheckoutToken(req, res) {
         // The same numeric id the catalog feed gives Shiprocket (catalogController: last 8 hex
         // digits of the ObjectId). Sending the full ObjectId makes Shiprocket fail with HTTP 500.
         variant_id: parseInt(variant._id.toString().slice(-8), 16),
-        quantity: Math.max(1, parseInt(quantity) || 1) // Use user quantity, min 1
+        quantity: clampQty(quantity)
       });
     }
 
@@ -125,8 +135,16 @@ async function generateCheckoutToken(req, res) {
       const session = await CheckoutSession.create({
         status: 'open',
         userId: req.user?.id ? String(req.user.id) : null,
-        items: cartItems.map((c) => ({ variantId: String(c.variantId), quantity: Math.max(1, parseInt(c.quantity) || 1) })),
+        items: cartItems.map((c) => ({ variantId: String(c.variantId), quantity: clampQty(c.quantity) })),
         orderNumber: null,
+        // The order arrives later by Shiprocket's webhook, which knows nothing about the shopper's
+        // browser. Keep what Meta needs to match the Purchase to the ad click (shiprocketOrderImport).
+        meta: {
+          fbp: shortText(req.headers['x-meta-fbp']),
+          fbc: shortText(req.headers['x-meta-fbc']),
+          ip: req.ip || null,
+          userAgent: shortText(req.headers['user-agent'], 400),
+        },
       });
       sessionId = String(session._id);
     } catch { /* the success page still empties the bag */ }
@@ -134,13 +152,14 @@ async function generateCheckoutToken(req, res) {
     return res.json({ success: true, token, sessionId });
   } catch (error) {
     const upstreamStatus = error.response?.status;
-    const upstreamData = error.response?.data;
+    console.error('[checkout token]', upstreamStatus || '', error.message);
 
     return res.status(502).json({
       success: false,
+      // Never echo internal error text (it can name missing settings or secrets).
       message: upstreamStatus
         ? `Shiprocket rejected the token request (HTTP ${upstreamStatus})`
-        : error.message
+        : 'Checkout is unavailable right now. Please try again in a moment.'
     });
   }
 }

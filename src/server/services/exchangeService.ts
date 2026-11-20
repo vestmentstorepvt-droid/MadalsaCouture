@@ -64,6 +64,12 @@ class ExchangeService {
       throw createError(ERROR.NOT_FOUND, 404, 'ORDER_NOT_FOUND');
     }
 
+    // ── 1b. Only the customer who placed the order may ask for an exchange ─
+    const ownerId = order.userId && (order.userId._id ?? order.userId);
+    if (!ownerId || String(ownerId) !== String(userId)) {
+      throw createError('You do not have access to this order.', 403, 'FORBIDDEN');
+    }
+
     // ── 2. Verify order status is Delivered ────────────────────────────────
     if (order.status !== 'Delivered') {
       throw createError(

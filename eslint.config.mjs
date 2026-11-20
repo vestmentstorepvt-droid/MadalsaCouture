@@ -27,7 +27,7 @@ export default defineConfig([
   },
   {
     // The Mongo-compatible data layer works with schemaless documents.
-    files: ["src/db/**/*.ts", "src/server/lib/**/*.ts", "src/server/http/**/*.ts", "src/server/models/**/*.ts", "src/app/api/**/*.ts", "scripts/**/*.ts"],
+    files: ["src/db/**/*.ts", "src/server/lib/**/*.ts", "src/server/http/**/*.ts", "src/server/models/**/*.ts", "src/app/api/**/*.ts", "src/app/sitemap.ts", "src/seo/**/*.ts", "scripts/**/*.ts"],
     rules: { "@typescript-eslint/no-explicit-any": "off", "@typescript-eslint/no-this-alias": "off" },
   },
   // The copied website keeps its original code style until the redesign.

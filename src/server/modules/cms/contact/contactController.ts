@@ -34,6 +34,11 @@ async function submitInquiry(req, res, next) {
     if (!name || !email || !message) {
       return sendError(res, 'VALIDATION_ERROR', 'Name, email, and message are required.', 400);
     }
+    const tooLong = [[name, 100], [email, 200], [phone, 30], [subject, 200], [message, 5000]]
+      .some(([v, max]) => v != null && (typeof v !== 'string' || v.length > max));
+    if (tooLong || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return sendError(res, 'VALIDATION_ERROR', 'Please check your details and try again.', 400);
+    }
     const inquiry = await contactService.createInquiry({ name, email, phone, subject, message });
     return sendSuccess(res, { inquiry, message: 'Your message has been sent to our concierge.' }, 201);
   } catch (error) { next(error); }

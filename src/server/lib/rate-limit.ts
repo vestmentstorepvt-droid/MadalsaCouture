@@ -50,6 +50,42 @@ async function hit(key: string, windowMs: number): Promise<{ count: number; rese
   return entry;
 }
 
+/** Count one event for `key` (e.g. a failed login) and return the count in the current window. */
+export async function countEvent(key: string, windowMs: number): Promise<number> {
+  try {
+    return (await hit(`ev:${key}`, windowMs)).count;
+  } catch {
+    return 0;
+  }
+}
+
+/** How many events `key` has in the current window (0 when unknown or on a Redis outage). */
+export async function eventCount(key: string, windowMs: number): Promise<number> {
+  try {
+    const r = getRedis();
+    const now = Date.now();
+    if (r) {
+      const windowStart = Math.floor(now / windowMs) * windowMs;
+      return Number((await r.get(`rl:ev:${key}:${windowStart}`)) || 0);
+    }
+    const entry = memory.get(`ev:${key}`);
+    return entry && entry.resetAt > now ? entry.count : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** Forget the events for `key` (e.g. after a successful login). */
+export async function clearEvents(key: string, windowMs: number): Promise<void> {
+  try {
+    const r = getRedis();
+    if (r) await r.del(`rl:ev:${key}:${Math.floor(Date.now() / windowMs) * windowMs}`);
+    else memory.delete(`ev:${key}`);
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function rateLimit(opts: Options = {}): Handler {
   const id = `l${limiterSeq++}`;
   const windowMs = opts.windowMs ?? 60_000;

@@ -2,6 +2,7 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../store';
 import { logout, updateToken } from '../store/slices/authSlice';
+import { metaCookieHeaders } from '../utils/metaPixel';
 
 const normalizeBaseUrl = (value?: string) => {
   const raw = (value || process.env.NEXT_PUBLIC_API_BASE_URL || '').trim();
@@ -29,11 +30,16 @@ const readAuthToken = (getState?: () => unknown) => {
 
 export const baseQuery = fetchBaseQuery({
   baseUrl: `${API_BASE_URL}${API_VERSION_PREFIX}`,
-  prepareHeaders: (headers, { getState, arg }) => {
+  prepareHeaders: (headers, { getState, arg, type }) => {
     const token = readAuthToken(getState);
 
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
+    }
+
+    // Actions the server reports to Meta (add to bag, sign up, order) carry the pixel cookies.
+    if (type === 'mutation') {
+      for (const [name, value] of Object.entries(metaCookieHeaders())) headers.set(name, value);
     }
 
     // Only set content-type if not already set (lets multipart/form-data keep its boundary)

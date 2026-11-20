@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, Home } from 'lucide-react';
-import { takeCheckoutItems } from '../../services/shiprocketCheckoutAlternative';
+import { takeCheckoutItems, trackCheckoutPurchase } from '../../services/shiprocketCheckoutAlternative';
 import { useRemoveCheckedOutItems } from '../../hooks/useCheckoutCleanup';
 
 /**
@@ -14,22 +14,12 @@ const CheckoutSuccess: React.FC = () => {
   const orderId = searchParams.get('orderId') || searchParams.get('oid');
 
   useEffect(() => {
+    // Meta Pixel Purchase (bag value, paired with the server's event so the sale counts once).
+    // Must run before takeCheckoutItems(), which clears the remembered checkout.
+    trackCheckoutPurchase();
     // Take out only what was ordered (remembered when checkout opened); anything added since stays.
     removeCheckedOutItems(takeCheckoutItems());
-
-    // Track conversion with Meta Pixel once per order, so a page refresh does not double-count it
-    try {
-      const trackedKey = `purchase_tracked_${orderId || 'session'}`;
-      if (!sessionStorage.getItem(trackedKey)) {
-        sessionStorage.setItem(trackedKey, '1');
-        window.fbq?.('track', 'Purchase', {
-          currency: 'INR',
-          value: 0, // Shiprocket provides actual value
-          content_type: 'product'
-        });
-      }
-    } catch { /* silent */ }
-  }, [removeCheckedOutItems, orderId]);
+  }, [removeCheckedOutItems]);
 
   return (
     <div className="min-h-screen bg-canvas flex items-center justify-center px-4 py-12">

@@ -35,6 +35,24 @@ const originPatterns = allowedOrigins
 const isAllowedOrigin = (origin: string) =>
   allowAllOrigins || allowedOrigins.includes(origin) || originPatterns.some((p) => p.test(origin));
 
+/**
+ * The visitor's real IP, used for rate limits. The FIRST entry of X-Forwarded-For is whatever the
+ * visitor sent, so trusting it let anyone skip every limit by sending a fake value. Only headers the
+ * hosting platform itself writes are trusted:
+ *   Render (behind Cloudflare): CF-Connecting-IP, else the LAST X-Forwarded-For entry (added by the proxy).
+ *   Vercel: X-Real-IP / X-Vercel-Forwarded-For (Vercel overwrites these).
+ * TRUSTED_IP_HEADER can name a different header if the hosting changes.
+ */
+function clientIp(headers: Record<string, string>): string | null {
+  const first = (v?: string) => (v || "").split(",")[0].trim() || null;
+  const last = (v?: string) => (v || "").split(",").map((s) => s.trim()).filter(Boolean).pop() || null;
+  const custom = process.env.TRUSTED_IP_HEADER?.toLowerCase();
+  if (custom) return first(headers[custom]);
+  if (process.env.RENDER) return first(headers["cf-connecting-ip"]) || last(headers["x-forwarded-for"]);
+  if (process.env.VERCEL) return first(headers["x-real-ip"]) || first(headers["x-vercel-forwarded-for"]) || first(headers["x-forwarded-for"]);
+  return first(headers["x-forwarded-for"]) || first(headers["x-real-ip"]);
+}
+
 /** express-mongo-sanitize: drop keys that start with `$` or contain `.`. */
 function sanitize(value: any): any {
   if (Array.isArray(value)) return value.map(sanitize);
@@ -118,7 +136,7 @@ async function handle(request: NextRequest): Promise<Response> {
     return res.toResponse();
   }
 
-  const ip = (headers["x-forwarded-for"] || "").split(",")[0].trim() || headers["x-real-ip"] || null;
+  const ip = clientIp(headers);
   const originalUrl = url.pathname + url.search;
   const req: Req = {
     method: request.method,

@@ -65,9 +65,22 @@ function hashData(value) {
  */
 function normalizePhone(phone) {
   if (!phone) return undefined;
-  // Strip all non-digit characters then take the last 10 digits
+  // Meta matches phone numbers WITH the country code, digits only ("919876543210").
+  // Indian numbers are stored as 10 digits, so add 91.
   const digits = String(phone).replace(/\D/g, '');
-  return digits.length >= 10 ? digits.slice(-10) : undefined;
+  return digits.length >= 10 ? `91${digits.slice(-10)}` : undefined;
+}
+
+/** Meta's _fbp / _fbc cookie format ("fb.1.<time>.<id>"); anything else is dropped. */
+function metaCookie(value) {
+  const v = typeof value === 'string' ? value.trim() : '';
+  return /^fb\.\d\.\d+\.[\w.-]{1,250}$/.test(v) ? v : undefined;
+}
+
+/** City / postcode / country as Meta wants them before hashing: lower case, letters and digits only. */
+function compact(value) {
+  if (!value) return undefined;
+  return String(value).toLowerCase().replace(/[^a-z0-9]/g, '') || undefined;
 }
 
 /**
@@ -83,19 +96,16 @@ function normalizePhone(phone) {
  * @returns {object} Meta user_data payload
  */
 function buildUserData(req, userData = {}) {
-  // IP — prefer X-Forwarded-For (behind a load balancer / Nginx)
-  const rawIp =
-    req?.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
-    req?.ip ||
-    undefined;
+  // IP: req.ip comes from the hosting platform's trusted header (api route clientIp), so it
+  // can't be faked with X-Forwarded-For. Server-to-server calls (the Shiprocket order webhook)
+  // pass the shopper's IP and browser that were saved when checkout opened.
+  const rawIp = userData.ip || req?.ip || undefined;
+  const userAgent = userData.userAgent || req?.headers?.['user-agent'] || undefined;
 
-  const userAgent = req?.headers?.['user-agent'] || undefined;
-
-  // _fbc and _fbp are cookies set by the Meta browser pixel.
-  // Prefer caller-supplied values (if the frontend explicitly forwarded them
-  // in the request body) over cookies, so both paths work correctly.
-  const fbc = userData.fbc || req?.cookies?.['_fbc'] || undefined;
-  const fbp = userData.fbp || req?.cookies?.['_fbp'] || undefined;
+  // _fbc and _fbp are cookies the Meta pixel sets on the shop's domain. The API runs on another
+  // domain, so the browser forwards them in x-meta-fbp / x-meta-fbc headers (api/baseQuery.ts).
+  const fbc = metaCookie(userData.fbc) || metaCookie(req?.headers?.['x-meta-fbc']) || metaCookie(req?.cookies?.['_fbc']);
+  const fbp = metaCookie(userData.fbp) || metaCookie(req?.headers?.['x-meta-fbp']) || metaCookie(req?.cookies?.['_fbp']);
 
   const result = {};
 
@@ -115,6 +125,15 @@ function buildUserData(req, userData = {}) {
   if (hashedPhone) result.ph = hashedPhone;
   if (hashedFn)    result.fn = hashedFn;
   if (hashedLn)    result.ln = hashedLn;
+
+  const hashedCity    = hashData(compact(userData.city));
+  const hashedZip     = hashData(compact(userData.zip));
+  const hashedCountry = hashData(compact(userData.country));
+  const hashedId      = hashData(userData.externalId);
+  if (hashedCity)    result.ct = hashedCity;
+  if (hashedZip)     result.zp = hashedZip;
+  if (hashedCountry) result.country = hashedCountry;
+  if (hashedId)      result.external_id = hashedId;
 
   return result;
 }
@@ -183,13 +202,13 @@ async function sendEvent(events) {
  * @returns {Promise<void>}
  */
 async function trackPurchase(req, orderData, eventId) {
-  const { orderId, value, currency = 'INR', items = [], user = {} } = orderData;
+  const { orderId, value, currency = 'INR', items = [], user = {}, eventTime, sourcePath = '/order-success' } = orderData;
 
   const event = {
     event_name:       'Purchase',
-    event_time:       Math.floor(Date.now() / 1000),
+    event_time:       Math.floor((eventTime ? new Date(eventTime).getTime() : Date.now()) / 1000),
     event_id:         eventId,
-    event_source_url: `${FRONTEND_URL}/order-success`,
+    event_source_url: `${FRONTEND_URL}${sourcePath}`,
     action_source:    'website',
     user_data:        buildUserData(req, user),
     custom_data: {

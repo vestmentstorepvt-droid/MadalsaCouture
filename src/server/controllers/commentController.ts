@@ -1,6 +1,6 @@
 // @ts-nocheck — ported from the Express backend (controllers/commentController.js); logic unchanged.
 import { verifyUpload } from "@/server/lib/storage";
-import { REVIEW_FOLDER } from "@/server/modules/mediaLibrary/mediaUpload.routes";
+import { MAX_REVIEW_BYTES, REVIEW_FOLDER } from "@/server/modules/mediaLibrary/mediaUpload.routes";
 import __imp0 from "@/server/models/commentModel";
 import __imp1 from "@/server/models/productModel";
 import __imp2 from "@/server/models/userModel";
@@ -193,7 +193,7 @@ class CommentController {
         for (const u of uploads) {
           try {
             const file = await verifyUpload({
-              provider: u.provider, publicId: u.publicId, key: u.key, resourceType: u.resourceType, folder: REVIEW_FOLDER,
+              provider: u.provider, publicId: u.publicId, key: u.key, resourceType: u.resourceType, folder: REVIEW_FOLDER, maxBytes: MAX_REVIEW_BYTES,
             });
             if (file.resourceType !== 'image' && file.resourceType !== 'video') {
               return sendValidationError(res, 'Only image and video files are allowed.');

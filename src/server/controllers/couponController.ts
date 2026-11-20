@@ -202,8 +202,9 @@ class CouponController {
   async claimPromoCoupon(req, res, next) {
     try {
       const { email, firstName } = req.body;
-      if (!email || !String(email).trim()) {
-        return res.status(400).json({ error: { message: 'Email address is required.' } });
+      // One plain address only (no lists, display names or comments).
+      if (typeof email !== 'string' || email.length > 200 || !/^[^\s@,;<>()"]+@[^\s@,;<>()"]+\.[^\s@,;<>()"]+$/.test(email.trim())) {
+        return res.status(400).json({ error: { message: 'Please enter a valid email address.' } });
       }
       const result = await couponService.claimPromoCoupon(email.trim(), (firstName || '').trim());
       return sendSuccess(res, result, 200);

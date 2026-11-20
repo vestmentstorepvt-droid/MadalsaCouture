@@ -95,7 +95,8 @@ export const MultiImageUploader: React.FC<MultiImageUploaderProps> = ({
             const isFirstImage = newItems.length === 0;
             newItems.push({
               url: result.url,
-              altText: file.name.replace(/\.[^/.]+$/, ''),
+              // Left empty for the admin to describe the photo; camera names like "IMG_5347" describe nothing.
+              altText: '',
               role: isFirstImage ? 'primary' : 'gallery',
               sortOrder: newItems.length,
             });

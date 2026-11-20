@@ -3,6 +3,7 @@ import __imp0 from "@/server/models/notificationTemplateModel";
 import __imp1 from "@/server/models/notificationLogModel";
 import __imp2 from "@/server/emails/mailer";
 import __imp3 from "@/server/config/logger";
+import { escapeHtml, plainLine } from "@/server/utils/escapeHtml";
 
 const NotificationTemplate = __imp0;
 const NotificationLog = __imp1;
@@ -22,8 +23,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * @param {Object} placeholders - Key/value map for substitution
  * @returns {string} Rendered string
  */
-function interpolate(template, placeholders) {
-  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => placeholders[key] ?? '');
+function interpolate(template, placeholders, escape = escapeHtml) {
+  // Values are escaped: they can contain text a visitor typed (e.g. their name).
+  return template.replace(/\{\{(\w+)\}\}/g, (_, key) => escape(placeholders[key] ?? ''));
 }
 
 class NotificationService {
@@ -69,7 +71,7 @@ class NotificationService {
     }
 
     // 2. Render subject and body
-    const renderedSubject = interpolate(template.subject, placeholders);
+    const renderedSubject = interpolate(template.subject, placeholders, (v) => plainLine(v));
     const renderedBody = interpolate(template.htmlBody, placeholders);
 
     // 3. Create an audit log entry (initial status: retrying)

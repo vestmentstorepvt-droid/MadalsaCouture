@@ -75,7 +75,19 @@ export type UploadTicket =
   | { provider: "r2"; method: "PUT"; uploadUrl: string; headers: Record<string, string>; key: string; publicUrl: string; resourceType: ResourceType };
 
 /** A short-lived permission for the browser to upload one file. */
-export async function createUploadTicket(opts: { fileName: string; contentType: string; folder: string; tags?: string[] }): Promise<UploadTicket> {
+// File formats customers may upload (reviews, profile photos). No SVG/HTML: those can carry scripts.
+export const CUSTOMER_IMAGE_FORMATS = ["jpg", "jpeg", "png", "webp", "gif", "avif", "heic", "heif"];
+export const CUSTOMER_VIDEO_FORMATS = ["mp4", "mov", "webm", "m4v"];
+export const CUSTOMER_IMAGE_TYPES = /^image\/(jpeg|png|webp|gif|avif|heic|heif)$/i;
+export const CUSTOMER_VIDEO_TYPES = /^video\/(mp4|quicktime|webm|x-m4v)$/i;
+
+/**
+ * A signed ticket for ONE upload.
+ *  - size: R2 signs the exact Content-Length, so the URL can't be used for a bigger file.
+ *  - allowedFormats: Cloudinary signs the format list, so the signature can't be reused for
+ *    other kinds of files (e.g. HTML/raw files hosted on the shop's Cloudinary account).
+ */
+export async function createUploadTicket(opts: { fileName: string; contentType: string; folder: string; tags?: string[]; size?: number; allowedFormats?: string[] }): Promise<UploadTicket> {
   const resourceType = resourceTypeFor(opts.contentType);
   const provider = providerFor(resourceType);
   if (provider === "cloudinary") {
@@ -83,6 +95,7 @@ export async function createUploadTicket(opts: { fileName: string; contentType: 
     const timestamp = String(Math.floor(Date.now() / 1000));
     const params: Record<string, string> = { folder: opts.folder, timestamp };
     if (opts.tags?.length) params.tags = opts.tags.join(",");
+    if (opts.allowedFormats?.length) params.allowed_formats = opts.allowedFormats.join(",");
     const signature = c.utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET!);
     return {
       provider,
@@ -93,8 +106,16 @@ export async function createUploadTicket(opts: { fileName: string; contentType: 
     };
   }
   const key = `${opts.folder.replace(/^\/+|\/+$/g, "")}/${randomUUID()}-${safeName(opts.fileName)}`;
-  const command = new PutObjectCommand({ Bucket: process.env.R2_BUCKET_NAME!, Key: key, ContentType: opts.contentType });
-  const uploadUrl = await getSignedUrl(r2Client(), command, { expiresIn: 600 });
+  const command = new PutObjectCommand({
+    Bucket: process.env.R2_BUCKET_NAME!,
+    Key: key,
+    ContentType: opts.contentType,
+    ...(opts.size ? { ContentLength: opts.size } : {}),
+  });
+  const uploadUrl = await getSignedUrl(r2Client(), command, {
+    expiresIn: 600,
+    signableHeaders: new Set(opts.size ? ["content-type", "content-length"] : ["content-type"]),
+  });
   return {
     provider,
     method: "PUT",
@@ -129,7 +150,23 @@ export async function verifyUpload(input: {
   key?: string;
   resourceType?: ResourceType;
   folder?: string;
+  /** Reject (and delete) a file bigger than this. */
+  maxBytes?: number;
 }): Promise<VerifiedFile> {
+  const file = await readUpload(input);
+  if (input.maxBytes && file.bytes != null && file.bytes > input.maxBytes) {
+    try {
+      if (file.publicId.startsWith("r2:")) await deleteR2Object(file.publicId);
+      else await configureCloudinary().uploader.destroy(file.publicId, { resource_type: file.resourceType });
+    } catch {
+      /* best effort */
+    }
+    throw Object.assign(new Error("File is too large."), { statusCode: 413, code: "FILE_TOO_LARGE" });
+  }
+  return file;
+}
+
+async function readUpload(input: { provider: Provider; publicId?: string; key?: string; resourceType?: ResourceType; folder?: string }): Promise<VerifiedFile> {
   const folder = input.folder?.replace(/^\/+|\/+$/g, "");
   if (input.provider === "cloudinary") {
     if (!input.publicId) throw badRequest("publicId is required.");

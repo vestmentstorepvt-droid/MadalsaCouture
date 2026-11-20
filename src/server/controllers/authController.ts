@@ -47,7 +47,7 @@ class AuthController {
   async login(req, res, next) {
     try {
       const { email, password } = req.body;
-      const result = await authService.loginUser(email, password);
+      const result = await authService.loginUser(email, password, req.ip);
       res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
       return sendSuccess(res, { accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user, expiresIn: '15m', role: result.user.role });

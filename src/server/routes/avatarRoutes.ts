@@ -57,7 +57,7 @@ router.post("/upload-url", authLimiter, authenticate, async (req: Req, res: Res,
     }
     if (body.size > MAX_AVATAR_BYTES) return sendError(res, "FILE_TOO_LARGE", "Photo must be 5 MB or smaller.", 413);
     const folder = folderFor(userIdOf(req));
-    const ticket = await createUploadTicket({ fileName: body.fileName, contentType: body.contentType, folder, tags: ["avatar"] });
+    const ticket = await createUploadTicket({ fileName: body.fileName, contentType: body.contentType, folder, tags: ["avatar"], size: body.size, allowedFormats: ["jpg", "jpeg", "png", "webp", "avif", "heic", "heif"] });
     return sendSuccess(res, { ...ticket, folder });
   } catch (err) {
     next(err);
@@ -69,7 +69,7 @@ router.put("/", authLimiter, authenticate, async (req: Req, res: Res, next: Next
     const parsed = saveSchema.safeParse(req.body);
     if (!parsed.success) return sendError(res, "VALIDATION_ERROR", "Validation failed.", 400);
     const userId = userIdOf(req);
-    const file = await verifyUpload({ ...parsed.data, resourceType: "image", folder: folderFor(userId) });
+    const file = await verifyUpload({ ...parsed.data, resourceType: "image", folder: folderFor(userId), maxBytes: MAX_AVATAR_BYTES });
     if (file.resourceType !== "image") return sendError(res, "INVALID_FILE_TYPE", "Only photos can be used.", 415);
 
     const user: any = await userRepository.findById(userId);

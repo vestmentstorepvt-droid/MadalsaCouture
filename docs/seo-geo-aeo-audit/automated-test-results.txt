@@ -1,0 +1,52 @@
+Sitemap URLs: 36   Routes checked: 49   Failing: 0
+PASS 200 /  —  Madalsa Couture | Designer Anarkali, Kurta & Sharara Sets
+PASS 200 /products  —  Shop All Designs | Madalsa Couture
+PASS 200 /collections/best-seller  —  Best Seller Collection | Madalsa Couture
+PASS 200 /collections/ethnic-wear  —  Ethnic Wear Collection | Madalsa Couture
+PASS 200 /collections/new-arrivals  —  New Arrivals Collection | Madalsa Couture
+PASS 200 /collections/western-wear  —  Western Wear Collection | Madalsa Couture
+PASS 200 /product/mayra-the-purple-anarkali-sharara-set  —  Mayra – The Purple Anarkali Sharara Set | Madalsa Couture
+PASS 200 /product/meher-the-baby-pink-salwar-suit  —  Meher – The Baby Pink Salwar Suit | Madalsa Couture
+PASS 200 /product/noor-emerald-green-anarkali-set  —  Noor- Emerald Green Anarkali Set | Madalsa Couture
+PASS 200 /product/sitara-ivory-anarkali-set  —  Sitara- Ivory Anarkali Set | Madalsa Couture
+PASS 200 /product/ocean-pink-party-mini-dress  —  Ocean Pink Party Mini Dress | Sleeveless Organza Dress | Madalsa Couture
+PASS 200 /product/baby-pink-cotton-mini-dress  —  Baby Pink Cotton Mini Dress | Sleeveless Flared Dress | Madalsa Couture
+PASS 200 /product/blush-pink-cotton-long-dress  —  Blush Pink Cotton Maxi Dress | Flowing Long Dress | Madalsa Couture
+PASS 200 /product/red-hot-short-dress  —  Red Hot Short Dress | Stone Work Party Dress | Madalsa Couture
+PASS 200 /product/brunch-date-black-maxi-dress  —  Black Brunch Date Maxi Dress | Ruched Cotton Long Dress | Madalsa Couture
+PASS 200 /product/stone-muse-red-dress  —  Red Hot Short Dress | Stone Work Valentine Party Dress | Madalsa Couture
+PASS 200 /product/halter-neck-dress  —  Red Halter Neck Bodycon Dress with Crystal Tassels | Madalsa Couture
+PASS 200 /product/true-love-red-dress  —  True Love Red Dress with Big Bow | Valentine Party Dress | Madalsa Couture
+PASS 200 /product/pearl  —  Pearl | Madalsa Couture
+PASS 200 /product/brunch-date-baby-pink-dress  —  Brunch date baby pink dress | Madalsa Couture
+PASS 200 /product/hot-pink-short-dress  —  Hot Pink Short Dress with Ruffle Sleeves | Madalsa Couture
+PASS 200 /product/ocean-blue-maxi-dress  —  Ocean blue maxi dress | Madalsa Couture
+PASS 200 /product/ocean-blue-co-ord-set  —  Ocean Blue Co-Ord Set | Ruched Peplum Top & Skirt | Madalsa Couture
+PASS 200 /product/esther  —  Esther Burnt Orange Indo-Western 3 Piece Set | Madalsa Couture
+PASS 200 /product/evara  —  Evara Royal Blue Banarsi Anarkali Set | Festive & Wedding Wear | Madalsa Couture
+PASS 200 /product/serena  —  Serena | Madalsa Couture
+PASS 200 /product/amber  —  Amber Drape Corset Saree | Pre-Draped Party & Wedding Saree | Madalsa Couture
+PASS 200 /product/jasmine  —  Jasmine Blue Peplum Sharara Set with Turquoise Dupatta | Madalsa Couture
+PASS 200 /product/rose-aura-2  —  Serena Rose Pink Kurta Set | Bell Sleeves & Bellbottom | Madalsa Couture
+PASS 200 /product/amara  —  Amara Ivory Kurta Set with Lime Organza Dupatta | Madalsa Couture
+PASS 200 /product/olivia  —  Olivia Olive Green Anarkali Set | Festive & Wedding Wear | Madalsa Couture
+PASS 200 /product/elara  —  Elara Black Anarkali Set | Festive & Party Wear | Madalsa Couture
+PASS 200 /product/ziva  —  Ziva Mustard Yellow Anarkali Set | Festive Wear | Madalsa Couture
+PASS 200 /about  —  About Us | Madalsa Couture
+PASS 200 /contact  —  Contact Us | Madalsa Couture
+PASS 200 /terms  —  Terms & Conditions | Madalsa Couture
+PASS 200 /login  —  Sign in | Madalsa Couture
+PASS 200 /signup  —  Create an account | Madalsa Couture
+PASS 200 /cart  —  Your bag | Madalsa Couture
+PASS 200 /checkout  —  Checkout | Madalsa Couture
+PASS 200 /my-orders  —  My orders | Madalsa Couture
+PASS 200 /admin/dashboard  —  Admin | Madalsa Couture
+PASS 200 /user/dashboard  —  My account | Madalsa Couture
+PASS 200 /order-success/abc  —  Order placed | Madalsa Couture
+PASS 404 /no-such-page  —  Page not found | Madalsa Couture
+PASS 404 /product/no-such-product  —  Page not found | Madalsa Couture
+PASS 404 /collections/no-such-collection  —  Page not found | Madalsa Couture
+PASS 404 /pages/no-such-page  —  Page not found | Madalsa Couture
+PASS 404 /about/extra  —  Page not found | Madalsa Couture
+
+Site-wide: robots.txt, sitemap, preview-host blocking and uniqueness all OK

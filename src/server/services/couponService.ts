@@ -1,5 +1,6 @@
 // @ts-nocheck — ported from the Express backend (services/couponService.js); logic unchanged.
 import __imp0 from "@/server/repositories/couponRepository";
+import { escapeHtml, plainLine } from "@/server/utils/escapeHtml";
 import __imp1 from "@/server/constants/messages";
 import __imp2 from "@/server/config/logger";
 import __imp3 from "@/server/emails/mailer";
@@ -347,16 +348,10 @@ class CouponService {
       }).lean();
     }
 
-    // 2. Fall back to the highest-value active coupon if no banner-specific coupon is found
+    // 2. Otherwise only the public WELCOME10 code. (It used to fall back to the highest-value
+    //    active coupon, which emailed private/staff codes to anyone who asked.)
     if (!coupon) {
-      coupon = await Coupon.findOne({
-        isActive: true,
-        isDeleted: false,
-        $and: [
-          { $or: [{ startDate: null }, { startDate: { $lte: now } }] },
-          { $or: [{ endDate: null }, { endDate: { $gte: now } }] }
-        ]
-      }).sort({ value: -1 }).lean();
+      coupon = await Coupon.findOne({ code: 'WELCOME10', isActive: true, isDeleted: false }).lean();
     }
 
     let couponCode = 'WELCOME10';
@@ -392,13 +387,15 @@ class CouponService {
     }
 
     // 2. Format and send the promotional email
-    const recipientName = firstName || 'there';
+    // Typed by the visitor: plain text only, escaped for the HTML part.
+    const recipientName = plainLine(firstName, 50) || 'there';
+    const recipientNameHtml = escapeHtml(recipientName);
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e8e3d9; border-radius: 12px; background-color: #FAF8F5; text-align: center;">
         <h1 style="color: #6B4D3E; font-family: serif; font-size: 26px; letter-spacing: 1px; margin-bottom: 20px; margin-top: 10px;">MADALSA COUTURE</h1>
         <div style="border-top: 1px solid #D4AF37; border-bottom: 1px solid #D4AF37; padding: 20px 0; margin: 20px 0;">
           <h2 style="color: #8C6A5C; font-family: sans-serif; font-size: 18px; margin: 0 0 10px 0; letter-spacing: 0.5px;">YOUR EXCLUSIVE PROMOTIONAL OFFER</h2>
-          <p style="font-size: 15px; color: #555; margin-bottom: 20px;">Dear ${recipientName}, thank you for subscribing to Madalsa Couture. Use the coupon code below to claim your exclusive offer:</p>
+          <p style="font-size: 15px; color: #555; margin-bottom: 20px;">Dear ${recipientNameHtml}, thank you for subscribing to Madalsa Couture. Use the coupon code below to claim your exclusive offer:</p>
           <div style="display: inline-block; background-color: #271C16; color: #D4AF37; font-size: 24px; font-weight: bold; letter-spacing: 3px; padding: 12px 30px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">${couponCode}</div>
           <p style="font-size: 16px; font-weight: bold; color: #6B4D3E; margin: 10px 0 0 0;">${discountDetails}</p>
         </div>

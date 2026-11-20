@@ -1,6 +1,7 @@
 /**
  * Shiprocket Checkout - redirect implementation (does not depend on the Shiprocket SDK)
  */
+import { metaCookieHeaders } from '../utils/metaPixel';
 
 interface CartItem {
   variantId: string;
@@ -41,6 +42,8 @@ export async function generateCheckoutToken(cartItems: CartItem[]): Promise<stri
     headers: {
       'Content-Type': 'application/json',
       ...authHeader,
+      // Saved with the checkout so the server's Purchase event can be matched to the ad click.
+      ...metaCookieHeaders(),
     },
     body: JSON.stringify({ cartItems })
   });
@@ -73,11 +76,54 @@ const CHECKOUT_ITEMS_KEY = 'checkout_items';
 let lastSessionId: string | null = null;
 const CHECKOUT_ITEMS_MAX_AGE = 24 * 60 * 60 * 1000;
 
-export function rememberCheckoutItems(items: CheckedOutItem[]) {
+/** Bag value and products at checkout, for the browser's Meta Purchase event. */
+export interface CheckoutPurchase {
+  value: number;
+  contentIds: string[];
+  numItems: number;
+}
+
+export function rememberCheckoutItems(items: CheckedOutItem[], purchase?: CheckoutPurchase) {
   try {
-    localStorage.setItem(CHECKOUT_ITEMS_KEY, JSON.stringify({ at: Date.now(), items, sessionId: lastSessionId }));
+    localStorage.setItem(
+      CHECKOUT_ITEMS_KEY,
+      JSON.stringify({ at: Date.now(), items, sessionId: lastSessionId, purchase: purchase ?? null }),
+    );
   } catch {
     // Storage blocked: the success page then leaves the bag as it is.
+  }
+}
+
+/**
+ * Meta Pixel Purchase for the open checkout, once per checkout. Call it before takeCheckoutItems().
+ * The server sends the same event (with the real order total) when Shiprocket reports the order;
+ * both use the ID `purchase_<checkout session id>`, so Meta counts the sale once. With no session
+ * id the two can't be paired, so only the server's event is sent.
+ */
+export function trackCheckoutPurchase() {
+  try {
+    const raw = localStorage.getItem(CHECKOUT_ITEMS_KEY);
+    if (!raw) return;
+    const rec = JSON.parse(raw);
+    if (!rec?.sessionId || Date.now() - rec.at >= CHECKOUT_ITEMS_MAX_AGE) return;
+    const doneKey = `purchase_tracked_${rec.sessionId}`;
+    if (localStorage.getItem(doneKey)) return;
+    localStorage.setItem(doneKey, '1');
+    const p: CheckoutPurchase | null = rec.purchase;
+    window.fbq?.(
+      'track',
+      'Purchase',
+      {
+        currency: 'INR',
+        value: p?.value ?? 0,
+        content_ids: p?.contentIds ?? [],
+        content_type: 'product',
+        num_items: p?.numItems ?? rec.items?.length ?? 0,
+      },
+      { eventID: `purchase_${rec.sessionId}` },
+    );
+  } catch {
+    /* storage blocked or pixel missing: the server's event still counts the sale */
   }
 }
 

@@ -9,6 +9,19 @@ import __imp6 from "@/server/emails/mailer";
 import __imp7 from "@/server/services/notificationService";
 import * as __imp8 from "google-auth-library";
 import __imp9 from "@/server/config/urls";
+import { AdminNotification } from "@/server/models/registry";
+import { countEvent, eventCount, clearEvents } from "@/server/lib/rate-limit";
+import { escapeHtml } from "@/server/utils/escapeHtml";
+
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const DEVICE_MAX_FAILS = 5;   // per email + IP
+const ACCOUNT_MAX_FAILS = 50; // per account, across all IPs
+// bcrypt hash of a random string: compared against when there is no real hash, to keep timing equal.
+const DUMMY_HASH = '$2a$12$oKvpXuIUKwuf.Dbx6bRV0OrfSPPxJGoiwoG8g39iI2jn0lEBtjuW6';
+const maskEmail = (email) => {
+  const [name, domain] = String(email || '').split('@');
+  return domain ? `${name.slice(0, 2)}***@${domain}` : '***';
+};
 
 const bcrypt = __imp0;
 const crypto = __imp1;
@@ -85,7 +98,7 @@ class AuthService {
       });
 
       notificationService.send('welcome', user.email, { name: user.name }, user._id);
-      logger.info(`New user registered via Google SSO: ${user.email}`);
+      logger.info(`New user registered via Google SSO: ${maskEmail(user.email)}`);
 
       return {
         user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar || null },
@@ -120,7 +133,7 @@ class AuthService {
       lastLoginAt: new Date()
     });
 
-    logger.info(`User logged in via Google: ${user.email}`);
+    logger.info(`User logged in via Google: ${maskEmail(user.email)}`);
     return {
       accessToken,
       refreshToken,
@@ -156,17 +169,43 @@ class AuthService {
     // Fire-and-forget welcome notification
     notificationService.send('welcome', user.email, { name: user.name }, user._id);
 
-    logger.info(`User registered: ${user.email}`);
+    logger.info(`User registered: ${maskEmail(user.email)}`);
     return { user: { id: user._id, name: user.name, email: user.email, phone: user.phone || null, role: user.role }, message: SUCCESS.REGISTER };
   }
 
-  async loginUser(email, password) {
+  async loginUser(email, password, ip = null) {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    // Failed attempts are counted per email + device IP, so a stranger guessing wrong passwords
+    // can no longer lock the real customer (or the admin) out of their account.
+    const deviceKey = `loginfail:${normalizedEmail}:${ip || 'unknown'}`;
+    if ((await eventCount(deviceKey, LOGIN_WINDOW_MS)) >= DEVICE_MAX_FAILS) {
+      throw Object.assign(new Error('Too many failed attempts. Please try again in 15 minutes or reset your password.'), { statusCode: 429, code: 'RATE_LIMITED' });
+    }
+
     const user = await userRepository.findByEmail(email);
-    if (!user) {
+
+    // Same work whether or not the account exists (and for Google-only accounts with no
+    // password), so response times don't reveal which emails are registered.
+    const hash = user && typeof user.password === 'string' && user.password ? user.password : DUMMY_HASH;
+    const isMatch = await bcrypt.compare(String(password || ''), hash) && hash !== DUMMY_HASH;
+
+    if (!user || !isMatch) {
+      await countEvent(deviceKey, LOGIN_WINDOW_MS);
+      if (user) {
+        // Account-wide safety net against guessing from many IPs: much higher threshold.
+        const attempts = (user.loginAttempts || 0) + 1;
+        const lock = attempts >= ACCOUNT_MAX_FAILS;
+        await userRepository.updateById(user._id, {
+          loginAttempts: lock ? 0 : attempts,
+          ...(lock ? { lockUntil: Date.now() + 15 * 60 * 1000 } : {})
+        });
+        if (lock) await this._alertLock(user);
+      }
+      logger.warn(`Failed login for ${maskEmail(normalizedEmail)} from ${ip || 'unknown IP'}`);
       throw Object.assign(new Error(ERROR.INVALID_CREDENTIALS), { statusCode: 401 });
     }
 
-    // Blocked users cannot log in
+    // Blocked users cannot log in (checked after the password, so it doesn't reveal the account)
     if (user.status === 'blocked') {
       throw Object.assign(new Error('Your account has been blocked. Please contact support.'), { statusCode: 403 });
     }
@@ -175,16 +214,9 @@ class AuthService {
       throw Object.assign(new Error('Account temporarily locked. Please try again later.'), { statusCode: 423 });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      const attempts = (user.loginAttempts || 0) + 1;
-      const lockUntil = attempts >= 5 ? Date.now() + 15 * 60 * 1000 : null;
-      await userRepository.updateById(user._id, {
-        loginAttempts: attempts,
-        ...(lockUntil ? { lockUntil } : {})
-      });
-      logger.warn(`Failed login for ${email}`);
-      throw Object.assign(new Error(ERROR.INVALID_CREDENTIALS), { statusCode: 401 });
+    await clearEvents(deviceKey, LOGIN_WINDOW_MS);
+    if (user.role === ROLES.ADMIN) {
+      logger.warn(`[security] Admin login: ${maskEmail(user.email)} from ${ip || 'unknown IP'}`);
     }
 
     const accessToken = createAccessToken({ id: user._id, role: user.role });
@@ -199,13 +231,28 @@ class AuthService {
       lastLoginAt: new Date()
     });
 
-    logger.info(`User logged in: ${user.email}`);
+    logger.info(`User logged in: ${maskEmail(user.email)}`);
     return {
       accessToken,
       refreshToken,
       user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar || null },
       message: SUCCESS.LOGIN
     };
+  }
+
+  /** Tell the admins when an account is locked after many failed logins (A09: alerting). */
+  async _alertLock(user) {
+    logger.warn(`[security] Account locked after ${ACCOUNT_MAX_FAILS} failed logins: ${maskEmail(user.email)} (${user.role})`);
+    try {
+      await AdminNotification.create({
+        title: user.role === ROLES.ADMIN ? 'Admin account locked' : 'Customer account locked',
+        message: `${maskEmail(user.email)} was locked for 15 minutes after ${ACCOUNT_MAX_FAILS} failed login attempts.`,
+        type: 'security',
+        relatedId: user._id,
+      });
+    } catch (err) {
+      logger.error(`Could not create lock alert: ${err.message}`);
+    }
   }
 
   async forgotPassword(email) {
@@ -232,7 +279,7 @@ class AuthService {
     // Fire-and-forget template-based password reset notification
     notificationService.send('password_reset', user.email, { name: user.name, resetUrl: resetPageUrl }, user._id);
 
-    logger.info(`Password reset requested: ${email}`);
+    logger.info(`Password reset requested: ${maskEmail(email)}`);
     return { message: SUCCESS.FORGOT_PASSWORD };
   }
 
@@ -284,7 +331,7 @@ class AuthService {
       refreshTokenExpiresAt: null
     });
 
-    logger.info(`Password reset for user: ${user.email}`);
+    logger.info(`Password reset for user: ${maskEmail(user.email)}`);
     return { message: SUCCESS.RESET_PASSWORD };
   }
 
@@ -301,7 +348,7 @@ class AuthService {
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
     await userRepository.updateById(userId, { password: passwordHash, refreshToken: null, refreshTokenExpiresAt: null });
-    logger.info(`Password changed for user: ${user.email}`);
+    logger.info(`Password changed for user: ${maskEmail(user.email)}`);
     return { message: SUCCESS.CHANGE_PASSWORD };
   }
 
@@ -341,7 +388,7 @@ class AuthService {
       html: `<p>To confirm your email change, click the button below:</p><p><a href="${verificationUrl}" style="display:inline-block;padding:12px 24px;background-color:#1a73e8;color:#ffffff;text-decoration:none;border-radius:6px;">Verify Email</a></p><p>If the button does not work, copy and paste the following link into your browser:</p><p>${verificationUrl}</p><p>This link will expire in 24 hours.</p>`
     });
 
-    logger.info(`Email change verification sent: ${user.email} → ${newEmail}`);
+    logger.info(`Email change verification sent: ${maskEmail(user.email)} → ${maskEmail(newEmail)}`);
     return { message: 'Verification email sent. Please check your new email address to confirm the change.' };
   }
 
@@ -356,15 +403,31 @@ class AuthService {
       throw Object.assign(new Error('Invalid or expired verification token.'), { statusCode: 400 });
     }
 
-    // Update email and clear verification fields
+    // Someone may have registered this address since the link was sent.
+    const taken = await userRepository.findByEmail(user.newEmailPending);
+    if (taken && String(taken._id) !== String(user._id)) {
+      throw Object.assign(new Error(ERROR.DUPLICATE_EMAIL), { statusCode: 409 });
+    }
+
+    // Update email and clear verification fields. Signing out other sessions: the refresh token is dropped.
     await userRepository.updateById(user._id, {
+      refreshToken: null,
+      refreshTokenExpiresAt: null,
       email: user.newEmailPending,
       emailChangeToken: null,
       emailChangeTokenExpiresAt: null,
       newEmailPending: null
     });
 
-    logger.info(`Email verified and changed for user: ${user.email} → ${user.newEmailPending}`);
+    // Tell the OLD address, so an account takeover can't silently move the login to a new email.
+    sendMail({
+      to: user.email,
+      subject: 'Your Madalsa Couture email address was changed',
+      text: `The email address on your Madalsa Couture account was changed to ${user.newEmailPending}. If you did not do this, contact us immediately.`,
+      html: `<p>The email address on your Madalsa Couture account was changed to <strong>${escapeHtml(user.newEmailPending)}</strong>.</p><p>If you did not do this, contact us immediately.</p>`
+    }).catch((err) => logger.error(`Could not notify old email address: ${err.message}`));
+
+    logger.info(`Email verified and changed for user: ${maskEmail(user.email)} → ${maskEmail(user.newEmailPending)}`);
     return { message: 'Email successfully verified and updated.' };
   }
 

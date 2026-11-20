@@ -6,7 +6,8 @@ const isDev = process.env.NODE_ENV !== "production";
 // Global fallback limiter (skipped in development to prevent 429 errors during dev/testing)
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isDev ? 10000 : 100,
+  // 600 / 15 min: one page view makes several API calls, and many mobile users share one IP.
+  max: isDev ? 10000 : 600,
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => isDev,
@@ -43,5 +44,15 @@ export const couponLimiter = rateLimit({
   message: { error: { code: "RATE_LIMITED", message: "Too many coupon validation requests.", details: [] } },
 });
 
-const __exports: any = { globalLimiter, authLimiter, paymentLimiter, couponLimiter };
+// Public forms that send an email (contact, promo signup): 5 req / 15 min per IP
+export const formLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isDev ? 100 : 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => isDev,
+  message: { error: { code: "RATE_LIMITED", message: "Too many requests. Please try again later.", details: [] } },
+});
+
+const __exports: any = { globalLimiter, authLimiter, paymentLimiter, couponLimiter, formLimiter };
 export default __exports;

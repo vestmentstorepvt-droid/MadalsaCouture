@@ -15,8 +15,10 @@ const streamCsv = async (res, cursor, columns, filename = 'export.csv') => {
   // Escape a CSV cell value
   const escape = (val) => {
     if (val === null || val === undefined) return '';
-    const str = String(val);
-    if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+    let str = String(val);
+    // Stop spreadsheet formula injection: a customer name like =HYPERLINK(...) must open as text in Excel.
+    if (typeof val !== 'number' && /^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+    if (/[",\r\n]/.test(str)) {
       return `"${str.replace(/"/g, '""')}"`;
     }
     return str;

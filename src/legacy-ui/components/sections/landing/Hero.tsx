@@ -19,12 +19,15 @@ const FALLBACK_HERO_IMAGE =
 // 1080x1920 with a crop-safe zone, so object-cover works across phone aspect ratios.
 const MOBILE_HERO_HEIGHT = 'h-[85svh] min-h-[26rem] sm:h-auto sm:min-h-0';
 const SWIPE_THRESHOLD_PX = 50;
+// Desktop banners are designed at 1920x1080 and shown whole, never taller than the screen below
+// the header. The space held while loading matches that, so nothing moves when the photo arrives.
+const DESKTOP_BANNER_BOX = 'sm:aspect-video sm:max-h-[calc(100svh-var(--site-header-h,108px))]';
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 const HeroSkeleton: React.FC = () => (
   <section
     id="hero"
-    className={`relative ${MOBILE_HERO_HEIGHT} w-full animate-pulse overflow-hidden bg-hairline-soft sm:aspect-[21/9]`}
+    className={`relative ${MOBILE_HERO_HEIGHT} w-full animate-pulse overflow-hidden bg-hairline-soft ${DESKTOP_BANNER_BOX}`}
     aria-hidden="true"
   >
   </section>
@@ -44,9 +47,11 @@ interface HeroMediaProps {
   /** Stacked slide: fill the hero box (whose height is set by the first slide) instead of sizing it. */
   fill?: boolean;
   onVideoEnded?: () => void;
+  /** Called once the image has loaded or finally failed (its size is then known). */
+  onSettled?: () => void;
 }
 
-const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaUrl, headline, loopVideo, tallMobile, fill = false, onVideoEnded }) => {
+const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaUrl, headline, loopVideo, tallMobile, fill = false, onVideoEnded, onSettled }) => {
   const [imageFailed, setImageFailed] = useState(false);
   const [fallbackFailed, setFallbackFailed] = useState(false);
 
@@ -128,12 +133,14 @@ const HeroMedia: React.FC<HeroMediaProps> = ({ mediaType, mediaUrl, mobileMediaU
         loading="eager"
         decoding="async"
         fetchPriority={fill ? 'low' : 'high'}
+        onLoad={onSettled}
         onError={() => {
           if (!imageFailed) {
             setImageFailed(true);
             return;
           }
           setFallbackFailed(true);
+          onSettled?.();
         }}
       />
     </picture>
@@ -152,6 +159,10 @@ const Hero: React.FC = () => {
   const mediaIndex = currentMediaIndex % mediaItems.length;
   const currentMedia = mediaItems[mediaIndex];
   const firstIsVideo = mediaItems[0]?.mediaType === 'video';
+  // On desktop the hero takes the first banner's own height, which is 0 until the photo arrives:
+  // the page below jumped up and then back down. Hold the banner's box until it has loaded.
+  const [sizerLoaded, setSizerLoaded] = useState(false);
+  const markSizerLoaded = useCallback(() => setSizerLoaded(true), []);
 
   const advanceSlide = useCallback(() => {
     setCurrentMediaIndex((index) => (index + 1) % mediaItems.length);
@@ -257,7 +268,7 @@ const Hero: React.FC = () => {
       <section
         id="hero"
         className={`relative w-full overflow-hidden bg-hairline-soft ${MOBILE_HERO_HEIGHT} ${
-          firstIsVideo ? 'sm:aspect-video' : ''
+          firstIsVideo ? 'sm:aspect-video' : sizerLoaded ? '' : DESKTOP_BANNER_BOX
         }`}
         aria-label="Hero section"
         onTouchStart={onTouchStart}
@@ -294,6 +305,7 @@ const Hero: React.FC = () => {
                   tallMobile
                   fill={!sizer}
                   onVideoEnded={mediaItems.length > 1 ? advanceSlide : undefined}
+                  onSettled={sizer ? markSizerLoaded : undefined}
                 />
               </div>
             );
@@ -374,6 +386,8 @@ const Hero: React.FC = () => {
   return (
     <div ref={pageRef} className="min-h-screen bg-canvas text-ink">
       <main id="home">
+        {/* The home page had no main heading; this one is for screen readers and search engines only. */}
+        <h1 className="sr-only">Madalsa Couture — designer Anarkali, kurta and sharara sets</h1>
         {renderHeroSection()}
         <VideoCardsErrorBoundary>
           <Suspense fallback={<div className="h-64 animate-pulse bg-hairline-soft" aria-label="Loading video stories" />}>

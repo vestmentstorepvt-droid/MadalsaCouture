@@ -6,6 +6,7 @@ import { queueShiprocketSync, shiprocketVariantId } from "@/server/services/ship
 import { createDueShipments } from "@/server/services/shiprocketShipping";
 import variantService from "@/server/services/variantService";
 import cartService from "@/server/services/cartService";
+import metaCapi from "@/server/services/metaConversionsService";
 
 const mongoose = __imp0;
 const logger = __imp1;
@@ -192,9 +193,56 @@ export async function importShiprocketOrder(delivery) {
   await ShiprocketOrder.updateOne({ _id: delivery._id }, { $set: { processed: true, shopOrderId: order._id } });
   logger.info(`[Shiprocket order] ${cartId} → ${orderNumber} (${snapshots.length} items, ₹${total}, ${user ? "customer " + user._id : "guest"})`);
 
+  sendMetaPurchase({ order, snapshots, session, user, placedAt, cartId, address: p.shipping_address || p.billing_address || {} });
+
   // Into the shipping panel once due (immediately while SHIPROCKET_SHIP_DELAY_MINUTES is 0).
   createDueShipments().catch((err) => logger.error(`[Shiprocket shipping] ${err.message}`));
   return order;
+}
+
+// Meta rejects server events older than 7 days (e.g. a late re-import of old webhook deliveries).
+const META_MAX_AGE = 6 * 24 * 60 * 60 * 1000;
+
+/**
+ * Tell Meta about the sale (Conversions API). Shiprocket Checkout orders reach us only by webhook,
+ * so this is the one reliable Purchase signal for ads. The browser fires the same event on
+ * /checkout-success with event ID `purchase_<checkout session id>`, and Meta counts the pair once.
+ * Fire-and-forget: Meta problems never affect the order.
+ */
+function sendMetaPurchase({ order, snapshots, session, user, placedAt, cartId, address }) {
+  if (Date.now() - placedAt.getTime() > META_MAX_AGE) return;
+  const meta = session?.meta || {};
+  const eventId = session ? `purchase_${session._id}` : `purchase_sr_${cartId}`;
+  metaCapi
+    .trackPurchase(
+      null,
+      {
+        orderId: order.orderNumber,
+        value: order.total,
+        currency: "INR",
+        eventTime: placedAt,
+        sourcePath: "/checkout-success",
+        items: snapshots
+          .filter((s) => s.productId)
+          .map((s) => ({ productId: String(s.productId), quantity: s.quantity, unitPrice: s.unitPrice })),
+        user: {
+          email: user?.email,
+          phone: order.shippingAddress?.phone || user?.phone,
+          firstName: address.first_name || user?.firstName,
+          lastName: address.last_name || user?.lastName,
+          city: order.shippingAddress?.city,
+          zip: order.shippingAddress?.pincode,
+          country: "in",
+          externalId: user?._id ? String(user._id) : undefined,
+          fbp: meta.fbp,
+          fbc: meta.fbc,
+          ip: meta.ip,
+          userAgent: meta.userAgent,
+        },
+      },
+      eventId,
+    )
+    .catch((err) => logger.error(`[MetaCAPI] Purchase for ${order.orderNumber} failed: ${err.message}`));
 }
 
 const CHECKOUT_MATCH_WINDOW = 24 * 60 * 60 * 1000;

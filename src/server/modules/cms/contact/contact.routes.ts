@@ -3,6 +3,7 @@ import __imp0 from "@/server/lib/express";
 import __imp1 from "@/server/middleware/authMiddleware";
 import __imp2 from "@/server/middleware/auditMiddleware";
 import __imp3 from "@/server/modules/cms/contact/contactController";
+import { formLimiter } from "@/server/middleware/security";
 
 const express = __imp0;
 const { authenticate, authorize } = __imp1;
@@ -22,7 +23,7 @@ adminRouter.get('/inquiries', getInquiriesAdmin);
 
 const publicRouter = express.Router();
 publicRouter.get('/', getContactPublic);
-publicRouter.post('/inquiry', submitInquiry);
+publicRouter.post('/inquiry', formLimiter, submitInquiry);
 
 const __exports: any = { adminRouter, publicRouter };
 

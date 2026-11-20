@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { optimizePoster, optimizeVideo } from "../../../utils/imageUtils";
 
 interface VideoModalProps {
   isOpen: boolean;
@@ -78,8 +79,8 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, videos, initia
           <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
             <video
               key={currentVideo._id}
-              src={currentVideo.videoUrl}
-              poster={currentVideo.posterUrl}
+              src={optimizeVideo(currentVideo.videoUrl, 1080)}
+              poster={optimizePoster(currentVideo.posterUrl, 1080)}
               autoPlay
               controls
               playsInline

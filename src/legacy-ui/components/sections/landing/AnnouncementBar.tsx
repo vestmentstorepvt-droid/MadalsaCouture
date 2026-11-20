@@ -57,15 +57,43 @@ function useCountdown(targetDateStr?: string | null) {
  * Fetches its content from GET /cms/announcement-bar.
  * Hidden when isActive is false, when the API errors, or while loading.
  */
+// Last answer seen in this browser, so the space can be held while the bar loads.
+const LAST_BAR_KEY = 'announcement_bar_last';
+const readLastBar = (): { shown: boolean; bg?: string } | null => {
+  try {
+    return JSON.parse(localStorage.getItem(LAST_BAR_KEY) || 'null');
+  } catch {
+    return null;
+  }
+};
+const writeLastBar = (value: { shown: boolean; bg?: string }) => {
+  try {
+    localStorage.setItem(LAST_BAR_KEY, JSON.stringify(value));
+  } catch {
+    /* storage blocked */
+  }
+};
+
 const AnnouncementBar: React.FC = () => {
   const { data, isLoading, isError } = useGetAnnouncementBarQuery();
   const countdown = useCountdown(data?.countdownTarget);
+  const msg = data?.message || data?.text || '';
+  const shown = Boolean(!isLoading && !isError && data?.isActive && msg.trim());
 
-  // Hide on load, error, or when explicitly disabled
-  if (isLoading || isError || !data || !data.isActive) return null;
+  useEffect(() => {
+    if (!isLoading) writeLastBar({ shown, bg: data?.backgroundColor });
+  }, [isLoading, shown, data?.backgroundColor]);
 
-  const msg = data.message || data.text || '';
-  if (!msg.trim()) return null;
+  // While loading, hold the bar's 36px (empty) unless it was off on the last visit. Popping in
+  // after the page has drawn pushed the whole page down (the main layout shift on desktop).
+  if (isLoading) {
+    const last = readLastBar();
+    if (last && !last.shown) return null;
+    return <div className="relative z-30 h-9 w-full" style={{ backgroundColor: last?.bg || '#171717' }} aria-hidden="true" />;
+  }
+
+  // Hide on error, or when explicitly disabled
+  if (!shown || !data) return null;
 
   const barStyle: React.CSSProperties = {
     backgroundColor: data.backgroundColor || '#171717',

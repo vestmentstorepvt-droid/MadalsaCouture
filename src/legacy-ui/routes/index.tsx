@@ -101,10 +101,77 @@ const ScrollToTop = () => {
   return null;
 };
 
+/**
+ * Keeps the browser-tab title in step with in-app navigation. The server sets the right title
+ * for the first page loaded; moving around inside the app never changed it, so a visitor who
+ * opened a product and then went home still saw the product's title.
+ */
+const BRAND = 'Madalsa Couture';
+const STATIC_TITLES: Record<string, string> = {
+  '/': `${BRAND} | Designer Anarkali, Kurta & Sharara Sets`,
+  '/products': `Shop All Designs | ${BRAND}`,
+  '/about': `About Us | ${BRAND}`,
+  '/contact': `Contact Us | ${BRAND}`,
+  '/terms': `Terms & Conditions | ${BRAND}`,
+  '/privacy-policy': `Privacy Policy | ${BRAND}`,
+  '/refund-policy': `Refund Policy | ${BRAND}`,
+  '/shipping-policy': `Shipping Policy | ${BRAND}`,
+  '/login': `Sign in | ${BRAND}`,
+  '/signup': `Create an account | ${BRAND}`,
+  '/cart': `Your bag | ${BRAND}`,
+  '/checkout': `Checkout | ${BRAND}`,
+  '/my-orders': `My orders | ${BRAND}`,
+  '/wishlist': `Wishlist | ${BRAND}`,
+  '/profile': `My profile | ${BRAND}`,
+  '/addresses': `Saved addresses | ${BRAND}`,
+};
+
+const DocumentTitle = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (pathname === window.__firstPath) return; // the server already set this one
+    window.__firstPath = undefined;
+    const known = STATIC_TITLES[pathname.replace(/\/+$/, '') || '/'];
+    if (known) {
+      document.title = known;
+      return;
+    }
+    if (pathname.startsWith('/admin')) {
+      document.title = `Admin | ${BRAND}`;
+      return;
+    }
+    // Product, collection and CMS pages: use the page's heading once it has loaded.
+    const suffix = pathname.startsWith('/collections/') ? ` Collection | ${BRAND}` : ` | ${BRAND}`;
+    const apply = () => {
+      const h1 = document.querySelector('main h1, h1');
+      const text = h1?.textContent?.trim();
+      if (text) document.title = `${text}${suffix}`;
+      return Boolean(text);
+    };
+    if (apply()) return;
+    const observer = new MutationObserver(() => apply() && observer.disconnect());
+    observer.observe(document.body, { childList: true, subtree: true });
+    const stop = window.setTimeout(() => observer.disconnect(), 8000);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(stop);
+    };
+  }, [pathname]);
+  return null;
+};
+
+declare global {
+  interface Window {
+    __firstPath?: string;
+  }
+}
+if (typeof window !== 'undefined') window.__firstPath = window.location.pathname;
+
 const RootLayout = () => {
   return (
     <>
       <ScrollToTop />
+      <DocumentTitle />
       <Suspense fallback={<div className="h-screen w-full flex items-center justify-center bg-ink"><div className="w-12 h-12 border-4 border-hairline border-t-transparent rounded-full animate-spin"></div></div>}>
         <Outlet />
       </Suspense>

@@ -5,6 +5,7 @@ import { SectionHeader } from "../../ui/SectionHeader";
 import { useGetVideoCardsQuery } from "../../../services/cmsApi";
 import VideoModal from "./VideoModal";
 import { useScrollReveal } from "../../../lib/motion";
+import { optimizePoster, optimizeVideo } from "../../../utils/imageUtils";
 
 interface VideoCardMediaProps {
   title: string;
@@ -63,8 +64,10 @@ const VideoCardMedia: React.FC<VideoCardMediaProps> = ({ title, description, vid
     >
       <video
         ref={videoRef}
-        src={isVisible ? videoUrl : undefined}
-        poster={posterUrl}
+        // Cards are ~230–300px wide. The raw uploads (5–10 MB each, some .mov) all played at once
+        // on laptops, ~45 MB per visit; 480px MP4/WebM via Cloudinary is ~2–3.5 MB each.
+        src={isVisible ? optimizeVideo(videoUrl, 480) : undefined}
+        poster={optimizePoster(posterUrl, 600)}
         autoPlay={isVisible && !hasFailed}
         muted
         loop
