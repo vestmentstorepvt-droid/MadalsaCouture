@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { User, ShoppingBag, Menu, X, ChevronDown, Search, Heart, ArrowRight, LogOut, LayoutDashboard, Package, Shirt } from 'lucide-react';
+import { User, ShoppingBag, Menu, X, ChevronDown, Search, Heart, ArrowRight, LogOut, LayoutDashboard, Package, Shirt, UserRound } from 'lucide-react';
 const madalsaLogo = '/assets/file.png';
 import { useLogout } from '../../../hooks/useLogout';
 import { useCheckoutCleanupWatcher } from '../../../hooks/useCheckoutCleanup';
@@ -163,6 +163,7 @@ export const LandingNavbar = () => {
 
   const accountLinks = isAdmin
     ? [
+        { label: 'Admin profile', path: '/admin/profile', icon: UserRound },
         { label: 'Admin dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
         { label: 'Orders', path: '/admin/orders', icon: Package },
         { label: 'Products', path: '/admin/products', icon: Shirt },
@@ -368,11 +369,8 @@ export const LandingNavbar = () => {
                 className="account-menu absolute right-0 top-full mt-3 w-[min(20rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl bg-surface text-ink shadow-[0_24px_60px_-12px_rgba(23,23,23,0.35)] ring-1 ring-black/5"
               >
                 {/* Identity band in the banners' maroon and gold */}
-                <Link
-                  to={isAdmin ? '/admin/profile' : '/profile'}
-                  onClick={close}
-                  role="menuitem"
-                  className="group relative block overflow-hidden px-5 pb-5 pt-5 text-[#f6ead2]"
+                <div
+                  className="relative overflow-hidden px-5 py-5 text-[#f6ead2]"
                   style={{ background: 'radial-gradient(120% 140% at 100% 0%, #9a2238 0%, #5e0d1d 55%, #4a0a17 100%)' }}
                 >
                   <ButiPattern id="buti-account-menu" />
@@ -387,17 +385,12 @@ export const LandingNavbar = () => {
                       <span className="block truncate text-xs text-[#f6ead2]/70">{user?.email}</span>
                     </span>
                   </span>
-                  <span className="relative mt-4 flex items-center justify-between border-t border-[#e2c27a]/25 pt-3 text-xs font-medium uppercase tracking-[0.14em] text-[#e2c27a]">
-                    {isAdmin ? 'Admin profile' : 'View profile'}
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                  </span>
-                </Link>
+                </div>
 
                 <div className="p-2">
                   {accountLinks.map(({ label, path, icon: Icon, ...rest }) => {
                     const active = location.pathname === path;
                     const hint = 'hint' in rest ? (rest as { hint?: string }).hint : undefined;
-                    if (path === '/profile') return null;
                     return (
                       <Link
                         key={path}

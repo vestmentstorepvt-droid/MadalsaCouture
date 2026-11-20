@@ -317,3 +317,15 @@
 @media (prefers-reduced-motion: reduce) {
   .account-menu { animation: none; }
 }
+
+/* Cancel order sheet: drawn tick, pop-in and text fade (components/features/orders/CancelOrder.tsx). */
+@keyframes cancel-draw { from { stroke-dashoffset: 48; } to { stroke-dashoffset: 0; } }
+@keyframes cancel-pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes cancel-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.cancel-draw { stroke-dasharray: 48; stroke-dashoffset: 48; animation: cancel-draw 420ms 260ms ease-out forwards; }
+.cancel-pop { animation: cancel-pop 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.cancel-fade-in { animation: cancel-fade-in 260ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .cancel-draw { animation: none; stroke-dashoffset: 0; }
+  .cancel-pop, .cancel-fade-in { animation: none; }
+}

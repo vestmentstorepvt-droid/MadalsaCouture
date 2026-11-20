@@ -4,6 +4,23 @@ import { ENDPOINTS } from '../constants/endpoints';
 
 // ── Data interfaces ───────────────────────────────────────────────────────────
 
+export interface SizeChangeRequest {
+  status: 'pending' | 'done' | 'declined';
+  at: string;
+  changes: { itemId: string; productTitle?: string; fromSize?: string | null; toSize: string; variantId: string }[];
+  note?: string | null;
+}
+
+export interface SizeOptionsItem {
+  itemId: string;
+  productTitle: string;
+  productImage?: string | null;
+  color?: string | null;
+  currentSize?: string | null;
+  quantity: number;
+  options: { variantId: string; size: string; available: boolean; current: boolean }[];
+}
+
 export interface OrderItem {
   _id?: string;
   productId: string | { _id: string; title?: string; name?: string; slug?: string };
@@ -96,6 +113,8 @@ export interface Order {
   notes?: string | null;
   /** Set when the customer cancelled: why and when. */
   cancellation?: { by: string; reason: string; reasonLabel: string; note?: string | null; at: string } | null;
+  /** "Change size instead of cancelling" request, sent to Admin. */
+  sizeChangeRequest?: SizeChangeRequest | null;
   /** The order in Shiprocket's shipping panel; an AWB means it's with the courier. */
   shiprocketShipping?: { orderId?: number | string; status?: string; awb?: string | null; courier?: string | null } | null;
   createdAt: string;
@@ -234,6 +253,25 @@ export const ordersApi = createApi({
         }
         return normalizeOrder(response);
       },
+      invalidatesTags: ['Orders', 'AdminOrders'],
+    }),
+
+    // ── Customer: other sizes for the items in an order (for "change size instead")
+    getSizeOptions: builder.query<{ items: SizeOptionsItem[]; pending: SizeChangeRequest | null }, string>({
+      query: (id) => `${ENDPOINTS.ORDERS}/${id}/size-options`,
+      transformResponse: (response: { data?: { items: SizeOptionsItem[]; pending: SizeChangeRequest | null } }) =>
+        response?.data ?? { items: [], pending: null },
+      keepUnusedDataFor: 0,
+    }),
+
+    // ── Customer: ask for a different size instead of cancelling
+    requestSizeChange: builder.mutation<Order, { id: string; changes: { itemId: string; variantId: string }[]; note?: string }>({
+      query: ({ id, changes, note }) => ({
+        url: `${ENDPOINTS.ORDERS}/${id}/size-change`,
+        method: 'POST',
+        body: { changes, note },
+      }),
+      transformResponse: (response: { data?: { order?: unknown } }) => normalizeOrder(response?.data?.order ?? response),
       invalidatesTags: ['Orders', 'AdminOrders'],
     }),
 
@@ -392,6 +430,8 @@ export const {
   useGetMyOrdersQuery,
   useGetMyOrderByIdQuery,
   useCancelOrderMutation,
+  useGetSizeOptionsQuery,
+  useRequestSizeChangeMutation,
   useValidateCouponMutation,
   useRequestExchangeMutation,
   useGetAdminOrdersQuery,

@@ -230,7 +230,8 @@ export const MODELS: Record<CollectionName, ModelConfig> = {
   orders: {
     // shiprocketShipping: the order in Shiprocket's shipping panel { orderId, shipmentId, status, awb, courier, error } (shiprocketShipping.ts)
     // cancellation: { by, reason, reasonLabel, note, at } when the customer cancels (orderService.cancelOrder)
-    fields: f("orderNumber userId guestEmail items shippingAddress couponId couponCode discountAmount shippingCharge taxAmount subtotal total paymentMethod shiprocketOrderId shiprocketShipping cancellation source status statusHistory notes isDeleted deletedAt"),
+    // sizeChangeRequest: { status, at, changes[{ itemId, fromSize, toSize, variantId }], note } (orderSizeChangeService)
+    fields: f("orderNumber userId guestEmail items shippingAddress couponId couponCode discountAmount shippingCharge taxAmount subtotal total paymentMethod shiprocketOrderId shiprocketShipping cancellation sizeChangeRequest source status statusHistory notes isDeleted deletedAt"),
     subdocs: { statusHistory: { defaults: () => ({ timestamp: new Date().toISOString(), actorId: null, actorEmail: null, note: null }) }, shippingAddress: { defaults: () => ({ deliveryPhone: null }) } },
     timestamps: true,
     defaults: () => ({

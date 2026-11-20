@@ -27,9 +27,28 @@ const FAN_BACK = -30;
 const FAN_FRONT = 12;
 const fanAngle = (position: number, count: number) =>
   count < 2 ? FAN_FRONT : FAN_BACK + ((FAN_FRONT - FAN_BACK) * position) / (count - 1);
-/** Loop: every few seconds the front swatch slides out and tucks in behind the stack. */
+/**
+ * Loop: every few seconds the front swatch is flipped like a wall-calendar page. Hinged at its eyelet,
+ * it is lifted up and over its own (tilted) top edge, showing its back; once past upright, gravity
+ * takes it down behind the stack, where it swings a little and settles. Then it slides round the
+ * eyelet into its place at the back of the fan.
+ */
 const LOOP_MS = 4200;
-const LIFT_MS = 560;
+/** 0 -> 180deg: lifted from the bottom edge up to upright (slows as it nears the top). */
+const LIFT_MS = 760;
+/** 180 -> 372deg: falls behind under gravity (speeds up), overshooting the hang a little. */
+const FALL_MS = 460;
+/** 372 -> 360deg: swings back and settles. */
+const SETTLE_MS = 380;
+
+type TurnPhase = 'lift' | 'fall' | 'settle' | 'reset';
+interface Turn {
+  index: number;
+  phase: TurnPhase;
+  /** Fan angle the swatch had when it was flipped (it hangs there, then slides to the back). */
+  angle: number;
+}
+
 const MAX_SWATCHES = 5;
 
 /** Polygon for a card cut with pinking shears (zigzag on every edge), in px. */
@@ -118,25 +137,51 @@ interface Swatch {
   fallbackPosition: string;
 }
 
+/** Eyelet ring punched through the swatch, at (PIVOT, y) in the face's own coordinates. */
+const Eyelet: React.FC<{ y: number }> = ({ y }) => (
+  <span
+    className="absolute rounded-full"
+    style={{
+      left: PIVOT - 9,
+      top: y - 9,
+      width: 18,
+      height: 18,
+      background: `radial-gradient(circle, ${T.silk} 0 38%, ${T.brass} 40% 70%, ${T.brassDeep} 72% 100%)`,
+      boxShadow: 'inset 0 1px 1px #fff8, 0 1px 2px #0005',
+    }}
+  />
+);
+
+const FACE_SHADOW = 'drop-shadow(0 10px 14px rgb(60 30 10 / 0.22)) drop-shadow(0 2px 3px rgb(60 30 10 / 0.18))';
+
 const SwatchCard: React.FC<{
   swatch: Swatch;
   angle: number;
   z: number;
-  /** The front swatch on its way to the back of the stack. */
-  lifted: boolean;
+  /** Set while this swatch is being flipped. */
+  turn: Turn | null;
   open: boolean;
   /** Stagger for the first fan-out only. */
   delay: number;
-}> = ({ swatch, angle, z, lifted, open, delay }) => {
+}> = ({ swatch, angle, z, turn, open, delay }) => {
   const [failed, setFailed] = useState(false);
   const useFallback = failed || swatch.src === FALLBACK_SRC;
-  // Always "rotate() translate()" so poses interpolate cleanly. The front swatch slides straight
-  // out to the right at its own angle (no swing), then slides back in behind the stack.
-  const transform = !open
-    ? `rotate(${FAN_BACK + 21}deg) translate(0px, 0px)`
-    : lifted
-      ? `rotate(${angle}deg) translate(${Math.round(CARD_W * 0.92)}px, 18px)`
-      : `rotate(${angle}deg) translate(0px, 0px)`;
+  // Always "rotate() rotateX()" so the flip angle interpolates linearly. rotateX after the fan rotation
+  // hinges the swatch on its own tilted top edge through the eyelet; positive angles bring the bottom
+  // edge towards the viewer and up (a calendar page), and past 180deg it is behind the stack.
+  const flip = turn?.phase === 'lift' ? 180 : turn?.phase === 'fall' ? 372 : turn?.phase === 'settle' ? 360 : 0;
+  const fan = turn ? turn.angle : open ? angle : FAN_BACK + 21;
+  const transform = `rotate(${fan}deg) rotateX(${flip}deg)`;
+  const timing =
+    turn?.phase === 'lift'
+      ? { duration: LIFT_MS, ease: 'cubic-bezier(0.4, 0, 0.3, 1)' }
+      : turn?.phase === 'fall'
+        ? { duration: FALL_MS, ease: 'cubic-bezier(0.6, 0, 0.9, 0.55)' }
+        : turn?.phase === 'settle'
+          ? { duration: SETTLE_MS, ease: 'cubic-bezier(0.25, 0.6, 0.4, 1)' }
+          : turn?.phase === 'reset'
+            ? { duration: 0, ease: 'linear' }
+            : { duration: 1000, ease: 'cubic-bezier(0.16, 1, 0.3, 1)' };
   return (
     <div
       className="group absolute left-0 top-0 motion-reduce:transition-none"
@@ -145,46 +190,58 @@ const SwatchCard: React.FC<{
         height: CARD_H,
         transformOrigin: `${PIVOT}px ${PIVOT}px`,
         transform,
+        transformStyle: 'preserve-3d',
         transitionProperty: 'transform',
-        transitionTimingFunction: lifted ? 'cubic-bezier(0.45, 0, 0.25, 1)' : 'cubic-bezier(0.16, 1, 0.3, 1)',
-        transitionDuration: lifted ? `${LIFT_MS}ms` : '1000ms',
+        transitionTimingFunction: timing.ease,
+        transitionDuration: `${timing.duration}ms`,
         transitionDelay: `${delay}ms`,
         zIndex: z,
       }}
     >
       <div
-        className="h-full w-full transition-transform duration-300 ease-out group-hover:-translate-y-2 motion-reduce:transition-none"
-        style={{ filter: 'drop-shadow(0 10px 14px rgb(60 30 10 / 0.22)) drop-shadow(0 2px 3px rgb(60 30 10 / 0.18))' }}
+        className="relative h-full w-full transition-transform duration-300 ease-out group-hover:-translate-y-2 motion-reduce:transition-none"
+        style={{ transformStyle: 'preserve-3d' }}
       >
-        <div className="flex h-full w-full flex-col bg-[#fffaf0]" style={{ clipPath: SWATCH_CLIP }}>
-          <div className="relative mx-[9px] mt-[9px] flex-1 overflow-hidden">
-            <img
-              src={useFallback ? FALLBACK_SRC : swatchUrl(swatch.src)}
-              alt=""
-              decoding="async"
-              onError={() => setFailed(true)}
-              className="h-full w-full object-cover"
-              style={{ objectPosition: useFallback ? swatch.fallbackPosition : '50% 35%' }}
-            />
-            {/* the eyelet punched through the swatch */}
-            <span
-              className="absolute rounded-full"
-              style={{
-                left: PIVOT - 9 - 9,
-                top: PIVOT - 9 - 9,
-                width: 18,
-                height: 18,
-                background: `radial-gradient(circle, ${T.silk} 0 38%, ${T.brass} 40% 70%, ${T.brassDeep} 72% 100%)`,
-                boxShadow: 'inset 0 1px 1px #fff8, 0 1px 2px #0005',
-              }}
-            />
+        {/* front: the piece */}
+        <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', filter: FACE_SHADOW }}>
+          <div className="flex h-full w-full flex-col bg-[#fffaf0]" style={{ clipPath: SWATCH_CLIP }}>
+            <div className="relative mx-[9px] mt-[9px] flex-1 overflow-hidden">
+              <img
+                src={useFallback ? FALLBACK_SRC : swatchUrl(swatch.src)}
+                alt=""
+                decoding="async"
+                onError={() => setFailed(true)}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: useFallback ? swatch.fallbackPosition : '50% 35%' }}
+              />
+            </div>
+            {/* woven label */}
+            <div className="mx-[9px] mb-[11px] mt-2 flex h-9 items-center gap-2 border-y border-dashed px-1" style={{ borderColor: `${T.madder}55` }}>
+              <span className="truncate font-display text-base font-semibold leading-none" style={{ color: T.maroon }}>
+                {swatch.name}
+              </span>
+            </div>
           </div>
-          {/* woven label */}
-          <div className="mx-[9px] mb-[11px] mt-2 flex h-9 items-center gap-2 border-y border-dashed px-1" style={{ borderColor: `${T.madder}55` }}>
-            <span className="truncate font-display text-base font-semibold leading-none" style={{ color: T.maroon }}>
-              {swatch.name}
-            </span>
+          <Eyelet y={PIVOT} />
+        </div>
+
+        {/* back: plain card stock, stamped; turned over the top edge, so it reads upright when the
+            swatch is lifted, and its eyelet lines up through the card */}
+        <div className="absolute inset-0" style={{ backfaceVisibility: 'hidden', transform: 'rotateX(180deg)', filter: FACE_SHADOW }}>
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-[#f7eedd]" style={{ clipPath: SWATCH_CLIP }}>
+            <div className="mx-6 w-[70%] border border-dashed px-4 py-5 text-center" style={{ borderColor: `${T.madder}66` }}>
+              <p className="font-display text-xl font-semibold uppercase leading-none tracking-[0.2em]" style={{ color: T.maroon }}>
+                Madalsa
+              </p>
+              <p className="mt-1 font-display text-xs font-medium uppercase tracking-[0.4em]" style={{ color: T.madder }}>
+                Couture
+              </p>
+              <p className="mt-4 truncate font-display text-base" style={{ color: T.maroon }}>
+                {swatch.name}
+              </p>
+            </div>
           </div>
+          <Eyelet y={CARD_H - PIVOT} />
         </div>
       </div>
     </div>
@@ -211,7 +268,7 @@ const CuttingTable: React.FC<{ collection: string }> = ({ collection }) => {
   const initialOrder = Array.from({ length: count }, (_, i) => count - 1 - i);
   const [order, setOrder] = useState<number[]>([]);
   const stack = order.length === count ? order : initialOrder;
-  const [lifted, setLifted] = useState<number | null>(null);
+  const [turn, setTurn] = useState<Turn | null>(null);
 
   // First fan-out once the photos are known, staggered back to front.
   const [open, setOpen] = useState(false);
@@ -233,20 +290,29 @@ const CuttingTable: React.FC<{ collection: string }> = ({ collection }) => {
   useEffect(() => {
     if (!settled || count < 2) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let liftTimer: number | undefined;
+    const timers: number[] = [];
+    const later = (fn: () => void, ms: number) => timers.push(window.setTimeout(fn, ms));
     const interval = window.setInterval(() => {
       if (paused.current || document.hidden) return;
       const current = stackRef.current;
       const front = current[current.length - 1];
-      setLifted(front);
-      liftTimer = window.setTimeout(() => {
+      const startAngle = fanAngle(current.length - 1, current.length);
+      // Lifted up and over, in front of everything...
+      setTurn({ index: front, phase: 'lift', angle: startAngle });
+      // ...upright above the stack (not overlapping it), so it can go behind here unseen and fall...
+      later(() => setTurn({ index: front, phase: 'fall', angle: startAngle }), LIFT_MS);
+      // ...swing back and settle...
+      later(() => setTurn({ index: front, phase: 'settle', angle: startAngle }), LIFT_MS + FALL_MS);
+      later(() => {
+        // ...360deg is the hanging pose: drop it without animating, then slide round to the back.
         setOrder([front, ...current.slice(0, -1)]);
-        setLifted(null);
-      }, LIFT_MS);
+        setTurn({ index: front, phase: 'reset', angle: startAngle });
+        later(() => setTurn(null), 40);
+      }, LIFT_MS + FALL_MS + SETTLE_MS);
     }, LOOP_MS);
     return () => {
       window.clearInterval(interval);
-      window.clearTimeout(liftTimer);
+      timers.forEach((t) => window.clearTimeout(t));
     };
   }, [settled, count]);
 
@@ -272,7 +338,7 @@ const CuttingTable: React.FC<{ collection: string }> = ({ collection }) => {
       {/* swatch book, hung from the eyelet */}
       <div
         className="absolute left-[34%] top-[12%] [@media(min-height:860px)]:top-[19%]"
-        style={{ width: CARD_W, height: CARD_H }}
+        style={{ width: CARD_W, height: CARD_H, perspective: 1400 }}
         onMouseEnter={() => (paused.current = true)}
         onMouseLeave={() => (paused.current = false)}
       >
@@ -283,8 +349,8 @@ const CuttingTable: React.FC<{ collection: string }> = ({ collection }) => {
               key={i}
               swatch={swatch}
               angle={fanAngle(position, count)}
-              z={position + 1}
-              lifted={lifted === i}
+              z={turn?.index === i ? (turn.phase === 'lift' ? count + 5 : 0) : position + 1}
+              turn={turn?.index === i ? turn : null}
               open={open}
               delay={settled ? 0 : position * 110}
             />

@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSelector, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
 
@@ -16,6 +16,8 @@ export interface CartItem {
 
 export interface CartState {
   items: CartItem[];
+  /** Bag lines the shopper unticked; they stay in the bag but are not sent to checkout. */
+  deselected: string[];
 }
 
 // Load persisted cart from localStorage on store initialisation
@@ -28,7 +30,23 @@ const storedItems = (() => {
   }
 })();
 
-const initialState: CartState = { items: storedItems };
+const storedDeselected = (() => {
+  try {
+    const raw = localStorage.getItem('cartDeselected');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed.filter((k) => typeof k === 'string') as string[]) : [];
+  } catch {
+    return [];
+  }
+})();
+
+const initialState: CartState = { items: storedItems, deselected: storedDeselected };
+
+type LineRef = { productId: string; variantId?: string; size?: string; color?: string };
+
+/** Stable key for one bag line (product + variant + size + colour). */
+export const cartLineKey = (item: LineRef): string =>
+  [item.productId, item.variantId ?? '', item.size ?? '', item.color ?? ''].join('|');
 
 /** Returns true when two cart entries refer to the same product+variant combination. */
 function isSameItem(
@@ -100,16 +118,29 @@ const cartSlice = createSlice({
      */
     clearCart(state) {
       state.items = [];
+      state.deselected = [];
       try {
         localStorage.removeItem('cart');
       } catch {
         // Storage access may fail in certain environments — silent fail
       }
     },
+
+    /** Tick or untick one bag line for checkout. */
+    setLineSelected(state, action: PayloadAction<{ item: LineRef; selected: boolean }>) {
+      const key = cartLineKey(action.payload.item);
+      state.deselected = state.deselected.filter((k) => k !== key);
+      if (!action.payload.selected) state.deselected.push(key);
+    },
+
+    /** Tick or untick every line in the bag. */
+    setAllSelected(state, action: PayloadAction<boolean>) {
+      state.deselected = action.payload ? [] : state.items.map(cartLineKey);
+    },
   },
 });
 
-export const { addToCart, updateQuantity, removeFromCart, clearCart, setCart } = cartSlice.actions;
+export const { addToCart, updateQuantity, removeFromCart, clearCart, setCart, setLineSelected, setAllSelected } = cartSlice.actions;
 
 
 export default cartSlice.reducer;
@@ -128,3 +159,21 @@ export const selectCartItemCount = (state: RootState): number =>
 /** Returns the cart subtotal (sum of price × quantity for each item). */
 export const selectCartSubtotal = (state: RootState): number =>
   state.cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+
+/** True when this bag line is ticked for checkout (lines are ticked by default). */
+export const selectIsLineSelected = (state: RootState, item: LineRef): boolean =>
+  !state.cart.deselected.includes(cartLineKey(item));
+
+/** The bag lines that go to checkout. */
+export const selectCheckoutItems = createSelector(
+  [(state: RootState) => state.cart.items, (state: RootState) => state.cart.deselected],
+  (items, deselected): CartItem[] =>
+    deselected.length === 0 ? items : items.filter((item) => !deselected.includes(cartLineKey(item))),
+);
+
+/** Units and subtotal of the ticked lines only. */
+export const selectCheckoutItemCount = (state: RootState): number =>
+  selectCheckoutItems(state).reduce((total, item) => total + item.quantity, 0);
+
+export const selectCheckoutSubtotal = (state: RootState): number =>
+  selectCheckoutItems(state).reduce((total, item) => total + item.price * item.quantity, 0);

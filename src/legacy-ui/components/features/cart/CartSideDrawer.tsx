@@ -13,13 +13,15 @@ import {
 import { optimizeImage } from '../../../utils/imageUtils';
 import {
   selectCartItems,
-  selectCartSubtotal,
+  selectCheckoutItems,
+  selectCheckoutSubtotal,
   selectCartItemCount,
   updateQuantity,
   removeFromCart,
   type CartItem,
 } from '../../../store/slices/cartSlice';
 import type { AppDispatch } from '../../../store';
+import { useStorefrontOffers } from '../../../hooks/useStorefrontOffers';
 
 interface CartSideDrawerProps {
   isOpen: boolean;
@@ -36,7 +38,10 @@ const formatINR = (n: number) =>
 const CartSideDrawer: React.FC<CartSideDrawerProps> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
   const items = useSelector(selectCartItems);
-  const subtotal = useSelector(selectCartSubtotal);
+  // Totals follow the lines ticked on the bag page (all of them unless the shopper unticked some).
+  const subtotal = useSelector(selectCheckoutSubtotal);
+  const checkoutLineCount = useSelector(selectCheckoutItems).length;
+  const unticked = items.length - checkoutLineCount;
   const itemCount = useSelector(selectCartItemCount);
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -89,7 +94,7 @@ const CartSideDrawer: React.FC<CartSideDrawerProps> = ({ isOpen, onClose }) => {
     }));
   };
 
-  const shippingThreshold = 1499;
+  const { freeShippingThreshold: shippingThreshold, prepaidDiscountPercent } = useStorefrontOffers();
   const freeShipping = subtotal >= shippingThreshold;
   const remaining = shippingThreshold - subtotal;
   const shippingProgress = Math.min((subtotal / shippingThreshold) * 100, 100);
@@ -157,6 +162,11 @@ const CartSideDrawer: React.FC<CartSideDrawerProps> = ({ isOpen, onClose }) => {
                   />
                 </div>
               </div>
+            )}
+            {prepaidDiscountPercent > 0 && (
+              <p className="mt-2 text-xs text-stone-600">
+                Pay online and get an extra <strong className="font-semibold text-ink">{prepaidDiscountPercent}% off</strong> at checkout.
+              </p>
             )}
           </div>
         )}
@@ -267,10 +277,15 @@ const CartSideDrawer: React.FC<CartSideDrawerProps> = ({ isOpen, onClose }) => {
             </div>
 
             <p className="text-xs text-stone-400 tracking-wide">Shipping & taxes calculated at checkout</p>
+            {unticked > 0 && (
+              <p className="text-xs text-body">
+                {unticked} {unticked === 1 ? 'item is' : 'items are'} unticked in your bag and won't be checked out.
+              </p>
+            )}
 
             {/* Checkout CTA */}
             <Link
-              to="/checkout"
+              to={checkoutLineCount > 0 ? '/checkout' : '/cart'}
               onClick={onClose}
               className="flex items-center justify-center gap-2 w-full bg-ink text-[12px] text-white h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover"
             >

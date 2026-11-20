@@ -35,6 +35,7 @@ import featuredSectionRoutes from "./modules/cms/featuredSections/featuredSectio
 import videoCardRoutes from "./modules/cms/videoCards/videoCard.routes";
 import mediaRouter from "./modules/mediaLibrary/media.routes";
 import avatarRouter from "./routes/avatarRoutes";
+import storefrontSettingsRouter from "./routes/storefrontSettingsRoutes";
 import mediaUploadRouter from "./modules/mediaLibrary/mediaUpload.routes";
 import featuredReviewsRouter from "./modules/reviews/featuredReviews.routes";
 import auditLogRouter from "./modules/auditLogs/auditLog.routes";
@@ -62,6 +63,7 @@ app.get("/api/health", (req, res) => sendSuccess(res, { status: "ok" }));
 app.use("/api/v1/auth/avatar", avatarRouter);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/checkout", checkoutRoutes);
+app.use("/api/v1/storefront-settings", storefrontSettingsRouter);
 
 // 6. Storefront
 app.use("/api/v1/products", productRoutes.publicRouter);

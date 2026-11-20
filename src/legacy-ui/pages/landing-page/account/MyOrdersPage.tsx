@@ -11,7 +11,7 @@ import {
   type OrderItem,
 } from '../../../services/ordersApi';
 import { optimizeImage } from '../../../utils/imageUtils';
-import { CancelHint, CancelOrderSheet, CancellationNote, cancelState } from '../../../components/features/orders/CancelOrder';
+import { CancelHint, CancelOrderSheet, CancellationNote, SizeChangeNote, cancelState } from '../../../components/features/orders/CancelOrder';
 import {
   AccountHeading,
   Dialog,
@@ -211,6 +211,11 @@ const OrderCard: React.FC<{
           <CancellationNote order={order} />
         </div>
       ) : null}
+      {order.sizeChangeRequest?.status === 'pending' && order.status !== 'Cancelled' ? (
+        <div className="px-5 pb-4 sm:px-6">
+          <SizeChangeNote order={order} />
+        </div>
+      ) : null}
 
       {/* Details */}
       {expanded ? (
@@ -386,17 +391,15 @@ const MyOrdersPage: React.FC = () => {
   const currentPage = Math.min(page, totalPages);
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
+  /** Cancels the order; the sheet shows progress and the result, so errors are thrown back to it. */
   const handleCancel = async (reason: string, note: string) => {
     if (!cancelTarget) return;
     try {
       await cancelOrder({ id: cancelTarget, reason, note }).unwrap();
-      toast('Your order is cancelled. We’ve emailed you a confirmation.');
       void refetch();
     } catch (err) {
       const e = err as { data?: { message?: string; error?: { message?: string } } };
-      toast(e?.data?.error?.message ?? e?.data?.message ?? 'Could not cancel the order. Please try again.', 'error');
-    } finally {
-      setCancelTarget(null);
+      throw new Error(e?.data?.error?.message ?? e?.data?.message ?? 'Could not cancel the order. Please try again.');
     }
   };
 
@@ -527,9 +530,11 @@ const MyOrdersPage: React.FC = () => {
 
       <CancelOrderSheet
         order={allOrders.find((o) => o._id === cancelTarget) ?? null}
-        isSubmitting={isCancelling}
-        onConfirm={(reason, note) => void handleCancel(reason, note)}
-        onClose={() => setCancelTarget(null)}
+        onConfirm={handleCancel}
+        onClose={() => {
+          setCancelTarget(null);
+          void refetch();
+        }}
       />
 
       {exchangeTarget ? (

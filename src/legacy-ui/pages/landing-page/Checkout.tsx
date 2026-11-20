@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { ShieldCheck, Truck, CreditCard, ArrowLeft, AlertCircle } from 'lucide-react';
 
-import { selectCartItems, selectCartSubtotal } from '../../store/slices/cartSlice';
+import { selectCartItems, selectCheckoutItems, selectCheckoutSubtotal } from '../../store/slices/cartSlice';
 import { optimizeImage } from '../../utils/imageUtils';
 import { generateCheckoutToken, openShiprocketCheckout, rememberCheckoutItems } from '../../services/shiprocketCheckoutAlternative';
 
@@ -26,8 +26,10 @@ const formatINR = (amount: number) =>
  * Displays the order summary and proceeds with the payment flow.
  */
 const Checkout: React.FC = () => {
-  const cartItems = useSelector(selectCartItems);
-  const cartSubtotal = useSelector(selectCartSubtotal);
+  // Only the lines ticked on the bag page go to checkout; the rest stay in the bag.
+  const cartItems = useSelector(selectCheckoutItems);
+  const cartSubtotal = useSelector(selectCheckoutSubtotal);
+  const bagHasItems = useSelector(selectCartItems).length > 0;
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,12 +92,14 @@ const Checkout: React.FC = () => {
     return (
       <div className="min-h-screen bg-canvas flex items-center justify-center text-center px-4">
         <div className="space-y-4">
-          <p className="text-xl tracking-[-0.4px] text-slate-800 font-semibold">Your cart is empty</p>
+          <p className="text-xl tracking-[-0.4px] text-slate-800 font-semibold">
+            {bagHasItems ? 'No items selected for checkout' : 'Your cart is empty'}
+          </p>
           <Link
-            to="/products"
-            className="inline-block border px-6 text-ink h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
+            to={bagHasItems ? '/cart' : '/products'}
+            className="inline-flex items-center border px-6 text-ink h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
           >
-            Continue Shopping
+            {bagHasItems ? 'Back to bag' : 'Continue Shopping'}
           </Link>
         </div>
       </div>

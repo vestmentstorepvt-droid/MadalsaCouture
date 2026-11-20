@@ -3,6 +3,7 @@ import __imp0 from "@/server/lib/express";
 import __imp1 from "@/server/controllers/orderController";
 import __imp2 from "@/server/services/exchangeService";
 import __imp3 from "@/server/middleware/authMiddleware";
+import { getSizeOptions, requestSizeChange } from "@/server/services/orderSizeChangeService";
 
 const express = __imp0;
 const orderController = __imp1;
@@ -17,6 +18,21 @@ customerRouter.use(authenticate);
 customerRouter.get('/', orderController.listMyOrders);
 customerRouter.get('/:id', orderController.getMyOrder);
 customerRouter.post('/:id/cancel', orderController.cancelMyOrder);
+customerRouter.get('/:id/size-options', async (req, res, next) => {
+  try {
+    return res.json({ success: true, data: await getSizeOptions(req.params.id, req.user.id) });
+  } catch (err) {
+    next(err);
+  }
+});
+customerRouter.post('/:id/size-change', async (req, res, next) => {
+  try {
+    const order = await requestSizeChange(req.params.id, req.user.id, req.body || {});
+    return res.json({ success: true, data: { order } });
+  } catch (err) {
+    next(err);
+  }
+});
 
 customerRouter.post('/:orderId/items/:itemId/exchange-request', async (req, res, next) => {
   try {

@@ -2,11 +2,10 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store';
-import {
-  ShoppingBag, Plus, Minus, Trash2, ArrowRight,
-  Tag, RefreshCw, Heart, ChevronRight
-} from 'lucide-react';
+import { ShoppingBag, Plus, Minus, Trash2, ArrowRight, Heart, Truck } from 'lucide-react';
 import { optimizeImage } from '../../utils/imageUtils';
+import { SectionHeader } from '../../components/ui/SectionHeader';
+import { EmptyState } from '../../components/ui/EmptyState';
 import {
   selectCartItems,
   selectCartSubtotal,
@@ -15,6 +14,12 @@ import {
   removeFromCart,
   clearCart,
   setCart,
+  setLineSelected,
+  setAllSelected,
+  cartLineKey,
+  selectCheckoutItems,
+  selectCheckoutItemCount,
+  selectCheckoutSubtotal,
   type CartItem,
 } from '../../store/slices/cartSlice';
 import {
@@ -24,6 +29,7 @@ import {
   useClearCartApiMutation,
 } from '../../services/cartApi';
 import type { AppDispatch } from '../../store';
+import { useStorefrontOffers } from '../../hooks/useStorefrontOffers';
 
 const formatINR = (n: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -35,107 +41,107 @@ const formatINR = (n: number) =>
 // ── Cart Item Row ──────────────────────────────────────────────────────────────
 const CartItemRow: React.FC<{
   item: CartItem;
+  selected: boolean;
+  onToggle: (selected: boolean) => void;
   onUpdateQty: (qty: number) => void;
   onRemove: () => void;
-}> = ({ item, onUpdateQty, onRemove }) => (
-  <div className="flex items-start gap-4 sm:gap-5 rounded-2xl border border-hairline bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
+}> = ({ item, selected, onToggle, onUpdateQty, onRemove }) => (
+  <li className="flex gap-3 py-6 sm:gap-5">
+    {/* Tick: goes to checkout */}
+    <label className="-ml-2 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center self-start rounded-full hover:bg-hairline-soft">
+      <span className="sr-only">Include {item.name} in checkout</span>
+      <input
+        type="checkbox"
+        checked={selected}
+        onChange={(e) => onToggle(e.target.checked)}
+        className="h-[18px] w-[18px] cursor-pointer rounded accent-[#171717]"
+      />
+    </label>
+
     {/* Image */}
-    <div className="h-24 w-20 sm:h-28 sm:w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+    <div className={`aspect-[3/4] w-20 shrink-0 overflow-hidden rounded-md bg-hairline-soft transition-opacity sm:w-28 ${selected ? '' : 'opacity-50'}`}>
       {item.image ? (
-        <img src={optimizeImage(item.image, 200)} alt={item.name} className="h-full w-full object-cover" />
+        <img src={optimizeImage(item.image, 300)} alt={item.name} className="h-full w-full object-cover" />
       ) : (
-        <div className="h-full flex items-center justify-center">
-          <ShoppingBag className="h-7 w-7 text-slate-300" />
+        <div className="flex h-full items-center justify-center">
+          <ShoppingBag className="h-6 w-6 text-faint" aria-hidden="true" />
         </div>
       )}
     </div>
 
     {/* Details */}
-    <div className="flex flex-1 flex-col gap-2.5 min-w-0">
-      <div className="flex items-start justify-between gap-2">
+    <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-slate-900 leading-snug line-clamp-2">
-            {item.name}
-          </h3>
+          <h3 className="line-clamp-2 text-base font-medium leading-snug text-ink">{item.name}</h3>
           {(item.size || item.color) && (
-            <p className="text-xs text-slate-500 mt-0.5">
-              size - {[item.size, item.color].filter(Boolean).join(' · ')}
+            <p className="mt-1 text-sm text-mute">
+              {[item.size && `Size ${item.size}`, item.color].filter(Boolean).join(' · ')}
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onRemove}
-          className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition"
-          aria-label="Remove item"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <p className="shrink-0 text-base font-medium text-ink tabular-nums">{formatINR(item.price * item.quantity)}</p>
       </div>
+      {item.quantity > 1 && (
+        <p className="mt-0.5 text-right text-xs text-mute tabular-nums">{formatINR(item.price)} each</p>
+      )}
 
-      {/* Qty + price row */}
-      <div className="flex items-center justify-between gap-2">
-        {/* Stepper */}
-        <div className="flex items-center border border-hairline rounded-xl overflow-hidden">
+      {/* Qty + remove */}
+      <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+        <div className="flex h-10 items-center rounded-full border border-hairline-strong bg-surface px-0.5">
           <button
             type="button"
             onClick={() => onUpdateQty(item.quantity - 1)}
-            className="px-3 py-2 text-slate-600 hover:bg-canvas transition"
-            aria-label="Decrease quantity"
+            disabled={item.quantity <= 1}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-hairline-soft disabled:text-faint disabled:hover:bg-transparent"
+            aria-label={`Decrease quantity of ${item.name}`}
           >
-            <Minus className="h-3.5 w-3.5" />
+            <Minus className="h-4 w-4" />
           </button>
-          <span className="px-4 text-sm border-x min-w-[2.5rem] text-center bg-white h-11 rounded-full border border-hairline-strong bg-surface text-ink font-medium transition-colors hover:bg-hairline-soft">
+          <span className="min-w-8 text-center text-sm font-medium text-ink tabular-nums" aria-live="polite">
             {item.quantity}
           </span>
           <button
             type="button"
             onClick={() => onUpdateQty(item.quantity + 1)}
-            className="px-3 py-2 text-slate-600 hover:bg-canvas transition"
-            aria-label="Increase quantity"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink hover:bg-hairline-soft"
+            aria-label={`Increase quantity of ${item.name}`}
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
           </button>
         </div>
-
-        {/* Line total */}
-        <div className="text-right">
-          <p className="text-sm font-bold text-slate-900">{formatINR(item.price * item.quantity)}</p>
-          {item.quantity > 1 && (
-            <p className="text-xs text-slate-400">{formatINR(item.price)} each</p>
-          )}
-        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="inline-flex h-10 items-center gap-1.5 rounded-full px-2 text-sm text-mute transition-colors hover:text-ink"
+        >
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
+          Remove
+        </button>
       </div>
     </div>
-  </div>
+  </li>
 );
 
 // ── Empty Cart ─────────────────────────────────────────────────────────────────
 const EmptyCart: React.FC = () => (
-  <div className="min-h-screen bg-canvas flex flex-col items-center justify-center gap-6 text-center px-4">
-    <div className="w-24 h-24 rounded-full bg-ink/10 flex items-center justify-center">
-      <ShoppingBag className="h-12 w-12 text-accent" />
-    </div>
-    <div className="space-y-2">
-      <p className="eyebrow">Shopping Bag</p>
-      <h2 className="text-xl tracking-[-0.4px] text-slate-800 font-semibold">Your bag is empty</h2>
-      <p className="text-sm text-slate-500 max-w-sm">
-        Discover our luxury collections and add your favourite pieces.
-      </p>
-    </div>
-    <div className="flex flex-col sm:flex-row gap-3">
-      <Link
-        to="/products"
-        className="inline-flex items-center gap-2 bg-ink px-8 text-white h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover"
-      >
-        Explore Collections <ArrowRight className="h-4 w-4" />
-      </Link>
-      <Link
-        to="/wishlist"
-        className="inline-flex items-center gap-2 border text-ink px-8 h-11 rounded-full border-hairline-strong bg-surface text-sm font-medium transition-colors hover:bg-hairline-soft"
-      >
-        <Heart className="h-4 w-4" /> View Wishlist
-      </Link>
+  <div className="min-h-[70vh] bg-canvas px-4 pb-24 pt-10 sm:px-6 sm:pt-14 lg:px-8">
+    <div className="mx-auto max-w-2xl">
+      <EmptyState
+        icon={<ShoppingBag className="h-6 w-6" />}
+        title="Your bag is empty"
+        description="Discover our collections and add your favourite pieces."
+        action={
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Link to="/products" className="btn-primary gap-2 px-6">
+              Shop all products <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link to="/wishlist" className="btn-secondary gap-2 px-6">
+              <Heart className="h-4 w-4" aria-hidden="true" /> View wishlist
+            </Link>
+          </div>
+        }
+      />
     </div>
   </div>
 );
@@ -144,8 +150,15 @@ const EmptyCart: React.FC = () => (
 const Cart: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const items = useSelector(selectCartItems);
-  const subtotal = useSelector(selectCartSubtotal);
   const itemCount = useSelector(selectCartItemCount);
+  // The summary and checkout only count the ticked lines.
+  const checkoutItems = useSelector(selectCheckoutItems);
+  const subtotal = useSelector(selectCheckoutSubtotal);
+  const offers = useStorefrontOffers();
+  const selectedCount = useSelector(selectCheckoutItemCount);
+  const selectedKeys = new Set(checkoutItems.map(cartLineKey));
+  const allSelected = checkoutItems.length === items.length;
+  const noneSelected = checkoutItems.length === 0;
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   const { data: backendCart } = useGetCartQuery(undefined, { skip: !isAuthenticated });
@@ -215,117 +228,135 @@ const Cart: React.FC = () => {
 
   if (items.length === 0) return <EmptyCart />;
 
-  const shippingThreshold = 1499;
+  const shippingThreshold = offers.freeShippingThreshold;
   const freeShipping = subtotal >= shippingThreshold;
   const remaining = shippingThreshold - subtotal;
 
   return (
-    <div className="min-h-screen bg-canvas pt-20 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-8">
+    <div className="min-h-screen bg-canvas pb-24 pt-6 lg:pt-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <nav aria-label="Breadcrumb" className="mb-6 text-sm text-mute">
+          <ol className="flex flex-wrap items-center gap-1.5">
+            <li><Link to="/" className="hover:text-ink">Home</Link></li>
+            <li aria-hidden="true">/</li>
+            <li className="text-ink" aria-current="page">Shopping bag</li>
+          </ol>
+        </nav>
 
-        {/* ── Header ────────────────────────────────────────────────── */}
-        <div className="text-center space-y-2">
-          <p className="eyebrow">Shopping Bag</p>
-          <h1 className="text-[32px] leading-10 tracking-[-1.28px] text-slate-900 font-semibold">
-            Your Bag <span className="text-accent">({itemCount})</span>
-          </h1>
-          <div className="mx-auto h-0.5 w-12 bg-ink" />
-        </div>
+        <SectionHeader
+          as="h1"
+          eyebrow="Shopping bag"
+          title={<>Your bag <span className="text-mute tabular-nums">({itemCount})</span></>}
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="mt-8 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_24rem]">
           {/* ── Items ─────────────────────────────────────────────────── */}
-          <div className="lg:col-span-2 space-y-3">
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
-              <Link to="/" className="hover:text-accent transition">Home</Link>
-              <ChevronRight className="w-3 h-3" />
-              <span className="font-semibold text-slate-800">Shopping Bag</span>
+          <section aria-label="Items in your bag" className="border-t border-hairline pt-2">
+            {/* Select all */}
+            <div className="flex items-center justify-between gap-3 pb-2">
+              <label className="-ml-2 inline-flex cursor-pointer items-center gap-1 rounded-full pr-3 text-sm font-medium text-ink hover:bg-hairline-soft">
+                <span className="flex h-10 w-10 items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => { if (el) el.indeterminate = !allSelected && !noneSelected; }}
+                    onChange={(e) => dispatch(setAllSelected(e.target.checked))}
+                    className="h-[18px] w-[18px] cursor-pointer rounded accent-[#171717]"
+                  />
+                </span>
+                Select all
+              </label>
+              <p className="text-sm text-mute tabular-nums" aria-live="polite">
+                {checkoutItems.length} of {items.length} selected
+              </p>
             </div>
 
-            {items.map((item: CartItem) => (
-              <CartItemRow
-                key={`${item.productId}-${item.variantId ?? ''}-${item.size ?? ''}-${item.color ?? ''}`}
-                item={item}
-                onUpdateQty={(qty) => handleUpdateQty(item, qty)}
-                onRemove={() => handleRemove(item)}
-              />
-            ))}
+            <ul className="divide-y divide-hairline border-t border-hairline">
+              {items.map((item: CartItem) => (
+                <CartItemRow
+                  key={cartLineKey(item)}
+                  item={item}
+                  selected={selectedKeys.has(cartLineKey(item))}
+                  onToggle={(selected) => dispatch(setLineSelected({ item, selected }))}
+                  onUpdateQty={(qty) => handleUpdateQty(item, qty)}
+                  onRemove={() => handleRemove(item)}
+                />
+              ))}
+            </ul>
 
-            {/* Clear cart */}
-            <div className="flex justify-end pt-1">
+            <div className="flex items-center justify-between border-t border-hairline pt-4">
+              <Link to="/products" className="text-sm font-medium text-ink underline-offset-4 hover:underline">
+                Continue shopping
+              </Link>
               <button
                 type="button"
                 onClick={handleClear}
-                className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-rose-500 transition"
+                className="h-10 px-2 text-sm text-mute underline underline-offset-4 hover:text-ink"
               >
-                <RefreshCw className="w-3.5 h-3.5" /> Clear bag
+                Clear bag
               </button>
             </div>
-          </div>
-
+          </section>
 
           {/* ── Summary ───────────────────────────────────────────────── */}
-          <div className="rounded-2xl border border-hairline bg-white p-6 space-y-5 shadow-sm sticky top-24">
-            <h2 className="text-base text-slate-900 border-b border-hairline pb-3 font-semibold">
-              Order Summary
-            </h2>
+          <aside aria-labelledby="order-summary-heading" className="rounded-2xl border border-hairline bg-surface p-6 lg:sticky lg:top-28">
+            <h2 id="order-summary-heading" className="text-base font-semibold text-ink">Order summary</h2>
 
             {/* Free shipping progress */}
-            {!freeShipping && (
-              <div className="space-y-1.5">
-                <p className="text-xs text-slate-500">
-                  Add <strong className="text-ink">{formatINR(remaining)}</strong> more for free shipping
+            {!noneSelected && <div className="mt-4">
+              {freeShipping ? (
+                <p className="flex items-center gap-2 text-sm text-body">
+                  <Truck className="h-4 w-4 text-ink" aria-hidden="true" /> You qualify for free shipping
                 </p>
-                <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-ink transition-all duration-500"
-                    style={{ width: `${Math.min((subtotal / shippingThreshold) * 100, 100)}%` }}
-                  />
+              ) : (
+                <>
+                  <p className="text-sm text-body">
+                    Add <strong className="font-medium text-ink tabular-nums">{formatINR(remaining)}</strong> more for free shipping
+                  </p>
+                  <div className="mt-2 h-1 overflow-hidden rounded-full bg-hairline-soft">
+                    <div
+                      className="h-full rounded-full bg-ink transition-[width] duration-500"
+                      style={{ width: `${Math.min((subtotal / shippingThreshold) * 100, 100)}%` }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>}
+
+            <dl className="mt-6 space-y-3 border-t border-hairline pt-6 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-body">Subtotal ({selectedCount} {selectedCount === 1 ? 'item' : 'items'})</dt>
+                <dd className="text-ink tabular-nums">{formatINR(subtotal)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-body">Shipping</dt>
+                <dd className={freeShipping ? 'text-ink' : 'text-mute'}>{freeShipping ? 'Free' : 'Calculated at checkout'}</dd>
+              </div>
+              {offers.prepaidDiscountPercent > 0 && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-body">Pay online</dt>
+                  <dd className="text-right text-ink">Extra {offers.prepaidDiscountPercent}% off at checkout</dd>
                 </div>
+              )}
+              <div className="flex justify-between gap-4 border-t border-hairline pt-4">
+                <dt className="text-base font-semibold text-ink">Total</dt>
+                <dd className="text-base font-semibold text-ink tabular-nums">{formatINR(subtotal)}</dd>
               </div>
+            </dl>
+
+            {noneSelected ? (
+              <>
+                <button type="button" disabled className="btn-primary mt-6 h-12 w-full">
+                  Checkout
+                </button>
+                <p className="mt-3 text-center text-sm text-mute">Tick at least one item to check out.</p>
+              </>
+            ) : (
+              <Link to="/checkout" className="btn-primary mt-6 h-12 w-full">
+                {allSelected ? 'Checkout' : `Checkout ${checkoutItems.length} of ${items.length} items`}
+              </Link>
             )}
-            {freeShipping && (
-              <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
-                <Tag className="w-3.5 h-3.5" /> You qualify for free shipping!
-              </div>
-            )}
-
-            {/* Line items */}
-            <div className="space-y-2 text-sm text-slate-600">
-              <div className="flex justify-between">
-                <span>Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'items'})</span>
-                <span className="font-semibold text-slate-900">{formatINR(subtotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                {freeShipping
-                  ? <span className="text-emerald-600 font-semibold">FREE</span>
-                  : <span className="text-slate-400">Calculated at checkout</span>
-                }
-              </div>
-            </div>
-
-            {/* Total */}
-            <div className="border-t border-hairline pt-4 flex justify-between">
-              <span className="text-base font-semibold text-slate-900">Total</span>
-              <span className="font-serif text-lg font-bold text-ink">{formatINR(subtotal)}</span>
-            </div>
-
-            {/* CTA — Proceed to Checkout */}
-            <Link
-              to="/checkout"
-              className="w-full bg-ink text-white px-4 text-center transition h-11 rounded-full text-sm font-medium transition-colors hover:bg-ink-hover flex items-center justify-center"
-            >
-              Checkout
-            </Link>
-
-            <Link
-              to="/products"
-              className="flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-ink transition"
-            >
-              Continue Shopping
-            </Link>
-          </div>
+          </aside>
         </div>
       </div>
     </div>

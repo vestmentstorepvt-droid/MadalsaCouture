@@ -96,6 +96,7 @@ store.subscribe(() => {
   const { cart } = store.getState();
   try {
     localStorage.setItem('cart', JSON.stringify(cart.items));
+    localStorage.setItem('cartDeselected', JSON.stringify(cart.deselected));
   } catch {
     // Storage quota exceeded — silent fail
   }
