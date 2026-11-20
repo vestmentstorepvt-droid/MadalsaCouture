@@ -53,7 +53,7 @@ const CheckRow: React.FC<{ checked: boolean; label: string; count?: number; roun
   round,
   onChange,
 }) => (
-  <label className="flex min-h-10 cursor-pointer items-center gap-3 text-sm text-body transition-colors hover:text-ink">
+  <label className="relative flex min-h-10 cursor-pointer items-center gap-3 text-sm text-body transition-colors hover:text-ink">
     <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
     <span
       aria-hidden="true"
@@ -75,7 +75,7 @@ const CheckRow: React.FC<{ checked: boolean; label: string; count?: number; roun
 
 /** On/off switch for single yes/no filters. */
 const Toggle: React.FC<{ checked: boolean; label: string; count?: number; onChange: () => void }> = ({ checked, label, count, onChange }) => (
-  <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-body hover:text-ink">
+  <label className="relative flex min-h-11 cursor-pointer items-center gap-3 text-sm text-body hover:text-ink">
     <span className={`flex-1 ${checked ? 'font-medium text-ink' : ''}`}>
       {label}
       {count !== undefined && <span className="ml-1.5 text-xs tabular-nums text-faint">{count}</span>}
@@ -237,7 +237,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({ facets, state, update,
           );
         })}
         <form
-          className="mt-3 flex items-end gap-2"
+          className="relative mt-3 flex items-end gap-2"
           onSubmit={(event) => {
             event.preventDefault();
             applyPriceDrafts();

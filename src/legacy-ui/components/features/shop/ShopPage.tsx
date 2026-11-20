@@ -220,7 +220,7 @@ export const ShopPage: React.FC = () => {
         <div className="mt-6 grid gap-8 lg:grid-cols-[17rem_1fr] xl:grid-cols-[18rem_1fr]">
           {/* Desktop sidebar */}
           <aside className="hidden lg:block" aria-label="Filters">
-            <div className="sticky top-24 flex max-h-[calc(100svh-7.5rem)] flex-col overflow-hidden rounded-2xl border border-gold-muted bg-surface">
+            <div className="sticky top-24 flex max-h-[calc(100svh-7.5rem)] flex-col overflow-clip rounded-2xl border border-gold-muted bg-surface">
               <FilterHeader activeCount={activeCount} onClear={clearAll} headingId="shop-filter-heading" />
               <div className={`min-h-0 flex-1 overflow-y-auto px-5 ${THEMED_SCROLLBAR}`}>{panel}</div>
             </div>
@@ -370,7 +370,7 @@ export const ShopPage: React.FC = () => {
       {sheetOpen && (
         <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true" aria-labelledby="shop-filter-title">
           <button type="button" aria-label="Close filters" onClick={() => setSheetOpen(false)} className="absolute inset-0 bg-black/40" />
-          <div className="absolute inset-x-0 bottom-0 flex max-h-[88svh] flex-col overflow-hidden rounded-t-2xl bg-surface shadow-2xl">
+          <div className="absolute inset-x-0 bottom-0 flex max-h-[88svh] flex-col overflow-clip rounded-t-2xl bg-surface shadow-2xl">
             <FilterHeader headingId="shop-filter-title" onClose={() => setSheetOpen(false)} />
             <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 ${THEMED_SCROLLBAR}`}>{panel}</div>
             <div className="flex items-center gap-3 border-t border-hairline px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
