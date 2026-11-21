@@ -4,13 +4,16 @@
 // tells the API which file it uploaded. Returns the same { url, publicId } the
 // old POST /api/v1/admin/media returned.
 
+import { apiBaseFor } from '../api/baseQuery';
+
 type Ticket =
   | { provider: 'cloudinary'; method: 'POST'; uploadUrl: string; fields: Record<string, string>; resourceType: string; folder: string }
   | { provider: 'r2'; method: 'PUT'; uploadUrl: string; headers: Record<string, string>; key: string; resourceType: string; folder: string };
 
 export type UploadedRef = { provider: 'cloudinary' | 'r2'; publicId?: string; key?: string; resourceType: string };
 
-const apiBase = () => ((process.env.NEXT_PUBLIC_API_BASE_URL as string) || '').replace(/\/+$/, '');
+// Admin pages upload through the admin API server, shop pages (reviews, profile photos) through the shop's.
+const apiBase = (path: string) => apiBaseFor(path);
 
 const authHeader = (): Record<string, string> => {
   const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || '';
@@ -18,7 +21,7 @@ const authHeader = (): Record<string, string> => {
 };
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${apiBase()}${path}`, {
+  const res = await fetch(`${apiBase(path)}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify(body),
@@ -116,7 +119,7 @@ export async function uploadReviewFile(file: File): Promise<UploadedRef> {
 }
 
 async function sendJson<T>(method: 'PUT' | 'DELETE', path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${apiBase()}${path}`, {
+  const res = await fetch(`${apiBase(path)}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: body === undefined ? undefined : JSON.stringify(body),

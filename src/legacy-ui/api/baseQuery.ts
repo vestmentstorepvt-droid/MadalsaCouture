@@ -12,6 +12,18 @@ const normalizeBaseUrl = (value?: string) => {
 export const API_BASE_URL = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL);
 const API_VERSION_PREFIX = '/api/v1';
 
+// The admin panel can use a different API server from the shop: shoppers get the fast one next to
+// the database, the back office keeps the always-on server with no request time limit.
+// Unset = same server as the shop.
+const ADMIN_API_BASE_URL =
+  (process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL || '').trim().replace(/\/+$/, '') || API_BASE_URL;
+
+const onAdminPage = () => typeof window !== 'undefined' && /^\/admin(\/|$)/.test(window.location.pathname);
+
+/** API origin for a request: the admin server on admin pages and for /admin/... calls, else the shop's. */
+export const apiBaseFor = (path = '') =>
+  onAdminPage() || /^\/(api\/v1\/)?admin(\/|$)/.test(path) ? ADMIN_API_BASE_URL : API_BASE_URL;
+
 const readAuthToken = (getState?: () => unknown) => {
   const state = getState?.() as RootState | undefined;
   const tokenFromState = state?.auth?.token ?? null;
@@ -28,8 +40,7 @@ const readAuthToken = (getState?: () => unknown) => {
   );
 };
 
-export const baseQuery = fetchBaseQuery({
-  baseUrl: `${API_BASE_URL}${API_VERSION_PREFIX}`,
+const queryOptions: Omit<Parameters<typeof fetchBaseQuery>[0] & object, 'baseUrl'> = {
   prepareHeaders: (headers, { getState, arg, type }) => {
     const token = readAuthToken(getState);
 
@@ -53,7 +64,18 @@ export const baseQuery = fetchBaseQuery({
 
     return headers;
   },
-});
+};
+
+const shopQuery = fetchBaseQuery({ baseUrl: `${API_BASE_URL}${API_VERSION_PREFIX}`, ...queryOptions });
+const adminQuery =
+  ADMIN_API_BASE_URL === API_BASE_URL
+    ? shopQuery
+    : fetchBaseQuery({ baseUrl: `${ADMIN_API_BASE_URL}${API_VERSION_PREFIX}`, ...queryOptions });
+
+export const baseQuery: typeof shopQuery = (args, api, extraOptions) => {
+  const url = typeof args === 'string' ? args : args.url;
+  return (apiBaseFor(url) === ADMIN_API_BASE_URL && adminQuery !== shopQuery ? adminQuery : shopQuery)(args, api, extraOptions);
+};
 
 type RefreshApi = Parameters<typeof baseQuery>[1];
 type RefreshExtra = Parameters<typeof baseQuery>[2];
