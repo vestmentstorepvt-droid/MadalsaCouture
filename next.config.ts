@@ -56,6 +56,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Don't advertise the framework (X-Powered-By: Next.js).
   poweredByHeader: false,
+  // Tailwind CSS (~24 KB) goes inside the HTML instead of a separate file the page must wait for.
+  // PageSpeed counted that wait as ~680 ms of render-blocking on mobile.
+  experimental: { inlineCss: true },
   // Lets a second local server run alongside another (e.g. NEXT_DIST_DIR=.next-alt).
   distDir: process.env.NEXT_DIST_DIR || ".next",
   env: {

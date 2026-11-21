@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type PointerE
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { User, ShoppingBag, Menu, X, ChevronDown, Search, Heart, ArrowRight, LogOut, LayoutDashboard, Package, Shirt, UserRound } from 'lucide-react';
-const madalsaLogo = '/assets/file.png';
+const madalsaLogo = '/assets/logo-384.webp';
 import { useLogout } from '../../../hooks/useLogout';
 import { useCheckoutCleanupWatcher } from '../../../hooks/useCheckoutCleanup';
 import { selectCartItemCount } from '../../../store/slices/cartSlice';
@@ -325,7 +325,7 @@ export const LandingNavbar = () => {
 
         {/* Centre: logo */}
         <Link to="/" className="flex items-center justify-center rounded-md" aria-label="Madalsa Couture, home">
-          <img src={madalsaLogo} alt="" className="h-12 w-auto object-contain lg:h-[64px]" />
+          <img src={madalsaLogo} alt="" width={384} height={256} className="h-12 w-auto object-contain lg:h-[64px]" />
         </Link>
 
         {/* Right */}

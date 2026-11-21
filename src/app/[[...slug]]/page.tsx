@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { DEFAULT_OG_IMAGE, SITE_NAME, absoluteUrl, isProductionHost } from "@/seo/config";
+import { getHeroFirstImage } from "@/seo/data";
 import { resolvePage } from "@/seo/resolve";
 import { JsonLd, SeoSummary } from "@/seo/SeoSummary";
 import { optimizeImage } from "@/legacy-ui/utils/imageUtils";
@@ -38,11 +39,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Same widths and sizes as the home banner (Hero.tsx), so the preloaded file is the one it uses.
+const srcSet = (url: string, widths: number[]) => widths.map((w) => `${optimizeImage(url, w)} ${w}w`).join(", ");
+
+async function HeroPreload() {
+  const hero = await getHeroFirstImage().catch(() => null);
+  if (!hero) return null;
+  const desktop = srcSet(hero.mediaUrl, [640, 960, 1280, 1920]);
+  if (!hero.mobileMediaUrl) return <link rel="preload" as="image" imageSrcSet={desktop} imageSizes="100vw" fetchPriority="high" />;
+  return (
+    <>
+      <link rel="preload" as="image" media="(max-width: 639px)" imageSrcSet={srcSet(hero.mobileMediaUrl, [640, 1080])} imageSizes="100vw" fetchPriority="high" />
+      <link rel="preload" as="image" media="(min-width: 640px)" imageSrcSet={desktop} imageSizes="100vw" fetchPriority="high" />
+    </>
+  );
+}
+
 export default async function Page({ params }: Props) {
-  const seo = await resolvePage(await keyOf(params));
+  const key = await keyOf(params);
+  const seo = await resolvePage(key);
   if (seo?.notFound) notFound();
   return (
     <>
+      {/* Home: start the banner photo now. Without this it was found ~5 s in (app, then API, then image). */}
+      {key === "" ? <HeroPreload /> : null}
       {/* Start the main photo downloading now instead of after the app loads and fetches the
           product. The URL must match ProductDetails exactly (optimizeImage at 1000px) or it is
           downloaded twice. React moves this tag into <head>. */}

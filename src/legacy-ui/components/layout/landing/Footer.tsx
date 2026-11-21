@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-const logoImg = '/assets/file.png';
+const logoImg = '/assets/logo-384.webp';
 import { MapPin, Phone, Mail, ArrowUp } from 'lucide-react';
 import { useGetContactQuery } from '../../../services/cmsApi';
 
@@ -94,7 +94,7 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-12">
           {/* Brand + contact */}
           <div className="col-span-2 md:col-span-4">
-            <img src={logoImg} alt="Madalsa Couture" className="h-12 w-auto object-contain" />
+            <img src={logoImg} alt="Madalsa Couture" width={384} height={256} loading="lazy" className="h-12 w-auto object-contain" />
             <p className="mt-4 max-w-xs text-sm text-body">
               Contemporary womenswear with handcrafted detail, designed in Bhopal.
             </p>

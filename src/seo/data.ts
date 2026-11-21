@@ -4,6 +4,7 @@ import { AboutUs, Category, Collection, Comment, Contact, Product } from "@/serv
 import productService from "@/server/services/productService";
 import collectionService from "@/server/services/collectionService";
 import staticPageService from "@/server/modules/cms/staticPages/staticPageService";
+import heroService from "@/server/modules/cms/hero/heroService";
 
 // Server-side reads for page titles, descriptions, structured data and the sitemap.
 // Every function returns null for "doesn't exist" and THROWS on a database problem, so callers
@@ -79,4 +80,17 @@ export async function listCollections(): Promise<Doc> {
 export async function listCategories(): Promise<Doc> {
   await ensureSchema();
   return Category.find({ status: "active", isDeleted: false }).select("name slug").sort({ displayOrder: 1 }).lean();
+}
+
+/**
+ * The home banner's first slide when it is a photo (the page's largest image), so the server can
+ * start downloading it before the app asks the API. Same lookup and order as the public hero API.
+ */
+export async function getHeroFirstImage(): Promise<{ mediaUrl: string; mobileMediaUrl: string | null } | null> {
+  await ensureSchema();
+  const hero: Doc = await heroService.getHeroPublic();
+  if (!hero) return null;
+  const first: Doc = hero.media?.length ? hero.media[0] : hero.mediaUrl ? { mediaType: hero.mediaType || "image", mediaUrl: hero.mediaUrl } : null;
+  if (!first || first.mediaType === "video" || !first.mediaUrl) return null;
+  return { mediaUrl: String(first.mediaUrl), mobileMediaUrl: first.mobileMediaUrl ? String(first.mobileMediaUrl) : null };
 }

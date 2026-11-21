@@ -22,7 +22,7 @@ import {
 import type { RootState } from '../../../store';
 import { NAV_ITEMS } from '../../../config/adminNavigation';
 import { useLogout } from '../../../hooks/useLogout';
-const logoImg = '/assets/file.png';
+const logoImg = '/assets/logo-384.webp';
 
 interface SidebarProps {
   isOpen?: boolean;
