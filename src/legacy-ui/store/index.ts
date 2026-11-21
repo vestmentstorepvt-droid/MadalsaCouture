@@ -9,7 +9,7 @@ import { reviewsApi } from '../services/reviewsApi';
 import { authApi } from '../services/authApi';
 import { adminOrdersApi } from '../services/adminOrdersApi';
 import { baseApi } from '../redux/api/baseApi';
-import { cmsApi } from '../services/cmsApi';
+import { cmsApi, toCmsHero } from '../services/cmsApi';
 import { cmsAdminApi } from '../services/cmsAdminApi';
 import { addressApi } from '../services/addressApi';
 import { wishlistApi } from '../services/wishlistApi';
@@ -87,6 +87,16 @@ export const store = configureStore({
     ),
 });
 
+
+// The home page HTML carries the live banner data (read on the server for that request), so the
+// banner can show as soon as the app starts instead of waiting for the API. Admin changes still
+// apply on the next page load; RTK Query refreshes it like any other cached query afterwards.
+try {
+  const seeded = typeof document !== 'undefined' ? document.getElementById('initial-hero')?.textContent : null;
+  if (seeded) void store.dispatch(cmsApi.util.upsertQueryData('getHero', undefined, toCmsHero(JSON.parse(seeded))));
+} catch {
+  // Bad or missing data: the Hero fetches from the API as before.
+}
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

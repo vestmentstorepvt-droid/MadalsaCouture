@@ -148,6 +148,60 @@ export interface FeaturedReview {
   product: { title: string; slug: string; image: string | null } | null;
 }
 
+/** Turns the public hero API response into the shape the Hero uses. Also used for the copy the
+ * server puts in the home page HTML, so both paths give identical data. */
+export const toCmsHero = (response: unknown): CmsHero => {
+  const defaults: CmsHero = {
+    media: [],
+    mediaType: 'video',
+    mediaUrl: '',
+    headline: '',
+    subHeadline: '',
+    cta: {},
+    styles: {
+      headlineSize: 'large',
+      subHeadlineSize: 'medium',
+      buttonSize: 'medium',
+      buttonStyle: 'outline',
+      alignment: 'bottom-left',
+    },
+    status: 'inactive',
+  };
+
+  if (response && typeof response === 'object') {
+    const r = response as Record<string, unknown>;
+    // Envelope: { data: { hero: {...} } }
+    if (r.data && typeof r.data === 'object' && !Array.isArray(r.data)) {
+      const inner = r.data as Record<string, unknown>;
+      const raw = (inner.hero ?? inner) as Record<string, unknown>;
+      const legacyMedia = raw.mediaUrl
+        ? [{
+            mediaType: (raw.mediaType as 'image' | 'video') ?? 'image',
+            mediaUrl: raw.mediaUrl as string,
+          }]
+        : [];
+      return {
+        media: Array.isArray(raw.media)
+          ? raw.media as CmsHeroMedia[]
+          : legacyMedia,
+        mediaType: (raw.mediaType as 'image' | 'video') ?? defaults.mediaType,
+        mediaUrl: (raw.mediaUrl as string) ?? defaults.mediaUrl,
+        headline: (raw.headline as string) ?? defaults.headline,
+        subHeadline: (raw.subHeadline as string) ?? defaults.subHeadline,
+        cta: {
+          label: ((raw.cta as Record<string, string>)?.label) ?? '',
+          url: ((raw.cta as Record<string, string>)?.url) ?? '',
+        },
+        styles: (raw.styles as CmsHeroStyles) ?? defaults.styles,
+        status: (raw.status as 'active' | 'inactive') ?? 'inactive',
+        startsAt: (raw.startsAt as string) || null,
+        endsAt: (raw.endsAt as string) || null,
+      };
+    }
+  }
+  return defaults;
+};
+
 export const cmsApi = createApi({
   reducerPath: 'cmsApi',
   baseQuery: baseQueryWithErrorLogging,
@@ -162,57 +216,7 @@ export const cmsApi = createApi({
     }),
     getHero: builder.query<CmsHero, void>({
       query: () => ENDPOINTS.CMS.HERO,
-      transformResponse: (response: unknown): CmsHero => {
-        const defaults: CmsHero = {
-          media: [],
-          mediaType: 'video',
-          mediaUrl: '',
-          headline: '',
-          subHeadline: '',
-          cta: {},
-          styles: {
-            headlineSize: 'large',
-            subHeadlineSize: 'medium',
-            buttonSize: 'medium',
-            buttonStyle: 'outline',
-            alignment: 'bottom-left',
-          },
-          status: 'inactive',
-        };
-
-        if (response && typeof response === 'object') {
-          const r = response as Record<string, unknown>;
-          // Envelope: { data: { hero: {...} } }
-          if (r.data && typeof r.data === 'object' && !Array.isArray(r.data)) {
-            const inner = r.data as Record<string, unknown>;
-            const raw = (inner.hero ?? inner) as Record<string, unknown>;
-            const legacyMedia = raw.mediaUrl
-              ? [{
-                  mediaType: (raw.mediaType as 'image' | 'video') ?? 'image',
-                  mediaUrl: raw.mediaUrl as string,
-                }]
-              : [];
-            return {
-              media: Array.isArray(raw.media)
-                ? raw.media as CmsHeroMedia[]
-                : legacyMedia,
-              mediaType: (raw.mediaType as 'image' | 'video') ?? defaults.mediaType,
-              mediaUrl: (raw.mediaUrl as string) ?? defaults.mediaUrl,
-              headline: (raw.headline as string) ?? defaults.headline,
-              subHeadline: (raw.subHeadline as string) ?? defaults.subHeadline,
-              cta: {
-                label: ((raw.cta as Record<string, string>)?.label) ?? '',
-                url: ((raw.cta as Record<string, string>)?.url) ?? '',
-              },
-              styles: (raw.styles as CmsHeroStyles) ?? defaults.styles,
-              status: (raw.status as 'active' | 'inactive') ?? 'inactive',
-              startsAt: (raw.startsAt as string) || null,
-              endsAt: (raw.endsAt as string) || null,
-            };
-          }
-        }
-        return defaults;
-      },
+      transformResponse: toCmsHero,
       providesTags: ['CmsHero'],
     }),
 

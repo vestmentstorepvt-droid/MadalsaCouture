@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { ensureSchema } from "@/db/migrate";
 import { AboutUs, Category, Collection, Comment, Contact, Product } from "@/server/models/registry";
 import productService from "@/server/services/productService";
@@ -87,13 +88,17 @@ export async function listCategories(): Promise<Doc> {
   return Category.find({ status: "active", isDeleted: false }).select("name slug").sort({ displayOrder: 1 }).lean();
 }
 
+/** The active home banner, exactly as the public hero API returns it (null when none is live). */
+export const getHeroPublic = cache(async (): Promise<Doc> => {
+  await schemaReady();
+  return (await heroService.getHeroPublic()) || null;
+});
+
 /**
  * The home banner's first slide when it is a photo (the page's largest image), so the server can
  * start downloading it before the app asks the API. Same lookup and order as the public hero API.
  */
-export async function getHeroFirstImage(): Promise<{ mediaUrl: string; mobileMediaUrl: string | null } | null> {
-  await schemaReady();
-  const hero: Doc = await heroService.getHeroPublic();
+export function heroFirstImage(hero: Doc): { mediaUrl: string; mobileMediaUrl: string | null } | null {
   if (!hero) return null;
   const first: Doc = hero.media?.length ? hero.media[0] : hero.mediaUrl ? { mediaType: hero.mediaType || "image", mediaUrl: hero.mediaUrl } : null;
   if (!first || first.mediaType === "video" || !first.mediaUrl) return null;
