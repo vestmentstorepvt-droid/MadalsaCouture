@@ -13,10 +13,15 @@ import heroService from "@/server/modules/cms/hero/heroService";
 // Documents are schemaless (Mongo-compatible layer), so they are typed loosely here.
 export type Doc = any;
 
+// These pages only read. The tables already exist in production, and Vercel may be given a
+// read-only database token, so a failed "create tables if missing" step must not block the read.
+// A real database problem still surfaces from the query itself.
+const schemaReady = () => ensureSchema().catch(() => undefined);
+
 const isNotFound = (err: Doc) => err?.statusCode === 404 || err?.name === "CastError";
 
 export async function getProduct(slug: string): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   try {
     return await productService.getProductBySlug(slug);
   } catch (err) {
@@ -27,7 +32,7 @@ export async function getProduct(slug: string): Promise<Doc> {
 
 /** Average rating and count of the customer reviews shown on the product page. */
 export async function getProductRating(productId: string): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   const rated = await Comment.find({ productId, isDeleted: false, rating: { $ne: null } }).select("rating").lean();
   const ratings = rated.map((c: Doc) => Number(c.rating)).filter((r: number) => r >= 1 && r <= 5);
   if (ratings.length === 0) return null;
@@ -36,7 +41,7 @@ export async function getProductRating(productId: string): Promise<Doc> {
 }
 
 export async function getCollection(slug: string): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   let collection: Doc;
   try {
     collection = await collectionService.getCollectionBySlug(slug);
@@ -50,22 +55,22 @@ export async function getCollection(slug: string): Promise<Doc> {
 }
 
 export async function getStaticPage(slug: string): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   return (await staticPageService.getPageBySlugPublic(slug)) || null;
 }
 
 export async function getContact(): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   return (await Contact.findOne({ isDeleted: false, status: "active" }).lean()) || null;
 }
 
 export async function getAboutUs(): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   return (await AboutUs.findOne({ isDeleted: false }).lean()) || null;
 }
 
 export async function listProducts(): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   return Product.find({ status: "published", isDeleted: false })
     .select("title slug basePrice mrp primaryImage images updatedAt")
     .sort({ createdAt: -1 })
@@ -73,12 +78,12 @@ export async function listProducts(): Promise<Doc> {
 }
 
 export async function listCollections(): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   return Collection.find({ status: "active", isDeleted: false }).select("name slug updatedAt").sort({ name: 1 }).lean();
 }
 
 export async function listCategories(): Promise<Doc> {
-  await ensureSchema();
+  await schemaReady();
   return Category.find({ status: "active", isDeleted: false }).select("name slug").sort({ displayOrder: 1 }).lean();
 }
 
@@ -87,7 +92,7 @@ export async function listCategories(): Promise<Doc> {
  * start downloading it before the app asks the API. Same lookup and order as the public hero API.
  */
 export async function getHeroFirstImage(): Promise<{ mediaUrl: string; mobileMediaUrl: string | null } | null> {
-  await ensureSchema();
+  await schemaReady();
   const hero: Doc = await heroService.getHeroPublic();
   if (!hero) return null;
   const first: Doc = hero.media?.length ? hero.media[0] : hero.mediaUrl ? { mediaType: hero.mediaType || "image", mediaUrl: hero.mediaUrl } : null;
